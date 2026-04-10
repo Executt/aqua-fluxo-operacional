@@ -171,8 +171,6 @@ const Entidades = () => {
                 <Key className="h-4 w-4" />
                 Chaves de Integração
               </TabsTrigger>
-                Administração
-              </TabsTrigger>
             </TabsList>
 
             {/* ─── Tab 1: Concessionárias ─── */}
