@@ -105,11 +105,6 @@ const Entidades = () => {
   const [cnpj, setCnpj] = useState("");
   const [area, setArea] = useState("");
 
-  // Keycloak config state
-  const [kcEnabled, setKcEnabled] = useState(false);
-  const [kcUrl, setKcUrl] = useState("https://auth.sigsan.gov.br");
-  const [kcRealm, setKcRealm] = useState("sigsan-fed");
-  const [kcClientId, setKcClientId] = useState("sigsan-portal");
 
   const toggleReveal = (id: string) => {
     setRevealedKeys((prev) => {
