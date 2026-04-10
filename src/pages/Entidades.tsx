@@ -1,0 +1,531 @@
+import { DashboardLayout } from "@/components/DashboardLayout";
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import {
+  Building2,
+  Key,
+  Plus,
+  Copy,
+  Check,
+  RefreshCw,
+  Shield,
+  Settings,
+  Globe,
+  Link2,
+  Trash2,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+// ── Mock data ──────────────────────────────────────────
+
+interface ApiKey {
+  id: string;
+  name: string;
+  key: string;
+  created: string;
+  lastUsed: string;
+  status: "active" | "revoked";
+}
+
+const mockApiKeys: ApiKey[] = [
+  {
+    id: "1",
+    name: "Produção — CEDAE",
+    key: "sk_live_4f8a2c9d7e1b3f6a8c0d2e4f6a8b0c2d",
+    created: "2026-01-15",
+    lastUsed: "Há 2 horas",
+    status: "active",
+  },
+  {
+    id: "2",
+    name: "Staging — CEDAE",
+    key: "sk_test_9b7c5d3e1f0a8b6c4d2e0f8a6b4c2d0e",
+    created: "2026-02-20",
+    lastUsed: "Há 5 dias",
+    status: "active",
+  },
+  {
+    id: "3",
+    name: "Integração Legacy",
+    key: "sk_live_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d",
+    created: "2025-11-03",
+    lastUsed: "Há 30 dias",
+    status: "revoked",
+  },
+];
+
+const mockEntidades = [
+  { nome: "CEDAE", cnpj: "33.352.394/0001-04", area: "Rio de Janeiro, RJ", status: "Ativa" },
+  { nome: "SABESP", cnpj: "43.776.517/0001-80", area: "São Paulo, SP", status: "Ativa" },
+  { nome: "COPASA", cnpj: "17.281.106/0001-03", area: "Minas Gerais, MG", status: "Ativa" },
+  { nome: "EMBASA", cnpj: "13.504.675/0001-10", area: "Bahia, BA", status: "Pendente" },
+];
+
+// ── Helpers ─────────────────────────────────────────────
+
+const maskKey = (key: string) =>
+  key.slice(0, 8) + "••••••••••••••••" + key.slice(-4);
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
+};
+
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.1 } },
+};
+
+// ── Component ───────────────────────────────────────────
+
+const Entidades = () => {
+  const { toast } = useToast();
+  const [revealedKeys, setRevealedKeys] = useState<Set<string>>(new Set());
+  const [nome, setNome] = useState("");
+  const [cnpj, setCnpj] = useState("");
+  const [area, setArea] = useState("");
+
+  // Keycloak config state
+  const [kcEnabled, setKcEnabled] = useState(false);
+  const [kcUrl, setKcUrl] = useState("https://auth.sigsan.gov.br");
+  const [kcRealm, setKcRealm] = useState("sigsan-fed");
+  const [kcClientId, setKcClientId] = useState("sigsan-portal");
+
+  const toggleReveal = (id: string) => {
+    setRevealedKeys((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const copyKey = (key: string) => {
+    navigator.clipboard.writeText(key);
+    toast({ title: "Chave copiada", description: "A API key foi copiada para a área de transferência." });
+  };
+
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nome || !cnpj || !area) {
+      toast({ title: "Campos obrigatórios", description: "Preencha todos os campos.", variant: "destructive" });
+      return;
+    }
+    toast({ title: "Concessionária registada", description: `${nome} foi adicionada com sucesso.` });
+    setNome("");
+    setCnpj("");
+    setArea("");
+  };
+
+  return (
+    <DashboardLayout>
+      <motion.div
+        className="p-6 space-y-6"
+        variants={stagger}
+        initial="hidden"
+        animate="show"
+      >
+        {/* Header */}
+        <motion.div variants={fadeUp} className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">Gestão de Entidades</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Registo de concessionárias, gestão de API keys e configuração de integração
+            </p>
+          </div>
+        </motion.div>
+
+        {/* Tabs */}
+        <motion.div variants={fadeUp}>
+          <Tabs defaultValue="entidades" className="space-y-6">
+            <TabsList className="bg-card border border-border">
+              <TabsTrigger value="entidades" className="gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+                <Building2 className="h-4 w-4" />
+                Concessionárias
+              </TabsTrigger>
+              <TabsTrigger value="apikeys" className="gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+                <Key className="h-4 w-4" />
+                Chaves de Integração
+              </TabsTrigger>
+              <TabsTrigger value="admin" className="gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+                <Settings className="h-4 w-4" />
+                Administração
+              </TabsTrigger>
+            </TabsList>
+
+            {/* ─── Tab 1: Concessionárias ─── */}
+            <TabsContent value="entidades" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                {/* Form */}
+                <Card className="lg:col-span-2 bg-card border-border">
+                  <CardHeader>
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <Plus className="h-4 w-4 text-primary" />
+                      Registar Nova Concessionária
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      Preencha os dados da entidade para registo no sistema federal.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleRegister} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="nome" className="text-xs">Nome da Concessionária</Label>
+                        <Input
+                          id="nome"
+                          value={nome}
+                          onChange={(e) => setNome(e.target.value)}
+                          placeholder="Ex: CEDAE"
+                          className="bg-background border-border"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="cnpj" className="text-xs">CNPJ</Label>
+                        <Input
+                          id="cnpj"
+                          value={cnpj}
+                          onChange={(e) => setCnpj(e.target.value)}
+                          placeholder="00.000.000/0000-00"
+                          className="bg-background border-border font-mono"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="area" className="text-xs">Área de Atuação</Label>
+                        <Select value={area} onValueChange={setArea}>
+                          <SelectTrigger className="bg-background border-border">
+                            <SelectValue placeholder="Selecione o estado / região" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="São Paulo, SP">São Paulo, SP</SelectItem>
+                            <SelectItem value="Rio de Janeiro, RJ">Rio de Janeiro, RJ</SelectItem>
+                            <SelectItem value="Minas Gerais, MG">Minas Gerais, MG</SelectItem>
+                            <SelectItem value="Bahia, BA">Bahia, BA</SelectItem>
+                            <SelectItem value="Paraná, PR">Paraná, PR</SelectItem>
+                            <SelectItem value="Pernambuco, PE">Pernambuco, PE</SelectItem>
+                            <SelectItem value="Ceará, CE">Ceará, CE</SelectItem>
+                            <SelectItem value="Amazonas, AM">Amazonas, AM</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button type="submit" className="w-full gap-2">
+                        <Building2 className="h-4 w-4" />
+                        Registar Entidade
+                      </Button>
+                    </form>
+                  </CardContent>
+                </Card>
+
+                {/* Table */}
+                <Card className="lg:col-span-3 bg-card border-border">
+                  <CardHeader>
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <Globe className="h-4 w-4 text-primary" />
+                      Concessionárias Registadas
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="border-border hover:bg-transparent">
+                          <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Nome</TableHead>
+                          <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">CNPJ</TableHead>
+                          <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Área</TableHead>
+                          <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {mockEntidades.map((e) => (
+                          <TableRow key={e.cnpj} className="border-border">
+                            <TableCell className="text-sm font-medium">{e.nome}</TableCell>
+                            <TableCell className="font-mono text-xs text-muted-foreground">{e.cnpj}</TableCell>
+                            <TableCell className="text-xs">{e.area}</TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={
+                                  e.status === "Ativa"
+                                    ? "bg-success/15 text-success border-success/30"
+                                    : "bg-yellow-500/15 text-yellow-400 border-yellow-500/30"
+                                }
+                              >
+                                {e.status}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            {/* ─── Tab 2: API Keys ─── */}
+            <TabsContent value="apikeys" className="space-y-6">
+              <Card className="bg-gradient-to-br from-primary/5 via-card to-card border-primary/20">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-sm font-medium flex items-center gap-2">
+                        <Key className="h-4 w-4 text-primary" />
+                        Chaves de Integração (API Keys)
+                      </CardTitle>
+                      <CardDescription className="text-xs mt-1">
+                        Gerencie os tokens de acesso à API do SIGSAN-FED. As chaves permitem integração programática com sistemas externos.
+                      </CardDescription>
+                    </div>
+                    <Button className="gap-2">
+                      <Plus className="h-4 w-4" />
+                      Gerar Novo Token
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-border hover:bg-transparent">
+                        <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Nome</TableHead>
+                        <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Chave</TableHead>
+                        <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Criada em</TableHead>
+                        <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Último Uso</TableHead>
+                        <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Status</TableHead>
+                        <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider text-right">Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {mockApiKeys.map((apiKey) => (
+                        <TableRow key={apiKey.id} className="border-border">
+                          <TableCell className="text-sm font-medium">{apiKey.name}</TableCell>
+                          <TableCell>
+                            <code className="text-xs font-mono bg-background/50 px-2 py-1 rounded border border-border">
+                              {revealedKeys.has(apiKey.id) ? apiKey.key : maskKey(apiKey.key)}
+                            </code>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground font-mono">{apiKey.created}</TableCell>
+                          <TableCell className="text-xs text-muted-foreground">{apiKey.lastUsed}</TableCell>
+                          <TableCell>
+                            <Badge
+                              variant="outline"
+                              className={
+                                apiKey.status === "active"
+                                  ? "bg-success/15 text-success border-success/30"
+                                  : "bg-destructive/15 text-destructive border-destructive/30"
+                              }
+                            >
+                              {apiKey.status === "active" ? "Ativa" : "Revogada"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => toggleReveal(apiKey.id)}
+                              >
+                                {revealedKeys.has(apiKey.id) ? (
+                                  <EyeOff className="h-3.5 w-3.5 text-muted-foreground" />
+                                ) : (
+                                  <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+                                )}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => copyKey(apiKey.key)}
+                              >
+                                <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                              </Button>
+                              {apiKey.status === "active" && (
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                  <Trash2 className="h-3.5 w-3.5 text-destructive/70" />
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* ─── Tab 3: Administração ─── */}
+            <TabsContent value="admin" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Keycloak Integration */}
+                <Card className="bg-card border-border">
+                  <CardHeader>
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-primary" />
+                      Integração Keycloak (IdP)
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      Configure a integração com o Keycloak para federação de identidade. As bases de utilizadores são geridas centralmente no Keycloak.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Ativar Keycloak SSO</p>
+                        <p className="text-xs text-muted-foreground">Autenticação federada via OpenID Connect</p>
+                      </div>
+                      <Switch checked={kcEnabled} onCheckedChange={setKcEnabled} />
+                    </div>
+
+                    <Separator className="bg-border" />
+
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label className="text-xs">URL do Servidor Keycloak</Label>
+                        <Input
+                          value={kcUrl}
+                          onChange={(e) => setKcUrl(e.target.value)}
+                          placeholder="https://auth.example.com"
+                          className="bg-background border-border font-mono text-xs"
+                          disabled={!kcEnabled}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">Realm</Label>
+                        <Input
+                          value={kcRealm}
+                          onChange={(e) => setKcRealm(e.target.value)}
+                          placeholder="sigsan-fed"
+                          className="bg-background border-border font-mono text-xs"
+                          disabled={!kcEnabled}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">Client ID</Label>
+                        <Input
+                          value={kcClientId}
+                          onChange={(e) => setKcClientId(e.target.value)}
+                          placeholder="sigsan-portal"
+                          className="bg-background border-border font-mono text-xs"
+                          disabled={!kcEnabled}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">Client Secret</Label>
+                        <Input
+                          type="password"
+                          placeholder="••••••••••••••••"
+                          className="bg-background border-border font-mono text-xs"
+                          disabled={!kcEnabled}
+                        />
+                      </div>
+                    </div>
+
+                    <Button className="w-full gap-2" disabled={!kcEnabled}>
+                      <Link2 className="h-4 w-4" />
+                      Testar Conexão
+                    </Button>
+
+                    {kcEnabled && (
+                      <div className="rounded-lg border border-success/20 bg-success/5 p-3">
+                        <div className="flex items-center gap-2">
+                          <Check className="h-4 w-4 text-success" />
+                          <span className="text-xs font-medium text-success">Endpoints OIDC detectados</span>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mt-1 font-mono">
+                          {kcUrl}/realms/{kcRealm}/.well-known/openid-configuration
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* General Settings */}
+                <Card className="bg-card border-border">
+                  <CardHeader>
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <Settings className="h-4 w-4 text-primary" />
+                      Configurações Gerais
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      Parâmetros globais do módulo de Gestão de Entidades.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Auto-aprovação de Registo</p>
+                        <p className="text-xs text-muted-foreground">Novas entidades ficam ativas imediatamente</p>
+                      </div>
+                      <Switch />
+                    </div>
+                    <Separator className="bg-border" />
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Notificações por E-mail</p>
+                        <p className="text-xs text-muted-foreground">Alertar administradores sobre novos registos</p>
+                      </div>
+                      <Switch defaultChecked />
+                    </div>
+                    <Separator className="bg-border" />
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">Rotação Automática de API Keys</p>
+                        <p className="text-xs text-muted-foreground">Renovar tokens a cada 90 dias</p>
+                      </div>
+                      <Switch defaultChecked />
+                    </div>
+                    <Separator className="bg-border" />
+                    <div className="space-y-2">
+                      <Label className="text-xs">Tempo de Expiração do Token (dias)</Label>
+                      <Select defaultValue="90">
+                        <SelectTrigger className="bg-background border-border">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="30">30 dias</SelectItem>
+                          <SelectItem value="60">60 dias</SelectItem>
+                          <SelectItem value="90">90 dias</SelectItem>
+                          <SelectItem value="180">180 dias</SelectItem>
+                          <SelectItem value="365">365 dias</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Button variant="outline" className="w-full gap-2">
+                      <RefreshCw className="h-4 w-4" />
+                      Guardar Configurações
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </motion.div>
+      </motion.div>
+    </DashboardLayout>
+  );
+};
+
+export default Entidades;
