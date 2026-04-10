@@ -37,20 +37,20 @@ export function AppSidebar() {
   const location = useLocation();
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border">
+    <Sidebar collapsible="icon" className="border-r border-sidebar-border">
       <SidebarHeader className="p-4">
         {!collapsed ? (
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-primary flex items-center justify-center glow-primary">
+            <div className="h-9 w-9 rounded-lg bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-sm">SF</span>
             </div>
             <div>
-              <h2 className="text-sm font-bold text-foreground tracking-wide">SIGSAN-FED</h2>
+              <h2 className="text-sm font-semibold text-foreground tracking-wide">SIGSAN-FED</h2>
               <p className="text-[10px] text-muted-foreground">Águas & Saneamento</p>
             </div>
           </div>
         ) : (
-          <div className="h-9 w-9 rounded-lg bg-primary flex items-center justify-center glow-primary mx-auto">
+          <div className="h-9 w-9 rounded-lg bg-primary flex items-center justify-center mx-auto">
             <span className="text-primary-foreground font-bold text-sm">SF</span>
           </div>
         )}
@@ -58,7 +58,7 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground">
+          <SidebarGroupLabel className="text-[10px] uppercase tracking-widest text-muted-foreground font-medium">
             Navegação
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -71,8 +71,8 @@ export function AppSidebar() {
                       <NavLink
                         to={item.url}
                         end
-                        className={`transition-colors ${active ? "bg-primary/10 text-primary" : "hover:bg-accent"}`}
-                        activeClassName="bg-primary/10 text-primary font-medium"
+                        className={`transition-colors rounded-md ${active ? "bg-primary/12 text-primary border-l-2 border-primary" : "hover:bg-accent text-sidebar-foreground"}`}
+                        activeClassName="bg-primary/12 text-primary font-medium"
                       >
                         <item.icon className="mr-2 h-4 w-4" />
                         {!collapsed && <span>{item.title}</span>}
@@ -88,8 +88,8 @@ export function AppSidebar() {
 
       <SidebarFooter className="p-4">
         {!collapsed && (
-          <div className="text-[10px] text-muted-foreground text-center">
-            <p>ANA — Gov.br</p>
+          <div className="text-[10px] text-muted-foreground text-center space-y-0.5">
+            <p className="font-medium">ANA — Gov.br</p>
             <p className="font-mono">v2.4.1</p>
           </div>
         )}
