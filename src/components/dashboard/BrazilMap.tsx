@@ -1,19 +1,70 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin } from "lucide-react";
+import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 
-const markers = [
-  { x: 65, y: 25, status: "ok", label: "Manaus" },
-  { x: 80, y: 30, status: "ok", label: "Belém" },
-  { x: 85, y: 42, status: "critical", label: "Fortaleza" },
-  { x: 88, y: 52, status: "ok", label: "Recife" },
-  { x: 82, y: 62, status: "critical", label: "Salvador" },
-  { x: 70, y: 68, status: "ok", label: "Brasília" },
-  { x: 75, y: 75, status: "ok", label: "Belo Horizonte" },
-  { x: 72, y: 82, status: "ok", label: "São Paulo" },
-  { x: 76, y: 80, status: "critical", label: "Rio de Janeiro" },
-  { x: 68, y: 85, status: "ok", label: "Curitiba" },
-  { x: 55, y: 55, status: "ok", label: "Cuiabá" },
-  { x: 62, y: 88, status: "ok", label: "Porto Alegre" },
+const etes = [
+  {
+    id: "ETE-0482",
+    nome: "ETE Barueri",
+    cidade: "São Paulo, SP",
+    lat: -23.5115,
+    lng: -46.8761,
+    status: "ok" as const,
+    ph: "7.2",
+    turbidez: "12 NTU",
+    dbo: "25 mg/L",
+    temp: "24°C",
+  },
+  {
+    id: "ETE-1204",
+    nome: "ETE Arrudas",
+    cidade: "Belo Horizonte, MG",
+    lat: -19.9042,
+    lng: -43.9292,
+    status: "ok" as const,
+    ph: "7.0",
+    turbidez: "18 NTU",
+    dbo: "30 mg/L",
+    temp: "26°C",
+  },
+  {
+    id: "ETE-0891",
+    nome: "ETE Belém",
+    cidade: "Curitiba, PR",
+    lat: -25.4697,
+    lng: -49.2056,
+    status: "ok" as const,
+    ph: "6.8",
+    turbidez: "10 NTU",
+    dbo: "22 mg/L",
+    temp: "20°C",
+  },
+  {
+    id: "ETE-0327",
+    nome: "ETE Jaguaribe",
+    cidade: "Salvador, BA",
+    lat: -12.9211,
+    lng: -38.4312,
+    status: "ok" as const,
+    ph: "7.4",
+    turbidez: "15 NTU",
+    dbo: "28 mg/L",
+    temp: "29°C",
+  },
+  {
+    id: "ETE-0963",
+    nome: "ETE Alegria",
+    cidade: "Rio de Janeiro, RJ",
+    lat: -22.8628,
+    lng: -43.2392,
+    status: "critical" as const,
+    ph: "8.9",
+    turbidez: "55 NTU",
+    dbo: "65 mg/L",
+    temp: "31°C",
+    alerta: "Turbidez acima do limite legal (≤ 40 NTU)",
+  },
 ];
 
 export function BrazilMap() {
@@ -26,54 +77,52 @@ export function BrazilMap() {
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4">
-        <div className="relative w-full aspect-[4/3] bg-muted/30 rounded-lg border border-border overflow-hidden">
-          {/* Grid lines */}
-          <svg className="absolute inset-0 w-full h-full opacity-10">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <line key={`h${i}`} x1="0" y1={`${(i + 1) * 10}%`} x2="100%" y2={`${(i + 1) * 10}%`} stroke="hsl(var(--primary))" strokeWidth="0.5" />
-            ))}
-            {Array.from({ length: 10 }).map((_, i) => (
-              <line key={`v${i}`} x1={`${(i + 1) * 10}%`} y1="0" x2={`${(i + 1) * 10}%`} y2="100%" stroke="hsl(var(--primary))" strokeWidth="0.5" />
-            ))}
-          </svg>
-
-          {/* Simulated Brazil shape outline */}
-          <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <path
-              d="M60,15 Q85,18 88,35 Q92,50 90,55 Q88,65 82,70 Q78,78 73,83 Q68,90 60,92 Q55,88 52,80 Q48,70 45,60 Q42,50 50,40 Q55,30 58,20 Z"
-              fill="hsl(var(--primary) / 0.08)"
-              stroke="hsl(var(--primary) / 0.3)"
-              strokeWidth="0.5"
+        <div className="rounded-lg overflow-hidden border border-border" style={{ height: 360 }}>
+          <MapContainer
+            center={[-14.5, -51.0]}
+            zoom={4}
+            scrollWheelZoom
+            className="h-full w-full"
+            style={{ height: "100%", background: "hsl(222 30% 6%)" }}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://carto.com/">CARTO</a>'
+              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
             />
-          </svg>
-
-          {/* Markers */}
-          {markers.map((m) => (
-            <div
-              key={m.label}
-              className="absolute group"
-              style={{ left: `${m.x}%`, top: `${m.y}%`, transform: "translate(-50%, -50%)" }}
-            >
-              <div className={`h-3 w-3 rounded-full border-2 ${
-                m.status === "critical"
-                  ? "bg-destructive border-destructive/50 animate-pulse-glow"
-                  : "bg-success border-success/50"
-              }`} />
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 hidden group-hover:block bg-card border border-border rounded px-2 py-1 text-[10px] text-foreground whitespace-nowrap z-10 shadow-lg">
-                {m.label}
-              </div>
-            </div>
-          ))}
-
-          {/* Legend */}
-          <div className="absolute bottom-3 left-3 flex gap-4 text-[10px] text-muted-foreground">
-            <div className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-success" /> Normal
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-destructive" /> Crítico
-            </div>
-          </div>
+            {etes.map((ete) => (
+              <CircleMarker
+                key={ete.id}
+                center={[ete.lat, ete.lng]}
+                radius={ete.status === "critical" ? 10 : 7}
+                pathOptions={{
+                  color: ete.status === "critical" ? "hsl(0 72% 55%)" : "hsl(152 60% 42%)",
+                  fillColor: ete.status === "critical" ? "hsl(0 72% 55%)" : "hsl(152 60% 42%)",
+                  fillOpacity: 0.7,
+                  weight: 2,
+                }}
+              >
+                <Popup>
+                  <div style={{ fontFamily: "Inter, sans-serif", fontSize: 12, minWidth: 180, color: "#1a1a2e" }}>
+                    <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>{ete.nome}</div>
+                    <div style={{ color: "#555", marginBottom: 8 }}>{ete.cidade} — <span style={{ fontFamily: "JetBrains Mono, monospace" }}>{ete.id}</span></div>
+                    {ete.status === "critical" && (
+                      <div style={{ background: "#fde8e8", color: "#c0392b", padding: "4px 8px", borderRadius: 4, marginBottom: 8, fontSize: 11, fontWeight: 600 }}>
+                        ⚠ {ete.alerta}
+                      </div>
+                    )}
+                    <table style={{ width: "100%", fontSize: 11 }}>
+                      <tbody>
+                        <tr><td style={{ color: "#888", padding: "2px 0" }}>pH</td><td style={{ fontFamily: "JetBrains Mono", textAlign: "right" }}>{ete.ph}</td></tr>
+                        <tr><td style={{ color: "#888", padding: "2px 0" }}>Turbidez</td><td style={{ fontFamily: "JetBrains Mono", textAlign: "right", color: ete.status === "critical" ? "#c0392b" : undefined }}>{ete.turbidez}</td></tr>
+                        <tr><td style={{ color: "#888", padding: "2px 0" }}>DBO</td><td style={{ fontFamily: "JetBrains Mono", textAlign: "right" }}>{ete.dbo}</td></tr>
+                        <tr><td style={{ color: "#888", padding: "2px 0" }}>Temperatura</td><td style={{ fontFamily: "JetBrains Mono", textAlign: "right" }}>{ete.temp}</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </Popup>
+              </CircleMarker>
+            ))}
+          </MapContainer>
         </div>
       </CardContent>
     </Card>
