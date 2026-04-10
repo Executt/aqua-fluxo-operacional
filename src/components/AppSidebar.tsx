@@ -4,6 +4,7 @@ import {
   ShieldCheck,
   Building2,
   BrainCircuit,
+  Settings,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -27,6 +28,7 @@ const menuItems = [
   { title: "Gestão SARSB", url: "/compliance", icon: ShieldCheck, badge: "Compliance" },
   { title: "Gestão de Entidades", url: "/entidades", icon: Building2 },
   { title: "Cortex-San (IA)", url: "/cortex", icon: BrainCircuit },
+  { title: "Administração", url: "/admin", icon: Settings },
 ];
 
 export function AppSidebar() {
