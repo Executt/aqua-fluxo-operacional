@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertTriangle, Activity, Droplets, Database } from "lucide-react";
+import { motion } from "framer-motion";
 
 const kpis = [
   {
