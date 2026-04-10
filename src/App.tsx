@@ -7,6 +7,8 @@ import Index from "./pages/Index.tsx";
 import CortexSan from "./pages/CortexSan.tsx";
 import Entidades from "./pages/Entidades.tsx";
 import Administracao from "./pages/Administracao.tsx";
+import IoTMonitor from "./pages/IoTMonitor.tsx";
+import CompliancePage from "./pages/Compliance.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -22,6 +24,8 @@ const App = () => (
           <Route path="/cortex" element={<CortexSan />} />
           <Route path="/entidades" element={<Entidades />} />
           <Route path="/admin" element={<Administracao />} />
+          <Route path="/iot" element={<IoTMonitor />} />
+          <Route path="/compliance" element={<CompliancePage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
