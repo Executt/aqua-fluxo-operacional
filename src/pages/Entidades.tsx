@@ -171,8 +171,6 @@ const Entidades = () => {
                 <Key className="h-4 w-4" />
                 Chaves de Integração
               </TabsTrigger>
-              <TabsTrigger value="admin" className="gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
-                <Settings className="h-4 w-4" />
                 Administração
               </TabsTrigger>
             </TabsList>
