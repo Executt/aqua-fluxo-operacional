@@ -6,56 +6,67 @@
 
 @layer base {
   :root {
-    --background: 222 30% 6%;
+    /* ── SAP Fiori Horizon Dark Theme ── */
+    --background: 213 25% 9%;
     --foreground: 210 20% 92%;
 
-    --card: 222 25% 10%;
+    --card: 213 25% 13%;
     --card-foreground: 210 20% 92%;
 
-    --popover: 222 25% 10%;
+    --popover: 213 25% 13%;
     --popover-foreground: 210 20% 92%;
 
-    --primary: 210 80% 52%;
+    --primary: 212 100% 47%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 222 20% 16%;
+    --secondary: 213 22% 18%;
     --secondary-foreground: 210 20% 85%;
 
-    --muted: 222 18% 14%;
-    --muted-foreground: 215 15% 55%;
+    --muted: 213 20% 16%;
+    --muted-foreground: 212 20% 58%;
 
-    --accent: 222 20% 16%;
+    --accent: 213 22% 18%;
     --accent-foreground: 210 20% 92%;
 
-    --destructive: 0 72% 55%;
+    --destructive: 0 100% 37%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 152 60% 42%;
+    --success: 152 68% 37%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 55%;
-    --warning-foreground: 0 0% 10%;
+    --warning: 27 90% 48%;
+    --warning-foreground: 0 0% 100%;
 
-    --border: 222 20% 16%;
-    --input: 222 20% 18%;
-    --ring: 210 80% 52%;
+    --informative: 212 100% 47%;
+    --informative-foreground: 0 0% 100%;
+
+    --border: 213 22% 20%;
+    --input: 213 22% 22%;
+    --ring: 212 100% 47%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 222 30% 8%;
-    --sidebar-foreground: 215 15% 65%;
-    --sidebar-primary: 210 80% 52%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 25% 14%;
-    --sidebar-accent-foreground: 210 20% 92%;
-    --sidebar-border: 222 20% 14%;
-    --sidebar-ring: 210 80% 52%;
+    /* ── SAP Shell ── */
+    --shell: 213 30% 22%;
+    --shell-foreground: 210 20% 85%;
 
-    --chart-1: 210 80% 52%;
-    --chart-2: 152 60% 42%;
-    --chart-3: 38 92% 55%;
-    --chart-4: 0 72% 55%;
-    --chart-5: 270 60% 55%;
+    /* ── Sidebar (SAP Navigation) ── */
+    --sidebar-background: 213 28% 11%;
+    --sidebar-foreground: 212 18% 62%;
+    --sidebar-primary: 212 100% 47%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 213 25% 16%;
+    --sidebar-accent-foreground: 210 20% 92%;
+    --sidebar-border: 213 22% 16%;
+    --sidebar-ring: 212 100% 47%;
+
+    /* ── Chart Palette (SAP Sequential) ── */
+    --chart-1: 212 100% 47%;
+    --chart-2: 152 68% 37%;
+    --chart-3: 27 90% 48%;
+    --chart-4: 0 100% 37%;
+    --chart-5: 267 55% 50%;
+    --chart-6: 187 72% 40%;
   }
 }
 
@@ -70,13 +81,42 @@
 }
 
 @layer utilities {
+  /* SAP Fiori elevation system */
+  .elevation-0 {
+    box-shadow: none;
+  }
+  .elevation-1 {
+    box-shadow: 0 1px 4px 0 hsl(213 25% 9% / 0.3);
+  }
+  .elevation-2 {
+    box-shadow: 0 4px 12px 0 hsl(213 25% 9% / 0.4);
+  }
+  .elevation-3 {
+    box-shadow: 0 8px 24px 0 hsl(213 25% 9% / 0.5);
+  }
+
+  /* SAP Status indicators */
+  .status-positive {
+    box-shadow: 0 0 0 2px hsl(152 68% 37% / 0.25);
+  }
+  .status-negative {
+    box-shadow: 0 0 0 2px hsl(0 100% 37% / 0.25);
+  }
+  .status-critical {
+    box-shadow: 0 0 0 2px hsl(27 90% 48% / 0.25);
+  }
+  .status-informative {
+    box-shadow: 0 0 0 2px hsl(212 100% 47% / 0.25);
+  }
+
+  /* Legacy glow classes mapped to SAP status */
   .glow-primary {
-    box-shadow: 0 0 20px -5px hsl(210 80% 52% / 0.3);
+    box-shadow: 0 0 16px -4px hsl(212 100% 47% / 0.3);
   }
   .glow-success {
-    box-shadow: 0 0 15px -5px hsl(152 60% 42% / 0.3);
+    box-shadow: 0 0 12px -4px hsl(152 68% 37% / 0.3);
   }
   .glow-destructive {
-    box-shadow: 0 0 15px -5px hsl(0 72% 55% / 0.3);
+    box-shadow: 0 0 12px -4px hsl(0 100% 37% / 0.3);
   }
 }
