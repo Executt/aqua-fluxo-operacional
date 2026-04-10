@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertTriangle, Activity, Droplets, Database } from "lucide-react";
+import { motion } from "framer-motion";
 
 const kpis = [
   {
@@ -40,21 +41,28 @@ const kpis = [
 export function KpiCards() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {kpis.map((kpi) => (
-        <Card key={kpi.title} className={`bg-card border-border hover:border-primary/30 transition-all ${kpi.glowClass}`}>
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
-                {kpi.title}
-              </span>
-              <kpi.icon className={`h-4 w-4 ${kpi.color} ${kpi.alert ? "animate-pulse-glow" : ""}`} />
-            </div>
-            <div className={`text-3xl font-bold ${kpi.color} font-mono`}>
-              {kpi.value}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">{kpi.change}</p>
-          </CardContent>
-        </Card>
+      {kpis.map((kpi, i) => (
+        <motion.div
+          key={kpi.title}
+          initial={{ opacity: 0, scale: 0.95, y: 12 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: i * 0.08, ease: "easeOut" }}
+        >
+          <Card className={`bg-card border-border hover:border-primary/30 transition-all ${kpi.glowClass}`}>
+            <CardContent className="p-5">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                  {kpi.title}
+                </span>
+                <kpi.icon className={`h-4 w-4 ${kpi.color} ${kpi.alert ? "animate-pulse-glow" : ""}`} />
+              </div>
+              <div className={`text-3xl font-bold ${kpi.color} font-mono`}>
+                {kpi.value}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">{kpi.change}</p>
+            </CardContent>
+          </Card>
+        </motion.div>
       ))}
     </div>
   );
