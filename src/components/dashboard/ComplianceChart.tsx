@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { TrendingUp } from "lucide-react";
+import { CHART_COLORS, CHART_GRID, CHART_TICK } from "@/lib/chart-colors";
 
 const data = [
   { mes: "Out", SP: 92, MG: 78, RJ: 65, BA: 58 },
@@ -14,7 +15,7 @@ const data = [
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload) return null;
   return (
-    <div className="bg-card border border-border rounded-lg p-3 shadow-xl">
+    <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
       <p className="text-xs font-medium text-foreground mb-2">{label}</p>
       {payload.map((p: any) => (
         <p key={p.dataKey} className="text-xs text-muted-foreground">
@@ -27,7 +28,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export function ComplianceChart() {
   return (
-    <Card className="bg-card border-border h-full">
+    <Card className="border-border h-full elevation-1">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-foreground flex items-center gap-2">
           <TrendingUp className="h-4 w-4 text-primary" />
@@ -37,15 +38,15 @@ export function ComplianceChart() {
       <CardContent className="p-4">
         <ResponsiveContainer width="100%" height={280}>
           <BarChart data={data} barGap={2}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(222 20% 16%)" />
-            <XAxis dataKey="mes" tick={{ fontSize: 11, fill: "hsl(215 15% 55%)" }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize: 11, fill: "hsl(215 15% 55%)" }} axisLine={false} tickLine={false} domain={[50, 100]} unit="%" />
+            <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} />
+            <XAxis dataKey="mes" tick={{ fontSize: 11, fill: CHART_TICK }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 11, fill: CHART_TICK }} axisLine={false} tickLine={false} domain={[50, 100]} unit="%" />
             <Tooltip content={<CustomTooltip />} />
-            <Legend iconSize={8} wrapperStyle={{ fontSize: "11px", color: "hsl(215 15% 55%)" }} />
-            <Bar dataKey="SP" fill="hsl(210 80% 52%)" radius={[2, 2, 0, 0]} />
-            <Bar dataKey="MG" fill="hsl(152 60% 42%)" radius={[2, 2, 0, 0]} />
-            <Bar dataKey="RJ" fill="hsl(38 92% 55%)" radius={[2, 2, 0, 0]} />
-            <Bar dataKey="BA" fill="hsl(270 60% 55%)" radius={[2, 2, 0, 0]} />
+            <Legend iconSize={8} wrapperStyle={{ fontSize: "11px", color: CHART_TICK }} />
+            <Bar dataKey="SP" fill={CHART_COLORS.primary} radius={[2, 2, 0, 0]} />
+            <Bar dataKey="MG" fill={CHART_COLORS.success} radius={[2, 2, 0, 0]} />
+            <Bar dataKey="RJ" fill={CHART_COLORS.warning} radius={[2, 2, 0, 0]} />
+            <Bar dataKey="BA" fill={CHART_COLORS.purple} radius={[2, 2, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </CardContent>

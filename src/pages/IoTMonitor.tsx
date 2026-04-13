@@ -5,59 +5,27 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  Legend,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  AreaChart, Area, Legend,
 } from "recharts";
 import {
-  Radio,
-  Wifi,
-  WifiOff,
-  Activity,
-  Thermometer,
-  Droplets,
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  RefreshCw,
-  Gauge,
-  Zap,
+  Radio, Wifi, WifiOff, Activity, Thermometer, Droplets, AlertTriangle,
+  CheckCircle2, Clock, RefreshCw, Gauge, Zap,
 } from "lucide-react";
+import { CHART_COLORS, CHART_GRID, CHART_TICK } from "@/lib/chart-colors";
 
-// ── Animation variants ───────────────────────────────
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
   show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
 };
-const stagger = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.1 } },
-};
-
-// ── Mock data ────────────────────────────────────────
+const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
 
 const sensorTimeSeries = Array.from({ length: 24 }, (_, i) => ({
   hora: `${String(i).padStart(2, "0")}:00`,
@@ -69,17 +37,9 @@ const sensorTimeSeries = Array.from({ length: 24 }, (_, i) => ({
 }));
 
 interface SensorStatus {
-  id: string;
-  ete: string;
-  cidade: string;
-  tipo: string;
-  valor: string;
-  unidade: string;
-  limite: string;
-  status: "normal" | "critico" | "alerta" | "offline";
-  ultimaLeitura: string;
-  bateria: number;
-  sinal: "forte" | "medio" | "fraco" | "offline";
+  id: string; ete: string; cidade: string; tipo: string; valor: string;
+  unidade: string; limite: string; status: "normal" | "critico" | "alerta" | "offline";
+  ultimaLeitura: string; bateria: number; sinal: "forte" | "medio" | "fraco" | "offline";
 }
 
 const sensores: SensorStatus[] = [
@@ -112,7 +72,7 @@ const sinalIcon = (s: string) => {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload) return null;
   return (
-    <div className="bg-card border border-border rounded-lg p-3 shadow-xl">
+    <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
       <p className="text-xs font-medium text-foreground mb-2">{label}</p>
       {payload.map((p: any) => (
         <p key={p.dataKey} className="text-xs text-muted-foreground">
@@ -123,7 +83,6 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-// ── KPI helpers ──────────────────────────────────────
 const totalSensores = sensores.length;
 const online = sensores.filter((s) => s.status !== "offline").length;
 const criticos = sensores.filter((s) => s.status === "critico").length;
@@ -135,8 +94,6 @@ const kpis = [
   { title: "Status Normal", value: String(normais), icon: CheckCircle2, color: "text-success" },
   { title: "Latência Média", value: "340ms", icon: Zap, color: "text-primary" },
 ];
-
-// ── Component ────────────────────────────────────────
 
 const IoTMonitor = () => {
   const [selectedEte, setSelectedEte] = useState("all");
@@ -178,7 +135,7 @@ const IoTMonitor = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.4, delay: i * 0.08 }}
             >
-              <Card className="bg-card border-border">
+              <Card className="border-border elevation-1">
                 <CardContent className="p-5">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">{kpi.title}</span>
@@ -205,9 +162,7 @@ const IoTMonitor = () => {
               </TabsTrigger>
             </TabsList>
 
-            {/* ─── Tab: Dashboard ─── */}
             <TabsContent value="dashboard" className="space-y-6">
-              {/* Filters */}
               <div className="flex items-center gap-4">
                 <Select value={selectedEte} onValueChange={setSelectedEte}>
                   <SelectTrigger className="w-60 bg-card border-border">
@@ -238,10 +193,8 @@ const IoTMonitor = () => {
                 </Select>
               </div>
 
-              {/* Charts */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Area Chart */}
-                <Card className="bg-card border-border">
+                <Card className="border-border elevation-1">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium flex items-center gap-2">
                       <Activity className="h-4 w-4 text-primary" />
@@ -254,28 +207,21 @@ const IoTMonitor = () => {
                       <AreaChart data={sensorTimeSeries}>
                         <defs>
                           <linearGradient id="gradParam" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="hsl(210 80% 52%)" stopOpacity={0.3} />
-                            <stop offset="95%" stopColor="hsl(210 80% 52%)" stopOpacity={0} />
+                            <stop offset="5%" stopColor={CHART_COLORS.primary} stopOpacity={0.2} />
+                            <stop offset="95%" stopColor={CHART_COLORS.primary} stopOpacity={0} />
                           </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(222 20% 16%)" />
-                        <XAxis dataKey="hora" tick={{ fontSize: 10, fill: "hsl(215 15% 55%)" }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fontSize: 10, fill: "hsl(215 15% 55%)" }} axisLine={false} tickLine={false} />
+                        <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} />
+                        <XAxis dataKey="hora" tick={{ fontSize: 10, fill: CHART_TICK }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fontSize: 10, fill: CHART_TICK }} axisLine={false} tickLine={false} />
                         <Tooltip content={<CustomTooltip />} />
-                        <Area
-                          type="monotone"
-                          dataKey={selectedParam}
-                          stroke="hsl(210 80% 52%)"
-                          fill="url(#gradParam)"
-                          strokeWidth={2}
-                        />
+                        <Area type="monotone" dataKey={selectedParam} stroke={CHART_COLORS.primary} fill="url(#gradParam)" strokeWidth={2} />
                       </AreaChart>
                     </ResponsiveContainer>
                   </CardContent>
                 </Card>
 
-                {/* Multi-parameter line chart */}
-                <Card className="bg-card border-border">
+                <Card className="border-border elevation-1">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium flex items-center gap-2">
                       <Thermometer className="h-4 w-4 text-primary" />
@@ -286,14 +232,14 @@ const IoTMonitor = () => {
                   <CardContent>
                     <ResponsiveContainer width="100%" height={280}>
                       <LineChart data={sensorTimeSeries}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(222 20% 16%)" />
-                        <XAxis dataKey="hora" tick={{ fontSize: 10, fill: "hsl(215 15% 55%)" }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fontSize: 10, fill: "hsl(215 15% 55%)" }} axisLine={false} tickLine={false} />
+                        <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} />
+                        <XAxis dataKey="hora" tick={{ fontSize: 10, fill: CHART_TICK }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fontSize: 10, fill: CHART_TICK }} axisLine={false} tickLine={false} />
                         <Tooltip content={<CustomTooltip />} />
                         <Legend iconSize={8} wrapperStyle={{ fontSize: "11px" }} />
-                        <Line type="monotone" dataKey="ph" stroke="hsl(210 80% 52%)" strokeWidth={2} dot={false} />
-                        <Line type="monotone" dataKey="turbidez" stroke="hsl(38 92% 55%)" strokeWidth={2} dot={false} />
-                        <Line type="monotone" dataKey="temperatura" stroke="hsl(0 72% 55%)" strokeWidth={2} dot={false} />
+                        <Line type="monotone" dataKey="ph" stroke={CHART_COLORS.primary} strokeWidth={2} dot={false} />
+                        <Line type="monotone" dataKey="turbidez" stroke={CHART_COLORS.warning} strokeWidth={2} dot={false} />
+                        <Line type="monotone" dataKey="temperatura" stroke={CHART_COLORS.destructive} strokeWidth={2} dot={false} />
                       </LineChart>
                     </ResponsiveContainer>
                   </CardContent>
@@ -301,9 +247,8 @@ const IoTMonitor = () => {
               </div>
             </TabsContent>
 
-            {/* ─── Tab: Sensores ─── */}
             <TabsContent value="sensores">
-              <Card className="bg-card border-border">
+              <Card className="border-border elevation-1">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium flex items-center gap-2">
                     <Gauge className="h-4 w-4 text-primary" />
@@ -339,9 +284,7 @@ const IoTMonitor = () => {
                             </div>
                           </TableCell>
                           <TableCell className="text-xs">{s.tipo}</TableCell>
-                          <TableCell className="font-mono text-xs font-semibold">
-                            {s.valor} {s.unidade}
-                          </TableCell>
+                          <TableCell className="font-mono text-xs font-semibold">{s.valor} {s.unidade}</TableCell>
                           <TableCell className="font-mono text-xs text-muted-foreground">{s.limite}</TableCell>
                           <TableCell>
                             <Badge variant="outline" className={statusColor[s.status]}>
@@ -351,7 +294,7 @@ const IoTMonitor = () => {
                           <TableCell>{sinalIcon(s.sinal)}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1.5">
-                              <div className={`h-1.5 w-8 rounded-full overflow-hidden bg-muted`}>
+                              <div className="h-1.5 w-8 rounded-full overflow-hidden bg-muted">
                                 <div
                                   className={`h-full rounded-full ${s.bateria > 50 ? "bg-success" : s.bateria > 20 ? "bg-warning" : "bg-destructive"}`}
                                   style={{ width: `${s.bateria}%` }}

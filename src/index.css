@@ -6,32 +6,32 @@
 
 @layer base {
   :root {
-    /* ── SAP Fiori Horizon Dark Theme ── */
-    --background: 213 25% 9%;
-    --foreground: 210 20% 92%;
+    /* ── SAP Fiori Horizon Light Theme ── */
+    --background: 0 0% 98%;
+    --foreground: 210 29% 15%;
 
-    --card: 213 25% 13%;
-    --card-foreground: 210 20% 92%;
+    --card: 0 0% 100%;
+    --card-foreground: 210 29% 15%;
 
-    --popover: 213 25% 13%;
-    --popover-foreground: 210 20% 92%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 29% 15%;
 
     --primary: 212 100% 47%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 213 22% 18%;
-    --secondary-foreground: 210 20% 85%;
+    --secondary: 210 18% 95%;
+    --secondary-foreground: 210 29% 24%;
 
-    --muted: 213 20% 16%;
-    --muted-foreground: 212 20% 58%;
+    --muted: 210 16% 93%;
+    --muted-foreground: 210 12% 48%;
 
-    --accent: 213 22% 18%;
-    --accent-foreground: 210 20% 92%;
+    --accent: 210 18% 95%;
+    --accent-foreground: 210 29% 15%;
 
-    --destructive: 0 100% 37%;
+    --destructive: 0 76% 44%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 152 68% 37%;
+    --success: 152 56% 34%;
     --success-foreground: 0 0% 100%;
 
     --warning: 27 90% 48%;
@@ -40,31 +40,31 @@
     --informative: 212 100% 47%;
     --informative-foreground: 0 0% 100%;
 
-    --border: 213 22% 20%;
-    --input: 213 22% 22%;
+    --border: 210 16% 88%;
+    --input: 210 16% 88%;
     --ring: 212 100% 47%;
 
     --radius: 0.5rem;
 
-    /* ── SAP Shell ── */
-    --shell: 213 30% 22%;
-    --shell-foreground: 210 20% 85%;
+    /* ── SAP Shell (stays dark per Fiori spec) ── */
+    --shell: 210 29% 24%;
+    --shell-foreground: 210 16% 93%;
 
-    /* ── Sidebar (SAP Navigation) ── */
-    --sidebar-background: 213 28% 11%;
-    --sidebar-foreground: 212 18% 62%;
+    /* ── Sidebar (Light) ── */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 210 12% 48%;
     --sidebar-primary: 212 100% 47%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 213 25% 16%;
-    --sidebar-accent-foreground: 210 20% 92%;
-    --sidebar-border: 213 22% 16%;
+    --sidebar-accent: 210 18% 95%;
+    --sidebar-accent-foreground: 210 29% 15%;
+    --sidebar-border: 210 16% 90%;
     --sidebar-ring: 212 100% 47%;
 
-    /* ── Chart Palette (SAP Sequential) ── */
+    /* ── Chart Palette (SAP Fiori Sequential) ── */
     --chart-1: 212 100% 47%;
-    --chart-2: 152 68% 37%;
+    --chart-2: 152 56% 34%;
     --chart-3: 27 90% 48%;
-    --chart-4: 0 100% 37%;
+    --chart-4: 0 76% 44%;
     --chart-5: 267 55% 50%;
     --chart-6: 187 72% 40%;
   }
@@ -81,42 +81,42 @@
 }
 
 @layer utilities {
-  /* SAP Fiori elevation system */
+  /* SAP Fiori elevation system (light) */
   .elevation-0 {
     box-shadow: none;
   }
   .elevation-1 {
-    box-shadow: 0 1px 4px 0 hsl(213 25% 9% / 0.3);
+    box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.08);
   }
   .elevation-2 {
-    box-shadow: 0 4px 12px 0 hsl(213 25% 9% / 0.4);
+    box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.1);
   }
   .elevation-3 {
-    box-shadow: 0 8px 24px 0 hsl(213 25% 9% / 0.5);
+    box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.12);
   }
 
   /* SAP Status indicators */
   .status-positive {
-    box-shadow: 0 0 0 2px hsl(152 68% 37% / 0.25);
+    box-shadow: 0 0 0 2px hsl(152 56% 34% / 0.2);
   }
   .status-negative {
-    box-shadow: 0 0 0 2px hsl(0 100% 37% / 0.25);
+    box-shadow: 0 0 0 2px hsl(0 76% 44% / 0.2);
   }
   .status-critical {
-    box-shadow: 0 0 0 2px hsl(27 90% 48% / 0.25);
+    box-shadow: 0 0 0 2px hsl(27 90% 48% / 0.2);
   }
   .status-informative {
-    box-shadow: 0 0 0 2px hsl(212 100% 47% / 0.25);
+    box-shadow: 0 0 0 2px hsl(212 100% 47% / 0.2);
   }
 
-  /* Legacy glow classes mapped to SAP status */
+  /* Glow classes */
   .glow-primary {
-    box-shadow: 0 0 16px -4px hsl(212 100% 47% / 0.3);
+    box-shadow: 0 0 16px -4px hsl(212 100% 47% / 0.2);
   }
   .glow-success {
-    box-shadow: 0 0 12px -4px hsl(152 68% 37% / 0.3);
+    box-shadow: 0 0 12px -4px hsl(152 56% 34% / 0.2);
   }
   .glow-destructive {
-    box-shadow: 0 0 12px -4px hsl(0 100% 37% / 0.3);
+    box-shadow: 0 0 12px -4px hsl(0 76% 44% / 0.2);
   }
 }
