@@ -6,75 +6,33 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-  Legend,
-  LineChart,
-  Line,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend,
+  LineChart, Line,
 } from "recharts";
 import {
-  ShieldCheck,
-  TrendingUp,
-  TrendingDown,
-  AlertTriangle,
-  CheckCircle2,
-  FileText,
-  Building2,
-  Calendar,
-  Award,
-  XCircle,
-  BarChart3,
-  Target,
+  ShieldCheck, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2,
+  FileText, Building2, Calendar, Award, XCircle, BarChart3, Target,
 } from "lucide-react";
+import { CHART_COLORS, CHART_GRID, CHART_TICK } from "@/lib/chart-colors";
 
-// ── Animation ────────────────────────────────────────
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
   show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
 };
-const stagger = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.1 } },
-};
-
-// ── Mock data ────────────────────────────────────────
+const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
 
 interface Concessionaria {
-  nome: string;
-  uf: string;
-  score: number;
-  tendencia: "up" | "down" | "stable";
-  metasCumpridas: number;
-  metasTotal: number;
-  ultimaAuditoria: string;
-  status: "conforme" | "parcial" | "nao-conforme";
-  infracoesAbertas: number;
+  nome: string; uf: string; score: number; tendencia: "up" | "down" | "stable";
+  metasCumpridas: number; metasTotal: number; ultimaAuditoria: string;
+  status: "conforme" | "parcial" | "nao-conforme"; infracoesAbertas: number;
 }
 
 const concessionarias: Concessionaria[] = [
@@ -120,20 +78,15 @@ const statusColor: Record<string, string> = {
   parcial: "bg-warning/15 text-warning border-warning/30",
   "nao-conforme": "bg-destructive/15 text-destructive border-destructive/30",
 };
-
 const statusLabel: Record<string, string> = {
-  conforme: "Conforme",
-  parcial: "Parcial",
-  "nao-conforme": "Não Conforme",
+  conforme: "Conforme", parcial: "Parcial", "nao-conforme": "Não Conforme",
 };
-
 const gravidadeColor: Record<string, string> = {
   leve: "bg-muted text-muted-foreground border-border",
   media: "bg-warning/15 text-warning border-warning/30",
   grave: "bg-destructive/15 text-destructive border-destructive/30",
   critica: "bg-destructive/20 text-destructive border-destructive/40",
 };
-
 const infracaoStatusColor: Record<string, string> = {
   aberta: "bg-destructive/15 text-destructive border-destructive/30",
   em_analise: "bg-warning/15 text-warning border-warning/30",
@@ -143,7 +96,7 @@ const infracaoStatusColor: Record<string, string> = {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload) return null;
   return (
-    <div className="bg-card border border-border rounded-lg p-3 shadow-xl">
+    <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
       <p className="text-xs font-medium text-foreground mb-2">{label}</p>
       {payload.map((p: any) => (
         <p key={p.dataKey} className="text-xs text-muted-foreground">
@@ -154,7 +107,6 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-// ── KPIs ─────────────────────────────────────────────
 const avgScore = Math.round(concessionarias.reduce((a, c) => a + c.score, 0) / concessionarias.length);
 const conformes = concessionarias.filter((c) => c.status === "conforme").length;
 const naoConformes = concessionarias.filter((c) => c.status === "nao-conforme").length;
@@ -167,19 +119,13 @@ const kpis = [
   { title: "Infrações Abertas", value: String(totalInfracoes), icon: AlertTriangle, color: "text-warning" },
 ];
 
-// ── Component ────────────────────────────────────────
-
 const CompliancePage = () => {
   const [filterUf, setFilterUf] = useState("all");
-
-  const filtered = filterUf === "all"
-    ? concessionarias
-    : concessionarias.filter((c) => c.uf === filterUf);
+  const filtered = filterUf === "all" ? concessionarias : concessionarias.filter((c) => c.uf === filterUf);
 
   return (
     <DashboardLayout>
       <motion.div className="p-6 space-y-6" variants={stagger} initial="hidden" animate="show">
-        {/* Header */}
         <motion.div variants={fadeUp} className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground tracking-tight">Gestão SARSB — Compliance</h1>
@@ -193,16 +139,10 @@ const CompliancePage = () => {
           </Button>
         </motion.div>
 
-        {/* KPIs */}
         <motion.div variants={fadeUp} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {kpis.map((kpi, i) => (
-            <motion.div
-              key={kpi.title}
-              initial={{ opacity: 0, scale: 0.95, y: 12 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: i * 0.08 }}
-            >
-              <Card className="bg-card border-border">
+            <motion.div key={kpi.title} initial={{ opacity: 0, scale: 0.95, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.08 }}>
+              <Card className="border-border elevation-1">
                 <CardContent className="p-5">
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">{kpi.title}</span>
@@ -215,31 +155,25 @@ const CompliancePage = () => {
           ))}
         </motion.div>
 
-        {/* Tabs */}
         <motion.div variants={fadeUp}>
           <Tabs defaultValue="ranking" className="space-y-6">
             <TabsList className="bg-card border border-border">
               <TabsTrigger value="ranking" className="gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
-                <Award className="h-4 w-4" />
-                Ranking
+                <Award className="h-4 w-4" /> Ranking
               </TabsTrigger>
               <TabsTrigger value="evolucao" className="gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
-                <BarChart3 className="h-4 w-4" />
-                Evolução
+                <BarChart3 className="h-4 w-4" /> Evolução
               </TabsTrigger>
               <TabsTrigger value="infracoes" className="gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
-                <AlertTriangle className="h-4 w-4" />
-                Infrações
+                <AlertTriangle className="h-4 w-4" /> Infrações
               </TabsTrigger>
             </TabsList>
 
-            {/* ─── Tab: Ranking ─── */}
+            {/* Ranking */}
             <TabsContent value="ranking" className="space-y-6">
               <div className="flex items-center gap-4">
                 <Select value={filterUf} onValueChange={setFilterUf}>
-                  <SelectTrigger className="w-48 bg-card border-border">
-                    <SelectValue placeholder="Filtrar por UF" />
-                  </SelectTrigger>
+                  <SelectTrigger className="w-48 bg-card border-border"><SelectValue placeholder="Filtrar por UF" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos os Estados</SelectItem>
                     <SelectItem value="SP">São Paulo</SelectItem>
@@ -255,12 +189,10 @@ const CompliancePage = () => {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Ranking table */}
-                <Card className="lg:col-span-2 bg-card border-border">
+                <Card className="lg:col-span-2 border-border elevation-1">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <Award className="h-4 w-4 text-primary" />
-                      Ranking de Compliance por Concessionária
+                      <Award className="h-4 w-4 text-primary" /> Ranking de Compliance por Concessionária
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-0">
@@ -294,24 +226,18 @@ const CompliancePage = () => {
                                 </span>
                               </div>
                             </TableCell>
-                            <TableCell className="text-xs font-mono text-muted-foreground">
-                              {c.metasCumpridas}/{c.metasTotal}
-                            </TableCell>
+                            <TableCell className="text-xs font-mono text-muted-foreground">{c.metasCumpridas}/{c.metasTotal}</TableCell>
                             <TableCell>
                               {c.tendencia === "up" && <TrendingUp className="h-4 w-4 text-success" />}
                               {c.tendencia === "down" && <TrendingDown className="h-4 w-4 text-destructive" />}
                               {c.tendencia === "stable" && <span className="text-xs text-muted-foreground">—</span>}
                             </TableCell>
                             <TableCell>
-                              <Badge variant="outline" className={statusColor[c.status]}>
-                                {statusLabel[c.status]}
-                              </Badge>
+                              <Badge variant="outline" className={statusColor[c.status]}>{statusLabel[c.status]}</Badge>
                             </TableCell>
                             <TableCell>
                               {c.infracoesAbertas > 0 ? (
-                                <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30 font-mono">
-                                  {c.infracoesAbertas}
-                                </Badge>
+                                <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30 font-mono">{c.infracoesAbertas}</Badge>
                               ) : (
                                 <CheckCircle2 className="h-4 w-4 text-success" />
                               )}
@@ -323,24 +249,22 @@ const CompliancePage = () => {
                   </CardContent>
                 </Card>
 
-                {/* Radar chart */}
-                <Card className="bg-card border-border">
+                <Card className="border-border elevation-1">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <Target className="h-4 w-4 text-primary" />
-                      Análise Multidimensional
+                      <Target className="h-4 w-4 text-primary" /> Análise Multidimensional
                     </CardTitle>
                     <CardDescription className="text-xs">SABESP vs CEDAE vs COMPESA</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <ResponsiveContainer width="100%" height={320}>
                       <RadarChart data={radarData}>
-                        <PolarGrid stroke="hsl(222 20% 16%)" />
-                        <PolarAngleAxis dataKey="criterio" tick={{ fontSize: 9, fill: "hsl(215 15% 55%)" }} />
-                        <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 9, fill: "hsl(215 15% 55%)" }} />
-                        <Radar name="SABESP" dataKey="SABESP" stroke="hsl(152 60% 42%)" fill="hsl(152 60% 42%)" fillOpacity={0.15} strokeWidth={2} />
-                        <Radar name="CEDAE" dataKey="CEDAE" stroke="hsl(38 92% 55%)" fill="hsl(38 92% 55%)" fillOpacity={0.1} strokeWidth={2} />
-                        <Radar name="COMPESA" dataKey="COMPESA" stroke="hsl(0 72% 55%)" fill="hsl(0 72% 55%)" fillOpacity={0.1} strokeWidth={2} />
+                        <PolarGrid stroke={CHART_GRID} />
+                        <PolarAngleAxis dataKey="criterio" tick={{ fontSize: 9, fill: CHART_TICK }} />
+                        <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 9, fill: CHART_TICK }} />
+                        <Radar name="SABESP" dataKey="SABESP" stroke={CHART_COLORS.success} fill={CHART_COLORS.success} fillOpacity={0.15} strokeWidth={2} />
+                        <Radar name="CEDAE" dataKey="CEDAE" stroke={CHART_COLORS.warning} fill={CHART_COLORS.warning} fillOpacity={0.1} strokeWidth={2} />
+                        <Radar name="COMPESA" dataKey="COMPESA" stroke={CHART_COLORS.destructive} fill={CHART_COLORS.destructive} fillOpacity={0.1} strokeWidth={2} />
                         <Legend iconSize={8} wrapperStyle={{ fontSize: "11px" }} />
                       </RadarChart>
                     </ResponsiveContainer>
@@ -349,54 +273,52 @@ const CompliancePage = () => {
               </div>
             </TabsContent>
 
-            {/* ─── Tab: Evolução ─── */}
+            {/* Evolução */}
             <TabsContent value="evolucao" className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="bg-card border-border">
+                <Card className="border-border elevation-1">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-primary" />
-                      Evolução de Compliance por Estado
+                      <TrendingUp className="h-4 w-4 text-primary" /> Evolução de Compliance por Estado
                     </CardTitle>
                     <CardDescription className="text-xs">Últimos 6 meses (% compliance)</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <ResponsiveContainer width="100%" height={320}>
                       <BarChart data={evolucaoMensal} barGap={2}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(222 20% 16%)" />
-                        <XAxis dataKey="mes" tick={{ fontSize: 11, fill: "hsl(215 15% 55%)" }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fontSize: 11, fill: "hsl(215 15% 55%)" }} axisLine={false} tickLine={false} domain={[40, 100]} unit="%" />
+                        <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} />
+                        <XAxis dataKey="mes" tick={{ fontSize: 11, fill: CHART_TICK }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fontSize: 11, fill: CHART_TICK }} axisLine={false} tickLine={false} domain={[40, 100]} unit="%" />
                         <Tooltip content={<CustomTooltip />} />
                         <Legend iconSize={8} wrapperStyle={{ fontSize: "11px" }} />
-                        <Bar dataKey="SP" fill="hsl(210 80% 52%)" radius={[2, 2, 0, 0]} />
-                        <Bar dataKey="MG" fill="hsl(152 60% 42%)" radius={[2, 2, 0, 0]} />
-                        <Bar dataKey="RJ" fill="hsl(38 92% 55%)" radius={[2, 2, 0, 0]} />
-                        <Bar dataKey="BA" fill="hsl(270 60% 55%)" radius={[2, 2, 0, 0]} />
+                        <Bar dataKey="SP" fill={CHART_COLORS.primary} radius={[2, 2, 0, 0]} />
+                        <Bar dataKey="MG" fill={CHART_COLORS.success} radius={[2, 2, 0, 0]} />
+                        <Bar dataKey="RJ" fill={CHART_COLORS.warning} radius={[2, 2, 0, 0]} />
+                        <Bar dataKey="BA" fill={CHART_COLORS.purple} radius={[2, 2, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-card border-border">
+                <Card className="border-border elevation-1">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <BarChart3 className="h-4 w-4 text-primary" />
-                      Tendência de Compliance
+                      <BarChart3 className="h-4 w-4 text-primary" /> Tendência de Compliance
                     </CardTitle>
                     <CardDescription className="text-xs">Linha de tendência por estado</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <ResponsiveContainer width="100%" height={320}>
                       <LineChart data={evolucaoMensal}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(222 20% 16%)" />
-                        <XAxis dataKey="mes" tick={{ fontSize: 11, fill: "hsl(215 15% 55%)" }} axisLine={false} tickLine={false} />
-                        <YAxis tick={{ fontSize: 11, fill: "hsl(215 15% 55%)" }} axisLine={false} tickLine={false} domain={[40, 100]} unit="%" />
+                        <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} />
+                        <XAxis dataKey="mes" tick={{ fontSize: 11, fill: CHART_TICK }} axisLine={false} tickLine={false} />
+                        <YAxis tick={{ fontSize: 11, fill: CHART_TICK }} axisLine={false} tickLine={false} domain={[40, 100]} unit="%" />
                         <Tooltip content={<CustomTooltip />} />
                         <Legend iconSize={8} wrapperStyle={{ fontSize: "11px" }} />
-                        <Line type="monotone" dataKey="SP" stroke="hsl(210 80% 52%)" strokeWidth={2} dot={{ r: 3 }} />
-                        <Line type="monotone" dataKey="MG" stroke="hsl(152 60% 42%)" strokeWidth={2} dot={{ r: 3 }} />
-                        <Line type="monotone" dataKey="RJ" stroke="hsl(38 92% 55%)" strokeWidth={2} dot={{ r: 3 }} />
-                        <Line type="monotone" dataKey="PE" stroke="hsl(0 72% 55%)" strokeWidth={2} dot={{ r: 3 }} />
+                        <Line type="monotone" dataKey="SP" stroke={CHART_COLORS.primary} strokeWidth={2} dot={{ r: 3 }} />
+                        <Line type="monotone" dataKey="MG" stroke={CHART_COLORS.success} strokeWidth={2} dot={{ r: 3 }} />
+                        <Line type="monotone" dataKey="RJ" stroke={CHART_COLORS.warning} strokeWidth={2} dot={{ r: 3 }} />
+                        <Line type="monotone" dataKey="PE" stroke={CHART_COLORS.destructive} strokeWidth={2} dot={{ r: 3 }} />
                       </LineChart>
                     </ResponsiveContainer>
                   </CardContent>
@@ -404,14 +326,13 @@ const CompliancePage = () => {
               </div>
             </TabsContent>
 
-            {/* ─── Tab: Infrações ─── */}
+            {/* Infrações */}
             <TabsContent value="infracoes">
-              <Card className="bg-card border-border">
+              <Card className="border-border elevation-1">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <AlertTriangle className="h-4 w-4 text-warning" />
-                      Registro de Infrações
+                      <AlertTriangle className="h-4 w-4 text-warning" /> Registro de Infrações
                     </CardTitle>
                     <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30 font-mono">
                       {totalInfracoes} abertas
@@ -450,8 +371,7 @@ const CompliancePage = () => {
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <Calendar className="h-3 w-3" />
-                              {inf.prazo}
+                              <Calendar className="h-3 w-3" /> {inf.prazo}
                             </div>
                           </TableCell>
                           <TableCell>

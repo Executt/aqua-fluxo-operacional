@@ -4,10 +4,10 @@ import { AppSidebar } from "@/components/AppSidebar";
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          {/* SAP Shell Bar */}
+          {/* SAP Shell Bar (stays dark per Fiori spec) */}
           <header className="h-11 flex items-center border-b border-border px-4 bg-shell">
             <SidebarTrigger className="text-shell-foreground hover:text-foreground" />
             <div className="ml-auto flex items-center gap-3">
@@ -15,7 +15,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <span className="text-[11px] text-shell-foreground font-medium tracking-wide">SISTEMA OPERACIONAL</span>
             </div>
           </header>
-          <main className="flex-1 overflow-auto">
+          <main className="flex-1 overflow-auto bg-background">
             {children}
           </main>
         </div>
