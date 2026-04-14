@@ -14,7 +14,274 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      compliance_scores: {
+        Row: {
+          created_at: string
+          entidade_id: string
+          id: string
+          infracoes_abertas: number
+          mes: string
+          metas_cumpridas: number
+          metas_total: number
+          score: number
+          status: string
+          tendencia: string
+          ultima_auditoria: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          entidade_id: string
+          id?: string
+          infracoes_abertas?: number
+          mes: string
+          metas_cumpridas?: number
+          metas_total?: number
+          score?: number
+          status?: string
+          tendencia?: string
+          ultima_auditoria?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          entidade_id?: string
+          id?: string
+          infracoes_abertas?: number
+          mes?: string
+          metas_cumpridas?: number
+          metas_total?: number
+          score?: number
+          status?: string
+          tendencia?: string
+          ultima_auditoria?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_scores_entidade_id_fkey"
+            columns: ["entidade_id"]
+            isOneToOne: false
+            referencedRelation: "entidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      entidades: {
+        Row: {
+          area_atuacao: string
+          cnpj: string
+          created_at: string
+          id: string
+          nome: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          area_atuacao: string
+          cnpj: string
+          created_at?: string
+          id?: string
+          nome: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          area_atuacao?: string
+          cnpj?: string
+          created_at?: string
+          id?: string
+          nome?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      etes: {
+        Row: {
+          cidade: string
+          codigo: string
+          created_at: string
+          entidade_id: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          nome: string
+          status: string
+          uf: string
+          updated_at: string
+        }
+        Insert: {
+          cidade: string
+          codigo: string
+          created_at?: string
+          entidade_id?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          nome: string
+          status?: string
+          uf: string
+          updated_at?: string
+        }
+        Update: {
+          cidade?: string
+          codigo?: string
+          created_at?: string
+          entidade_id?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          nome?: string
+          status?: string
+          uf?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "etes_entidade_id_fkey"
+            columns: ["entidade_id"]
+            isOneToOne: false
+            referencedRelation: "entidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      infracoes: {
+        Row: {
+          codigo: string
+          created_at: string
+          data_ocorrencia: string
+          descricao: string
+          entidade_id: string
+          gravidade: string
+          id: string
+          norma: string
+          prazo: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          codigo: string
+          created_at?: string
+          data_ocorrencia?: string
+          descricao: string
+          entidade_id: string
+          gravidade?: string
+          id?: string
+          norma: string
+          prazo: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          codigo?: string
+          created_at?: string
+          data_ocorrencia?: string
+          descricao?: string
+          entidade_id?: string
+          gravidade?: string
+          id?: string
+          norma?: string
+          prazo?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "infracoes_entidade_id_fkey"
+            columns: ["entidade_id"]
+            isOneToOne: false
+            referencedRelation: "entidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sensor_leituras: {
+        Row: {
+          created_at: string
+          id: string
+          sensor_id: string
+          status: string
+          valor: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          sensor_id: string
+          status?: string
+          valor: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          sensor_id?: string
+          status?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sensor_leituras_sensor_id_fkey"
+            columns: ["sensor_id"]
+            isOneToOne: false
+            referencedRelation: "sensores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sensores: {
+        Row: {
+          bateria: number
+          codigo: string
+          created_at: string
+          ete_id: string
+          id: string
+          limite_legal: string
+          sinal: string
+          status: string
+          tipo: string
+          ultima_leitura: string | null
+          unidade: string
+          updated_at: string
+        }
+        Insert: {
+          bateria?: number
+          codigo: string
+          created_at?: string
+          ete_id: string
+          id?: string
+          limite_legal: string
+          sinal?: string
+          status?: string
+          tipo: string
+          ultima_leitura?: string | null
+          unidade?: string
+          updated_at?: string
+        }
+        Update: {
+          bateria?: number
+          codigo?: string
+          created_at?: string
+          ete_id?: string
+          id?: string
+          limite_legal?: string
+          sinal?: string
+          status?: string
+          tipo?: string
+          ultima_leitura?: string | null
+          unidade?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sensores_ete_id_fkey"
+            columns: ["ete_id"]
+            isOneToOne: false
+            referencedRelation: "etes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
