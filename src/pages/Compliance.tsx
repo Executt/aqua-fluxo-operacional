@@ -22,6 +22,8 @@ import {
   FileText, Building2, Calendar, Award, XCircle, BarChart3, Target,
 } from "lucide-react";
 import { CHART_COLORS, CHART_GRID, CHART_TICK } from "@/lib/chart-colors";
+import { useComplianceScores, useInfracoes } from "@/hooks/use-sigsan-data";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
@@ -29,23 +31,7 @@ const fadeUp = {
 };
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
 
-interface Concessionaria {
-  nome: string; uf: string; score: number; tendencia: "up" | "down" | "stable";
-  metasCumpridas: number; metasTotal: number; ultimaAuditoria: string;
-  status: "conforme" | "parcial" | "nao-conforme"; infracoesAbertas: number;
-}
-
-const concessionarias: Concessionaria[] = [
-  { nome: "SABESP", uf: "SP", score: 96, tendencia: "up", metasCumpridas: 47, metasTotal: 48, ultimaAuditoria: "2026-03-15", status: "conforme", infracoesAbertas: 0 },
-  { nome: "COPASA", uf: "MG", score: 87, tendencia: "up", metasCumpridas: 42, metasTotal: 48, ultimaAuditoria: "2026-03-10", status: "conforme", infracoesAbertas: 2 },
-  { nome: "CEDAE", uf: "RJ", score: 74, tendencia: "down", metasCumpridas: 35, metasTotal: 48, ultimaAuditoria: "2026-02-28", status: "parcial", infracoesAbertas: 5 },
-  { nome: "EMBASA", uf: "BA", score: 68, tendencia: "up", metasCumpridas: 32, metasTotal: 48, ultimaAuditoria: "2026-03-20", status: "parcial", infracoesAbertas: 7 },
-  { nome: "SANEPAR", uf: "PR", score: 91, tendencia: "stable", metasCumpridas: 44, metasTotal: 48, ultimaAuditoria: "2026-03-05", status: "conforme", infracoesAbertas: 1 },
-  { nome: "COMPESA", uf: "PE", score: 62, tendencia: "down", metasCumpridas: 29, metasTotal: 48, ultimaAuditoria: "2026-02-15", status: "nao-conforme", infracoesAbertas: 9 },
-  { nome: "CAGECE", uf: "CE", score: 78, tendencia: "up", metasCumpridas: 37, metasTotal: 48, ultimaAuditoria: "2026-03-18", status: "parcial", infracoesAbertas: 4 },
-  { nome: "COSANPA", uf: "PA", score: 55, tendencia: "down", metasCumpridas: 26, metasTotal: 48, ultimaAuditoria: "2026-01-30", status: "nao-conforme", infracoesAbertas: 12 },
-];
-
+// Static chart data (would come from historical compliance_scores in production)
 const evolucaoMensal = [
   { mes: "Out", SP: 92, MG: 78, RJ: 65, BA: 58, PR: 88, PE: 55 },
   { mes: "Nov", SP: 93, MG: 80, RJ: 68, BA: 60, PR: 89, PE: 57 },
@@ -62,15 +48,6 @@ const radarData = [
   { criterio: "Atendimento\nPrazo", SABESP: 96, CEDAE: 80, COMPESA: 70 },
   { criterio: "Invest.\nInfra", SABESP: 94, CEDAE: 78, COMPESA: 65 },
   { criterio: "Relatórios\nEntregues", SABESP: 100, CEDAE: 85, COMPESA: 72 },
-];
-
-const infracoes = [
-  { id: "INF-2026-041", concessionaria: "COSANPA", uf: "PA", descricao: "Turbidez acima do limite em 3 ETEs consecutivas", norma: "CONAMA 357/2005", gravidade: "grave", data: "2026-04-08", prazo: "2026-04-22", status: "aberta" },
-  { id: "INF-2026-039", concessionaria: "COMPESA", uf: "PE", descricao: "Falha no envio de relatórios mensais (Fev/Mar)", norma: "Resolução ANA 2.914", gravidade: "media", data: "2026-04-05", prazo: "2026-04-19", status: "aberta" },
-  { id: "INF-2026-037", concessionaria: "CEDAE", uf: "RJ", descricao: "Cloro residual abaixo do mínimo em ETE Alegria", norma: "Portaria 888/2021", gravidade: "grave", data: "2026-04-01", prazo: "2026-04-15", status: "em_analise" },
-  { id: "INF-2026-034", concessionaria: "EMBASA", uf: "BA", descricao: "Coliformes acima do limite na captação Joanes", norma: "CONAMA 357/2005", gravidade: "critica", data: "2026-03-28", prazo: "2026-04-11", status: "aberta" },
-  { id: "INF-2026-030", concessionaria: "CEDAE", uf: "RJ", descricao: "Atraso na manutenção preventiva (ETE Sarapuí)", norma: "Contrato Concessão", gravidade: "leve", data: "2026-03-20", prazo: "2026-04-03", status: "resolvida" },
-  { id: "INF-2026-028", concessionaria: "CAGECE", uf: "CE", descricao: "DBO excedida em período de seca prolongada", norma: "CONAMA 357/2005", gravidade: "media", data: "2026-03-15", prazo: "2026-03-29", status: "resolvida" },
 ];
 
 const statusColor: Record<string, string> = {
@@ -107,21 +84,43 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-const avgScore = Math.round(concessionarias.reduce((a, c) => a + c.score, 0) / concessionarias.length);
-const conformes = concessionarias.filter((c) => c.status === "conforme").length;
-const naoConformes = concessionarias.filter((c) => c.status === "nao-conforme").length;
-const totalInfracoes = infracoes.filter((i) => i.status !== "resolvida").length;
-
-const kpis = [
-  { title: "Score Médio Nacional", value: `${avgScore}%`, icon: Target, color: "text-primary" },
-  { title: "Conformes", value: String(conformes), icon: CheckCircle2, color: "text-success" },
-  { title: "Não Conformes", value: String(naoConformes), icon: XCircle, color: "text-destructive" },
-  { title: "Infrações Abertas", value: String(totalInfracoes), icon: AlertTriangle, color: "text-warning" },
-];
-
 const CompliancePage = () => {
+  const { data: scores, isLoading: loadingScores } = useComplianceScores();
+  const { data: infracoes, isLoading: loadingInfracoes } = useInfracoes();
   const [filterUf, setFilterUf] = useState("all");
-  const filtered = filterUf === "all" ? concessionarias : concessionarias.filter((c) => c.uf === filterUf);
+
+  // Map UF from entidade area_atuacao
+  const getUf = (entidadeNome: string) => {
+    const ufMap: Record<string, string> = {
+      SABESP: "SP", COPASA: "MG", CEDAE: "RJ", EMBASA: "BA",
+      SANEPAR: "PR", COMPESA: "PE", CAGECE: "CE", COSANPA: "PA",
+    };
+    return ufMap[entidadeNome] || "??";
+  };
+
+  const concessionarias = (scores || []).map((s) => ({
+    ...s,
+    nome: (s.entidades as any)?.nome || "—",
+    uf: getUf((s.entidades as any)?.nome || ""),
+  }));
+
+  const filtered = filterUf === "all"
+    ? concessionarias
+    : concessionarias.filter((c) => c.uf === filterUf);
+
+  const avgScore = concessionarias.length
+    ? Math.round(concessionarias.reduce((a, c) => a + c.score, 0) / concessionarias.length)
+    : 0;
+  const conformes = concessionarias.filter((c) => c.status === "conforme").length;
+  const naoConformes = concessionarias.filter((c) => c.status === "nao-conforme").length;
+  const totalInfracoes = (infracoes || []).filter((i) => i.status !== "resolvida").length;
+
+  const kpis = [
+    { title: "Score Médio Nacional", value: `${avgScore}%`, icon: Target, color: "text-primary" },
+    { title: "Conformes", value: String(conformes), icon: CheckCircle2, color: "text-success" },
+    { title: "Não Conformes", value: String(naoConformes), icon: XCircle, color: "text-destructive" },
+    { title: "Infrações Abertas", value: String(totalInfracoes), icon: AlertTriangle, color: "text-warning" },
+  ];
 
   return (
     <DashboardLayout>
@@ -133,10 +132,7 @@ const CompliancePage = () => {
               Monitorização do cumprimento regulatório das concessionárias de saneamento
             </p>
           </div>
-          <Button className="gap-2">
-            <FileText className="h-4 w-4" />
-            Gerar Relatório
-          </Button>
+          <Button className="gap-2"><FileText className="h-4 w-4" /> Gerar Relatório</Button>
         </motion.div>
 
         <motion.div variants={fadeUp} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -148,7 +144,9 @@ const CompliancePage = () => {
                     <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">{kpi.title}</span>
                     <kpi.icon className={`h-4 w-4 ${kpi.color}`} />
                   </div>
-                  <div className={`text-3xl font-bold ${kpi.color} font-mono`}>{kpi.value}</div>
+                  <div className={`text-3xl font-bold ${kpi.color} font-mono`}>
+                    {loadingScores ? <Skeleton className="h-8 w-16" /> : kpi.value}
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
@@ -209,41 +207,46 @@ const CompliancePage = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {[...filtered].sort((a, b) => b.score - a.score).map((c, i) => (
-                          <TableRow key={c.nome} className="border-border">
-                            <TableCell className="font-mono text-xs text-muted-foreground font-bold">{i + 1}</TableCell>
-                            <TableCell>
-                              <div>
-                                <p className="text-sm font-medium">{c.nome}</p>
-                                <p className="text-[10px] text-muted-foreground">{c.uf}</p>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Progress value={c.score} className="w-16 h-1.5" />
-                                <span className={`font-mono text-xs font-bold ${c.score >= 85 ? "text-success" : c.score >= 70 ? "text-warning" : "text-destructive"}`}>
-                                  {c.score}%
-                                </span>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-xs font-mono text-muted-foreground">{c.metasCumpridas}/{c.metasTotal}</TableCell>
-                            <TableCell>
-                              {c.tendencia === "up" && <TrendingUp className="h-4 w-4 text-success" />}
-                              {c.tendencia === "down" && <TrendingDown className="h-4 w-4 text-destructive" />}
-                              {c.tendencia === "stable" && <span className="text-xs text-muted-foreground">—</span>}
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline" className={statusColor[c.status]}>{statusLabel[c.status]}</Badge>
-                            </TableCell>
-                            <TableCell>
-                              {c.infracoesAbertas > 0 ? (
-                                <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30 font-mono">{c.infracoesAbertas}</Badge>
-                              ) : (
-                                <CheckCircle2 className="h-4 w-4 text-success" />
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                        {loadingScores ? (
+                          Array.from({ length: 5 }).map((_, i) => (
+                            <TableRow key={i} className="border-border">
+                              {Array.from({ length: 7 }).map((_, j) => (
+                                <TableCell key={j}><Skeleton className="h-4 w-16" /></TableCell>
+                              ))}
+                            </TableRow>
+                          ))
+                        ) : (
+                          [...filtered].sort((a, b) => b.score - a.score).map((c, i) => (
+                            <TableRow key={c.id} className="border-border">
+                              <TableCell className="font-mono text-xs text-muted-foreground font-bold">{i + 1}</TableCell>
+                              <TableCell>
+                                <div><p className="text-sm font-medium">{c.nome}</p><p className="text-[10px] text-muted-foreground">{c.uf}</p></div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Progress value={c.score} className="w-16 h-1.5" />
+                                  <span className={`font-mono text-xs font-bold ${c.score >= 85 ? "text-success" : c.score >= 70 ? "text-warning" : "text-destructive"}`}>{c.score}%</span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-xs font-mono text-muted-foreground">{c.metas_cumpridas}/{c.metas_total}</TableCell>
+                              <TableCell>
+                                {c.tendencia === "up" && <TrendingUp className="h-4 w-4 text-success" />}
+                                {c.tendencia === "down" && <TrendingDown className="h-4 w-4 text-destructive" />}
+                                {c.tendencia === "stable" && <span className="text-xs text-muted-foreground">—</span>}
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline" className={statusColor[c.status] || ""}>{statusLabel[c.status] || c.status}</Badge>
+                              </TableCell>
+                              <TableCell>
+                                {c.infracoes_abertas > 0 ? (
+                                  <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30 font-mono">{c.infracoes_abertas}</Badge>
+                                ) : (
+                                  <CheckCircle2 className="h-4 w-4 text-success" />
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
                       </TableBody>
                     </Table>
                   </CardContent>
@@ -353,34 +356,41 @@ const CompliancePage = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {infracoes.map((inf) => (
-                        <TableRow key={inf.id} className="border-border">
-                          <TableCell className="font-mono text-xs text-primary">{inf.id}</TableCell>
-                          <TableCell>
-                            <div>
-                              <p className="text-xs font-medium">{inf.concessionaria}</p>
-                              <p className="text-[10px] text-muted-foreground">{inf.uf}</p>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-xs max-w-[280px] truncate">{inf.descricao}</TableCell>
-                          <TableCell className="text-[10px] text-muted-foreground font-mono">{inf.norma}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className={gravidadeColor[inf.gravidade]}>
-                              {inf.gravidade.charAt(0).toUpperCase() + inf.gravidade.slice(1)}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <Calendar className="h-3 w-3" /> {inf.prazo}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className={infracaoStatusColor[inf.status]}>
-                              {inf.status === "aberta" ? "Aberta" : inf.status === "em_analise" ? "Em Análise" : "Resolvida"}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {loadingInfracoes ? (
+                        Array.from({ length: 4 }).map((_, i) => (
+                          <TableRow key={i} className="border-border">
+                            {Array.from({ length: 7 }).map((_, j) => (
+                              <TableCell key={j}><Skeleton className="h-4 w-20" /></TableCell>
+                            ))}
+                          </TableRow>
+                        ))
+                      ) : (
+                        (infracoes || []).map((inf) => (
+                          <TableRow key={inf.id} className="border-border">
+                            <TableCell className="font-mono text-xs text-primary">{inf.codigo}</TableCell>
+                            <TableCell>
+                              <p className="text-xs font-medium">{(inf.entidades as any)?.nome || "—"}</p>
+                            </TableCell>
+                            <TableCell className="text-xs max-w-[280px] truncate">{inf.descricao}</TableCell>
+                            <TableCell className="text-[10px] text-muted-foreground font-mono">{inf.norma}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={gravidadeColor[inf.gravidade] || ""}>
+                                {inf.gravidade.charAt(0).toUpperCase() + inf.gravidade.slice(1)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <Calendar className="h-3 w-3" /> {inf.prazo}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className={infracaoStatusColor[inf.status] || ""}>
+                                {inf.status === "aberta" ? "Aberta" : inf.status === "em_analise" ? "Em Análise" : "Resolvida"}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
                     </TableBody>
                   </Table>
                 </CardContent>

@@ -3,16 +3,13 @@ import { MapPin } from "lucide-react";
 import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { CHART_COLORS } from "@/lib/chart-colors";
-
-const etes = [
-  { id: "ETE-0482", nome: "ETE Barueri", cidade: "São Paulo, SP", lat: -23.5115, lng: -46.8761, status: "ok" as const, ph: "7.2", turbidez: "12 NTU", dbo: "25 mg/L", temp: "24°C" },
-  { id: "ETE-1204", nome: "ETE Arrudas", cidade: "Belo Horizonte, MG", lat: -19.9042, lng: -43.9292, status: "ok" as const, ph: "7.0", turbidez: "18 NTU", dbo: "30 mg/L", temp: "26°C" },
-  { id: "ETE-0891", nome: "ETE Belém", cidade: "Curitiba, PR", lat: -25.4697, lng: -49.2056, status: "ok" as const, ph: "6.8", turbidez: "10 NTU", dbo: "22 mg/L", temp: "20°C" },
-  { id: "ETE-0327", nome: "ETE Jaguaribe", cidade: "Salvador, BA", lat: -12.9211, lng: -38.4312, status: "ok" as const, ph: "7.4", turbidez: "15 NTU", dbo: "28 mg/L", temp: "29°C" },
-  { id: "ETE-0963", nome: "ETE Alegria", cidade: "Rio de Janeiro, RJ", lat: -22.8628, lng: -43.2392, status: "critical" as const, ph: "8.9", turbidez: "55 NTU", dbo: "65 mg/L", temp: "31°C", alerta: "Turbidez acima do limite legal (≤ 40 NTU)" },
-];
+import { useEtes } from "@/hooks/use-sigsan-data";
 
 export function BrazilMap() {
+  const { data: etes } = useEtes();
+
+  const markers = (etes || []).filter((e) => e.latitude && e.longitude);
+
   return (
     <Card className="border-border h-full elevation-1">
       <CardHeader className="pb-2">
@@ -34,14 +31,14 @@ export function BrazilMap() {
               attribution='&copy; <a href="https://carto.com/">CARTO</a>'
               url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
             />
-            {etes.map((ete) => (
+            {markers.map((ete) => (
               <CircleMarker
                 key={ete.id}
-                center={[ete.lat, ete.lng]}
-                radius={ete.status === "critical" ? 10 : 7}
+                center={[ete.latitude!, ete.longitude!]}
+                radius={ete.status === "critica" ? 10 : 7}
                 pathOptions={{
-                  color: ete.status === "critical" ? CHART_COLORS.destructive : CHART_COLORS.success,
-                  fillColor: ete.status === "critical" ? CHART_COLORS.destructive : CHART_COLORS.success,
+                  color: ete.status === "critica" ? CHART_COLORS.destructive : CHART_COLORS.success,
+                  fillColor: ete.status === "critica" ? CHART_COLORS.destructive : CHART_COLORS.success,
                   fillOpacity: 0.7,
                   weight: 2,
                 }}
@@ -49,20 +46,14 @@ export function BrazilMap() {
                 <Popup>
                   <div style={{ fontFamily: "Inter, sans-serif", fontSize: 12, minWidth: 180, color: "#1D2D3E" }}>
                     <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>{ete.nome}</div>
-                    <div style={{ color: "#6B7B8D", marginBottom: 8 }}>{ete.cidade} — <span style={{ fontFamily: "JetBrains Mono, monospace" }}>{ete.id}</span></div>
-                    {ete.status === "critical" && (
-                      <div style={{ background: "#FEE2E2", color: "#B91C1C", padding: "4px 8px", borderRadius: 4, marginBottom: 8, fontSize: 11, fontWeight: 600 }}>
-                        ⚠ {ete.alerta}
+                    <div style={{ color: "#6B7B8D", marginBottom: 8 }}>
+                      {ete.cidade}, {ete.uf} — <span style={{ fontFamily: "JetBrains Mono, monospace" }}>{ete.codigo}</span>
+                    </div>
+                    {ete.entidades && (
+                      <div style={{ fontSize: 11, color: "#6B7B8D" }}>
+                        Concessionária: <strong>{(ete.entidades as any).nome}</strong>
                       </div>
                     )}
-                    <table style={{ width: "100%", fontSize: 11 }}>
-                      <tbody>
-                        <tr><td style={{ color: "#6B7B8D", padding: "2px 0" }}>pH</td><td style={{ fontFamily: "JetBrains Mono", textAlign: "right" }}>{ete.ph}</td></tr>
-                        <tr><td style={{ color: "#6B7B8D", padding: "2px 0" }}>Turbidez</td><td style={{ fontFamily: "JetBrains Mono", textAlign: "right", color: ete.status === "critical" ? "#B91C1C" : undefined }}>{ete.turbidez}</td></tr>
-                        <tr><td style={{ color: "#6B7B8D", padding: "2px 0" }}>DBO</td><td style={{ fontFamily: "JetBrains Mono", textAlign: "right" }}>{ete.dbo}</td></tr>
-                        <tr><td style={{ color: "#6B7B8D", padding: "2px 0" }}>Temperatura</td><td style={{ fontFamily: "JetBrains Mono", textAlign: "right" }}>{ete.temp}</td></tr>
-                      </tbody>
-                    </table>
                   </div>
                 </Popup>
               </CircleMarker>
