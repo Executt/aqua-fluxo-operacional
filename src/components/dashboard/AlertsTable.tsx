@@ -1,27 +1,26 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Radio } from "lucide-react";
-
-const alerts = [
-  { id: "ETE-0482", loc: "São Paulo, SP", param: "pH", valor: "9.8", limite: "6.0 - 9.0", status: "Crítico" },
-  { id: "ETE-1204", loc: "Belo Horizonte, MG", param: "Turbidez", valor: "42 NTU", limite: "≤ 40 NTU", status: "Crítico" },
-  { id: "ETE-0891", loc: "Curitiba, PR", param: "DBO", valor: "28 mg/L", limite: "≤ 60 mg/L", status: "Normal" },
-  { id: "ETE-0327", loc: "Salvador, BA", param: "Cloro Residual", valor: "0.1 mg/L", limite: "≥ 0.2 mg/L", status: "Crítico" },
-  { id: "ETE-1530", loc: "Manaus, AM", param: "pH", valor: "7.2", limite: "6.0 - 9.0", status: "Normal" },
-  { id: "ETE-0715", loc: "Recife, PE", param: "Temperatura", valor: "32°C", limite: "≤ 40°C", status: "Normal" },
-  { id: "ETE-0963", loc: "Rio de Janeiro, RJ", param: "Coliformes", valor: "1200 UFC", limite: "≤ 1000 UFC", status: "Crítico" },
-  { id: "ETE-1102", loc: "Fortaleza, CE", param: "Turbidez", valor: "55 NTU", limite: "≤ 40 NTU", status: "Crítico" },
-];
+import { useSensores } from "@/hooks/use-sigsan-data";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function AlertsTable() {
+  const { data: sensores, isLoading } = useSensores();
+
+  // Show only critical/alerta sensors as alerts
+  const alerts = (sensores || []).map((s) => ({
+    id: (s.etes as any)?.nome ? `${(s.etes as any).nome.replace("ETE ", "ETE-")}` : s.codigo,
+    eteCode: s.codigo.split("-").slice(0, 2).join("-"),
+    loc: `${(s.etes as any)?.cidade || "—"}, ${(s.etes as any)?.uf || ""}`,
+    param: s.tipo,
+    limite: s.limite_legal,
+    status: s.status === "critico" ? "Crítico" : s.status === "alerta" ? "Alerta" : "Normal",
+    codigo: s.codigo,
+  }));
+
   return (
     <Card className="bg-card border-border">
       <CardHeader className="pb-2">
@@ -37,36 +36,44 @@ export function AlertsTable() {
         <Table>
           <TableHeader>
             <TableRow className="border-border hover:bg-transparent">
-              <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">ID da ETE</TableHead>
+              <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">ID Sensor</TableHead>
               <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Localização</TableHead>
               <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Parâmetro</TableHead>
-              <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Valor Atual</TableHead>
               <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Limite Legal</TableHead>
               <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Status</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {alerts.map((a) => (
-              <TableRow key={a.id + a.param} className="border-border">
-                <TableCell className="font-mono text-xs text-primary">{a.id}</TableCell>
-                <TableCell className="text-xs">{a.loc}</TableCell>
-                <TableCell className="text-xs">{a.param}</TableCell>
-                <TableCell className="font-mono text-xs">{a.valor}</TableCell>
-                <TableCell className="font-mono text-xs text-muted-foreground">{a.limite}</TableCell>
-                <TableCell>
-                  <Badge
-                    className={
-                      a.status === "Crítico"
-                        ? "bg-destructive/15 text-destructive border-destructive/30 hover:bg-destructive/20"
-                        : "bg-success/15 text-success border-success/30 hover:bg-success/20"
-                    }
-                    variant="outline"
-                  >
-                    {a.status}
-                  </Badge>
-                </TableCell>
-              </TableRow>
-            ))}
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i} className="border-border">
+                  {Array.from({ length: 5 }).map((_, j) => (
+                    <TableCell key={j}><Skeleton className="h-4 w-20" /></TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              alerts.map((a) => (
+                <TableRow key={a.codigo} className="border-border">
+                  <TableCell className="font-mono text-xs text-primary">{a.codigo}</TableCell>
+                  <TableCell className="text-xs">{a.loc}</TableCell>
+                  <TableCell className="text-xs">{a.param}</TableCell>
+                  <TableCell className="font-mono text-xs text-muted-foreground">{a.limite}</TableCell>
+                  <TableCell>
+                    <Badge
+                      className={
+                        a.status === "Crítico"
+                          ? "bg-destructive/15 text-destructive border-destructive/30 hover:bg-destructive/20"
+                          : "bg-success/15 text-success border-success/30 hover:bg-success/20"
+                      }
+                      variant="outline"
+                    >
+                      {a.status}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </CardContent>
