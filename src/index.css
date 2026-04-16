@@ -6,67 +6,67 @@
 
 @layer base {
   :root {
-    /* ── SAP Fiori Horizon Light Theme ── */
-    --background: 0 0% 98%;
-    --foreground: 210 29% 15%;
+    /* ── SnowUI Dark Theme (ByeWind Dashboard UI Kit) ── */
+    --background: 228 14% 11%;          /* #171821 */
+    --foreground: 0 0% 100%;            /* White 100% */
 
-    --card: 0 0% 100%;
-    --card-foreground: 210 29% 15%;
+    --card: 228 12% 14%;                /* #1E1F2B */
+    --card-foreground: 0 0% 100%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 210 29% 15%;
+    --popover: 228 12% 14%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 212 100% 47%;
+    --primary: 246 58% 63%;             /* #7B6CF6 - SnowUI Purple */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 18% 95%;
-    --secondary-foreground: 210 29% 24%;
+    --secondary: 228 12% 18%;
+    --secondary-foreground: 0 0% 80%;
 
-    --muted: 210 16% 93%;
-    --muted-foreground: 210 12% 48%;
+    --muted: 228 12% 20%;
+    --muted-foreground: 0 0% 55%;
 
-    --accent: 210 18% 95%;
-    --accent-foreground: 210 29% 15%;
+    --accent: 228 12% 22%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 76% 44%;
+    --destructive: 0 72% 56%;           /* Red */
     --destructive-foreground: 0 0% 100%;
 
-    --success: 152 56% 34%;
+    --success: 152 56% 48%;             /* Green */
     --success-foreground: 0 0% 100%;
 
-    --warning: 27 90% 48%;
-    --warning-foreground: 0 0% 100%;
+    --warning: 38 92% 58%;              /* Yellow / Amber */
+    --warning-foreground: 228 14% 11%;
 
-    --informative: 212 100% 47%;
+    --informative: 213 90% 58%;         /* Blue */
     --informative-foreground: 0 0% 100%;
 
-    --border: 210 16% 88%;
-    --input: 210 16% 88%;
-    --ring: 212 100% 47%;
+    --border: 228 10% 20%;
+    --input: 228 10% 22%;
+    --ring: 246 58% 63%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    /* ── SAP Shell (stays dark per Fiori spec) ── */
-    --shell: 210 29% 24%;
-    --shell-foreground: 210 16% 93%;
+    /* ── Shell Header ── */
+    --shell: 228 14% 9%;
+    --shell-foreground: 0 0% 65%;
 
-    /* ── Sidebar (Light) ── */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 210 12% 48%;
-    --sidebar-primary: 212 100% 47%;
+    /* ── Sidebar ── */
+    --sidebar-background: 228 14% 9%;
+    --sidebar-foreground: 0 0% 55%;
+    --sidebar-primary: 246 58% 63%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 18% 95%;
-    --sidebar-accent-foreground: 210 29% 15%;
-    --sidebar-border: 210 16% 90%;
-    --sidebar-ring: 212 100% 47%;
+    --sidebar-accent: 228 12% 16%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 228 10% 16%;
+    --sidebar-ring: 246 58% 63%;
 
-    /* ── Chart Palette (SAP Fiori Sequential) ── */
-    --chart-1: 212 100% 47%;
-    --chart-2: 152 56% 34%;
-    --chart-3: 27 90% 48%;
-    --chart-4: 0 76% 44%;
-    --chart-5: 267 55% 50%;
-    --chart-6: 187 72% 40%;
+    /* ── Chart Palette (SnowUI sequential) ── */
+    --chart-1: 246 58% 63%;             /* Purple primary */
+    --chart-2: 213 90% 58%;             /* Blue */
+    --chart-3: 152 56% 48%;             /* Green */
+    --chart-4: 38 92% 58%;              /* Yellow */
+    --chart-5: 0 72% 56%;               /* Red */
+    --chart-6: 280 60% 58%;             /* Purple B */
   }
 }
 
@@ -81,42 +81,42 @@
 }
 
 @layer utilities {
-  /* SAP Fiori elevation system (light) */
+  /* SnowUI elevation system */
   .elevation-0 {
     box-shadow: none;
   }
   .elevation-1 {
-    box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
   }
   .elevation-2 {
-    box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.35), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
   }
   .elevation-3 {
-    box-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.12);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
   }
 
-  /* SAP Status indicators */
+  /* Status indicators */
   .status-positive {
-    box-shadow: 0 0 0 2px hsl(152 56% 34% / 0.2);
+    box-shadow: 0 0 0 2px hsl(152 56% 48% / 0.2);
   }
   .status-negative {
-    box-shadow: 0 0 0 2px hsl(0 76% 44% / 0.2);
+    box-shadow: 0 0 0 2px hsl(0 72% 56% / 0.2);
   }
   .status-critical {
-    box-shadow: 0 0 0 2px hsl(27 90% 48% / 0.2);
+    box-shadow: 0 0 0 2px hsl(38 92% 58% / 0.2);
   }
   .status-informative {
-    box-shadow: 0 0 0 2px hsl(212 100% 47% / 0.2);
+    box-shadow: 0 0 0 2px hsl(213 90% 58% / 0.2);
   }
 
-  /* Glow classes */
+  /* Glow effects */
   .glow-primary {
-    box-shadow: 0 0 16px -4px hsl(212 100% 47% / 0.2);
+    box-shadow: 0 0 20px -4px hsl(246 58% 63% / 0.3);
   }
   .glow-success {
-    box-shadow: 0 0 12px -4px hsl(152 56% 34% / 0.2);
+    box-shadow: 0 0 16px -4px hsl(152 56% 48% / 0.3);
   }
   .glow-destructive {
-    box-shadow: 0 0 12px -4px hsl(0 76% 44% / 0.2);
+    box-shadow: 0 0 16px -4px hsl(0 72% 56% / 0.3);
   }
 }

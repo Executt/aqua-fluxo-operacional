@@ -33,10 +33,10 @@ const mockApiKeys: ApiKey[] = [
 const maskKey = (key: string) => key.slice(0, 8) + "••••••••••••••••" + key.slice(-4);
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
-const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
+const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
 
 const Entidades = () => {
   const { toast } = useToast();
@@ -84,8 +84,8 @@ const Entidades = () => {
       <motion.div className="p-6 space-y-6" variants={stagger} initial="hidden" animate="show">
         <motion.div variants={fadeUp} className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">Gestão de Entidades</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
+            <h1 className="text-heading-1 text-foreground">Gestão de Entidades</h1>
+            <p className="text-body-sm text-muted-foreground mt-1">
               Registo de concessionárias, gestão de API keys e configuração de integração
             </p>
           </div>
@@ -94,10 +94,10 @@ const Entidades = () => {
         <motion.div variants={fadeUp}>
           <Tabs defaultValue="entidades" className="space-y-6">
             <TabsList className="bg-card border border-border">
-              <TabsTrigger value="entidades" className="gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+              <TabsTrigger value="entidades" className="gap-2 text-[12px] data-[state=active]:bg-primary/15 data-[state=active]:text-primary">
                 <Building2 className="h-4 w-4" /> Concessionárias
               </TabsTrigger>
-              <TabsTrigger value="apikeys" className="gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+              <TabsTrigger value="apikeys" className="gap-2 text-[12px] data-[state=active]:bg-primary/15 data-[state=active]:text-primary">
                 <Key className="h-4 w-4" /> Chaves de Integração
               </TabsTrigger>
             </TabsList>
@@ -106,27 +106,27 @@ const Entidades = () => {
               <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                 <Card className="lg:col-span-2 bg-card border-border">
                   <CardHeader>
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <CardTitle className="text-[13px] font-medium flex items-center gap-2">
                       <Plus className="h-4 w-4 text-primary" /> Registar Nova Concessionária
                     </CardTitle>
-                    <CardDescription className="text-xs">
+                    <CardDescription className="text-body-sm">
                       Preencha os dados da entidade para registo no sistema federal.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <form onSubmit={handleRegister} className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="nome" className="text-xs">Nome da Concessionária</Label>
-                        <Input id="nome" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex: CEDAE" className="bg-background border-border" />
+                        <Label htmlFor="nome" className="text-body-sm">Nome da Concessionária</Label>
+                        <Input id="nome" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex: CEDAE" className="bg-secondary border-border" />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="cnpj" className="text-xs">CNPJ</Label>
-                        <Input id="cnpj" value={cnpj} onChange={(e) => setCnpj(e.target.value)} placeholder="00.000.000/0000-00" className="bg-background border-border font-mono" />
+                        <Label htmlFor="cnpj" className="text-body-sm">CNPJ</Label>
+                        <Input id="cnpj" value={cnpj} onChange={(e) => setCnpj(e.target.value)} placeholder="00.000.000/0000-00" className="bg-secondary border-border font-mono" />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="area" className="text-xs">Área de Atuação</Label>
+                        <Label htmlFor="area" className="text-body-sm">Área de Atuação</Label>
                         <Select value={area} onValueChange={setArea}>
-                          <SelectTrigger className="bg-background border-border"><SelectValue placeholder="Selecione o estado / região" /></SelectTrigger>
+                          <SelectTrigger className="bg-secondary border-border"><SelectValue placeholder="Selecione o estado / região" /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="São Paulo, SP">São Paulo, SP</SelectItem>
                             <SelectItem value="Rio de Janeiro, RJ">Rio de Janeiro, RJ</SelectItem>
@@ -148,7 +148,7 @@ const Entidades = () => {
 
                 <Card className="lg:col-span-3 bg-card border-border">
                   <CardHeader>
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <CardTitle className="text-[13px] font-medium flex items-center gap-2">
                       <Globe className="h-4 w-4 text-primary" /> Concessionárias Registadas
                     </CardTitle>
                   </CardHeader>
@@ -156,10 +156,10 @@ const Entidades = () => {
                     <Table>
                       <TableHeader>
                         <TableRow className="border-border hover:bg-transparent">
-                          <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Nome</TableHead>
-                          <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">CNPJ</TableHead>
-                          <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Área</TableHead>
-                          <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Status</TableHead>
+                          <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Nome</TableHead>
+                          <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">CNPJ</TableHead>
+                          <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Área</TableHead>
+                          <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Status</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -174,12 +174,12 @@ const Entidades = () => {
                           ))
                         ) : (
                           entidades?.map((e) => (
-                            <TableRow key={e.id} className="border-border">
-                              <TableCell className="text-sm font-medium">{e.nome}</TableCell>
-                              <TableCell className="font-mono text-xs text-muted-foreground">{e.cnpj}</TableCell>
-                              <TableCell className="text-xs">{e.area_atuacao}</TableCell>
+                            <TableRow key={e.id} className="border-border hover:bg-accent/50">
+                              <TableCell className="text-[13px] font-medium text-foreground">{e.nome}</TableCell>
+                              <TableCell className="font-mono text-body-sm text-muted-foreground">{e.cnpj}</TableCell>
+                              <TableCell className="text-body-sm">{e.area_atuacao}</TableCell>
                               <TableCell>
-                                <Badge variant="outline" className={e.status === "Ativa" ? "bg-success/15 text-success border-success/30" : "bg-yellow-500/15 text-yellow-400 border-yellow-500/30"}>
+                                <Badge variant="outline" className={`text-[10px] ${e.status === "Ativa" ? "bg-success/15 text-success border-success/30" : "bg-warning/15 text-warning border-warning/30"}`}>
                                   {e.status}
                                 </Badge>
                               </TableCell>
@@ -194,45 +194,45 @@ const Entidades = () => {
             </TabsContent>
 
             <TabsContent value="apikeys" className="space-y-6">
-              <Card className="bg-gradient-to-br from-primary/5 via-card to-card border-primary/20">
+              <Card className="bg-card border-border">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div>
-                      <CardTitle className="text-sm font-medium flex items-center gap-2">
+                      <CardTitle className="text-[13px] font-medium flex items-center gap-2">
                         <Key className="h-4 w-4 text-primary" /> Chaves de Integração (API Keys)
                       </CardTitle>
-                      <CardDescription className="text-xs mt-1">
+                      <CardDescription className="text-body-sm mt-1">
                         Gerencie os tokens de acesso à API do SIGSAN-FED.
                       </CardDescription>
                     </div>
-                    <Button className="gap-2"><Plus className="h-4 w-4" /> Gerar Novo Token</Button>
+                    <Button size="sm" className="gap-2 text-[12px]"><Plus className="h-3.5 w-3.5" /> Gerar Novo Token</Button>
                   </div>
                 </CardHeader>
                 <CardContent className="p-0">
                   <Table>
                     <TableHeader>
                       <TableRow className="border-border hover:bg-transparent">
-                        <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Nome</TableHead>
-                        <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Chave</TableHead>
-                        <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Criada em</TableHead>
-                        <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Último Uso</TableHead>
-                        <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Status</TableHead>
-                        <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider text-right">Ações</TableHead>
+                        <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Nome</TableHead>
+                        <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Chave</TableHead>
+                        <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Criada em</TableHead>
+                        <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Último Uso</TableHead>
+                        <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Status</TableHead>
+                        <TableHead className="text-caption text-muted-foreground uppercase tracking-wider text-right">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {mockApiKeys.map((apiKey) => (
-                        <TableRow key={apiKey.id} className="border-border">
-                          <TableCell className="text-sm font-medium">{apiKey.name}</TableCell>
+                        <TableRow key={apiKey.id} className="border-border hover:bg-accent/50">
+                          <TableCell className="text-[13px] font-medium text-foreground">{apiKey.name}</TableCell>
                           <TableCell>
-                            <code className="text-xs font-mono bg-background/50 px-2 py-1 rounded border border-border">
+                            <code className="text-body-sm font-mono bg-secondary px-2 py-1 rounded border border-border">
                               {revealedKeys.has(apiKey.id) ? apiKey.key : maskKey(apiKey.key)}
                             </code>
                           </TableCell>
-                          <TableCell className="text-xs text-muted-foreground font-mono">{apiKey.created}</TableCell>
-                          <TableCell className="text-xs text-muted-foreground">{apiKey.lastUsed}</TableCell>
+                          <TableCell className="text-body-sm text-muted-foreground font-mono">{apiKey.created}</TableCell>
+                          <TableCell className="text-body-sm text-muted-foreground">{apiKey.lastUsed}</TableCell>
                           <TableCell>
-                            <Badge variant="outline" className={apiKey.status === "active" ? "bg-success/15 text-success border-success/30" : "bg-destructive/15 text-destructive border-destructive/30"}>
+                            <Badge variant="outline" className={`text-[10px] ${apiKey.status === "active" ? "bg-success/15 text-success border-success/30" : "bg-destructive/15 text-destructive border-destructive/30"}`}>
                               {apiKey.status === "active" ? "Ativa" : "Revogada"}
                             </Badge>
                           </TableCell>

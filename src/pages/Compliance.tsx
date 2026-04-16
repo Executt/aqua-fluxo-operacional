@@ -26,12 +26,11 @@ import { useComplianceScores, useInfracoes } from "@/hooks/use-sigsan-data";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: "easeOut" } },
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
-const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
+const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
 
-// Static chart data (would come from historical compliance_scores in production)
 const evolucaoMensal = [
   { mes: "Out", SP: 92, MG: 78, RJ: 65, BA: 58, PR: 88, PE: 55 },
   { mes: "Nov", SP: 93, MG: 80, RJ: 68, BA: 60, PR: 89, PE: 57 },
@@ -42,12 +41,12 @@ const evolucaoMensal = [
 ];
 
 const radarData = [
-  { criterio: "Qualidade\nÁgua", SABESP: 98, CEDAE: 72, COMPESA: 55 },
-  { criterio: "Cobertura\nEsgoto", SABESP: 95, CEDAE: 68, COMPESA: 48 },
-  { criterio: "Perdas\nDistrib.", SABESP: 92, CEDAE: 60, COMPESA: 52 },
-  { criterio: "Atendimento\nPrazo", SABESP: 96, CEDAE: 80, COMPESA: 70 },
-  { criterio: "Invest.\nInfra", SABESP: 94, CEDAE: 78, COMPESA: 65 },
-  { criterio: "Relatórios\nEntregues", SABESP: 100, CEDAE: 85, COMPESA: 72 },
+  { criterio: "Qualidade Agua", SABESP: 98, CEDAE: 72, COMPESA: 55 },
+  { criterio: "Cobertura Esgoto", SABESP: 95, CEDAE: 68, COMPESA: 48 },
+  { criterio: "Perdas Distrib.", SABESP: 92, CEDAE: 60, COMPESA: 52 },
+  { criterio: "Atendimento Prazo", SABESP: 96, CEDAE: 80, COMPESA: 70 },
+  { criterio: "Invest. Infra", SABESP: 94, CEDAE: 78, COMPESA: 65 },
+  { criterio: "Relatorios Entregues", SABESP: 100, CEDAE: 85, COMPESA: 72 },
 ];
 
 const statusColor: Record<string, string> = {
@@ -73,10 +72,10 @@ const infracaoStatusColor: Record<string, string> = {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload) return null;
   return (
-    <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
-      <p className="text-xs font-medium text-foreground mb-2">{label}</p>
+    <div className="bg-card border border-border rounded-lg p-3 elevation-2">
+      <p className="text-body-sm font-medium text-foreground mb-2">{label}</p>
       {payload.map((p: any) => (
-        <p key={p.dataKey} className="text-xs text-muted-foreground">
+        <p key={p.dataKey} className="text-body-sm text-muted-foreground">
           <span style={{ color: p.color }}>●</span> {p.dataKey}: {p.value}%
         </p>
       ))}
@@ -89,7 +88,6 @@ const CompliancePage = () => {
   const { data: infracoes, isLoading: loadingInfracoes } = useInfracoes();
   const [filterUf, setFilterUf] = useState("all");
 
-  // Map UF from entidade area_atuacao
   const getUf = (entidadeNome: string) => {
     const ufMap: Record<string, string> = {
       SABESP: "SP", COPASA: "MG", CEDAE: "RJ", EMBASA: "BA",
@@ -127,24 +125,24 @@ const CompliancePage = () => {
       <motion.div className="p-6 space-y-6" variants={stagger} initial="hidden" animate="show">
         <motion.div variants={fadeUp} className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">Gestão SARSB — Compliance</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
+            <h1 className="text-heading-1 text-foreground">Gestão SARSB — Compliance</h1>
+            <p className="text-body-sm text-muted-foreground mt-1">
               Monitorização do cumprimento regulatório das concessionárias de saneamento
             </p>
           </div>
-          <Button className="gap-2"><FileText className="h-4 w-4" /> Gerar Relatório</Button>
+          <Button size="sm" className="gap-2 text-[12px]"><FileText className="h-3.5 w-3.5" /> Gerar Relatório</Button>
         </motion.div>
 
         <motion.div variants={fadeUp} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {kpis.map((kpi, i) => (
-            <motion.div key={kpi.title} initial={{ opacity: 0, scale: 0.95, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ duration: 0.4, delay: i * 0.08 }}>
-              <Card className="border-border elevation-1">
+            <motion.div key={kpi.title} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: i * 0.06 }}>
+              <Card className="bg-card border-border">
                 <CardContent className="p-5">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">{kpi.title}</span>
+                    <span className="text-body-sm text-muted-foreground font-medium">{kpi.title}</span>
                     <kpi.icon className={`h-4 w-4 ${kpi.color}`} />
                   </div>
-                  <div className={`text-3xl font-bold ${kpi.color} font-mono`}>
+                  <div className={`text-[28px] font-semibold ${kpi.color} font-mono leading-none`}>
                     {loadingScores ? <Skeleton className="h-8 w-16" /> : kpi.value}
                   </div>
                 </CardContent>
@@ -156,22 +154,21 @@ const CompliancePage = () => {
         <motion.div variants={fadeUp}>
           <Tabs defaultValue="ranking" className="space-y-6">
             <TabsList className="bg-card border border-border">
-              <TabsTrigger value="ranking" className="gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+              <TabsTrigger value="ranking" className="gap-2 text-[12px] data-[state=active]:bg-primary/15 data-[state=active]:text-primary">
                 <Award className="h-4 w-4" /> Ranking
               </TabsTrigger>
-              <TabsTrigger value="evolucao" className="gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+              <TabsTrigger value="evolucao" className="gap-2 text-[12px] data-[state=active]:bg-primary/15 data-[state=active]:text-primary">
                 <BarChart3 className="h-4 w-4" /> Evolução
               </TabsTrigger>
-              <TabsTrigger value="infracoes" className="gap-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
+              <TabsTrigger value="infracoes" className="gap-2 text-[12px] data-[state=active]:bg-primary/15 data-[state=active]:text-primary">
                 <AlertTriangle className="h-4 w-4" /> Infrações
               </TabsTrigger>
             </TabsList>
 
-            {/* Ranking */}
             <TabsContent value="ranking" className="space-y-6">
               <div className="flex items-center gap-4">
                 <Select value={filterUf} onValueChange={setFilterUf}>
-                  <SelectTrigger className="w-48 bg-card border-border"><SelectValue placeholder="Filtrar por UF" /></SelectTrigger>
+                  <SelectTrigger className="w-48 bg-card border-border text-[12px]"><SelectValue placeholder="Filtrar por UF" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos os Estados</SelectItem>
                     <SelectItem value="SP">São Paulo</SelectItem>
@@ -187,23 +184,23 @@ const CompliancePage = () => {
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="lg:col-span-2 border-border elevation-1">
+                <Card className="lg:col-span-2 bg-card border-border">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <Award className="h-4 w-4 text-primary" /> Ranking de Compliance por Concessionária
+                    <CardTitle className="text-[13px] font-medium flex items-center gap-2">
+                      <Award className="h-4 w-4 text-primary" /> Ranking de Compliance
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-0">
                     <Table>
                       <TableHeader>
                         <TableRow className="border-border hover:bg-transparent">
-                          <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider w-12">#</TableHead>
-                          <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Concessionária</TableHead>
-                          <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Score</TableHead>
-                          <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Metas</TableHead>
-                          <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Tendência</TableHead>
-                          <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Status</TableHead>
-                          <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Infrações</TableHead>
+                          <TableHead className="text-caption text-muted-foreground uppercase tracking-wider w-12">#</TableHead>
+                          <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Concessionária</TableHead>
+                          <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Score</TableHead>
+                          <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Metas</TableHead>
+                          <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Tendência</TableHead>
+                          <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Status</TableHead>
+                          <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Infrações</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -217,29 +214,29 @@ const CompliancePage = () => {
                           ))
                         ) : (
                           [...filtered].sort((a, b) => b.score - a.score).map((c, i) => (
-                            <TableRow key={c.id} className="border-border">
-                              <TableCell className="font-mono text-xs text-muted-foreground font-bold">{i + 1}</TableCell>
+                            <TableRow key={c.id} className="border-border hover:bg-accent/50">
+                              <TableCell className="font-mono text-body-sm text-muted-foreground font-bold">{i + 1}</TableCell>
                               <TableCell>
-                                <div><p className="text-sm font-medium">{c.nome}</p><p className="text-[10px] text-muted-foreground">{c.uf}</p></div>
+                                <div><p className="text-[13px] font-medium text-foreground">{c.nome}</p><p className="text-caption text-muted-foreground">{c.uf}</p></div>
                               </TableCell>
                               <TableCell>
                                 <div className="flex items-center gap-2">
                                   <Progress value={c.score} className="w-16 h-1.5" />
-                                  <span className={`font-mono text-xs font-bold ${c.score >= 85 ? "text-success" : c.score >= 70 ? "text-warning" : "text-destructive"}`}>{c.score}%</span>
+                                  <span className={`font-mono text-body-sm font-bold ${c.score >= 85 ? "text-success" : c.score >= 70 ? "text-warning" : "text-destructive"}`}>{c.score}%</span>
                                 </div>
                               </TableCell>
-                              <TableCell className="text-xs font-mono text-muted-foreground">{c.metas_cumpridas}/{c.metas_total}</TableCell>
+                              <TableCell className="text-body-sm font-mono text-muted-foreground">{c.metas_cumpridas}/{c.metas_total}</TableCell>
                               <TableCell>
                                 {c.tendencia === "up" && <TrendingUp className="h-4 w-4 text-success" />}
                                 {c.tendencia === "down" && <TrendingDown className="h-4 w-4 text-destructive" />}
-                                {c.tendencia === "stable" && <span className="text-xs text-muted-foreground">—</span>}
+                                {c.tendencia === "stable" && <span className="text-body-sm text-muted-foreground">—</span>}
                               </TableCell>
                               <TableCell>
-                                <Badge variant="outline" className={statusColor[c.status] || ""}>{statusLabel[c.status] || c.status}</Badge>
+                                <Badge variant="outline" className={`text-[10px] ${statusColor[c.status] || ""}`}>{statusLabel[c.status] || c.status}</Badge>
                               </TableCell>
                               <TableCell>
                                 {c.infracoes_abertas > 0 ? (
-                                  <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30 font-mono">{c.infracoes_abertas}</Badge>
+                                  <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30 font-mono text-[10px]">{c.infracoes_abertas}</Badge>
                                 ) : (
                                   <CheckCircle2 className="h-4 w-4 text-success" />
                                 )}
@@ -252,12 +249,12 @@ const CompliancePage = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="border-border elevation-1">
+                <Card className="bg-card border-border">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <CardTitle className="text-[13px] font-medium flex items-center gap-2">
                       <Target className="h-4 w-4 text-primary" /> Análise Multidimensional
                     </CardTitle>
-                    <CardDescription className="text-xs">SABESP vs CEDAE vs COMPESA</CardDescription>
+                    <CardDescription className="text-body-sm">SABESP vs CEDAE vs COMPESA</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <ResponsiveContainer width="100%" height={320}>
@@ -276,15 +273,14 @@ const CompliancePage = () => {
               </div>
             </TabsContent>
 
-            {/* Evolução */}
             <TabsContent value="evolucao" className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="border-border elevation-1">
+                <Card className="bg-card border-border">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-primary" /> Evolução de Compliance por Estado
+                    <CardTitle className="text-[13px] font-medium flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-primary" /> Evolução por Estado
                     </CardTitle>
-                    <CardDescription className="text-xs">Últimos 6 meses (% compliance)</CardDescription>
+                    <CardDescription className="text-body-sm">Últimos 6 meses (% compliance)</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <ResponsiveContainer width="100%" height={320}>
@@ -294,21 +290,21 @@ const CompliancePage = () => {
                         <YAxis tick={{ fontSize: 11, fill: CHART_TICK }} axisLine={false} tickLine={false} domain={[40, 100]} unit="%" />
                         <Tooltip content={<CustomTooltip />} />
                         <Legend iconSize={8} wrapperStyle={{ fontSize: "11px" }} />
-                        <Bar dataKey="SP" fill={CHART_COLORS.primary} radius={[2, 2, 0, 0]} />
-                        <Bar dataKey="MG" fill={CHART_COLORS.success} radius={[2, 2, 0, 0]} />
-                        <Bar dataKey="RJ" fill={CHART_COLORS.warning} radius={[2, 2, 0, 0]} />
-                        <Bar dataKey="BA" fill={CHART_COLORS.purple} radius={[2, 2, 0, 0]} />
+                        <Bar dataKey="SP" fill={CHART_COLORS.primary} radius={[3, 3, 0, 0]} />
+                        <Bar dataKey="MG" fill={CHART_COLORS.success} radius={[3, 3, 0, 0]} />
+                        <Bar dataKey="RJ" fill={CHART_COLORS.warning} radius={[3, 3, 0, 0]} />
+                        <Bar dataKey="BA" fill={CHART_COLORS.purple} radius={[3, 3, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </CardContent>
                 </Card>
 
-                <Card className="border-border elevation-1">
+                <Card className="bg-card border-border">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <CardTitle className="text-[13px] font-medium flex items-center gap-2">
                       <BarChart3 className="h-4 w-4 text-primary" /> Tendência de Compliance
                     </CardTitle>
-                    <CardDescription className="text-xs">Linha de tendência por estado</CardDescription>
+                    <CardDescription className="text-body-sm">Linha de tendência por estado</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <ResponsiveContainer width="100%" height={320}>
@@ -329,15 +325,14 @@ const CompliancePage = () => {
               </div>
             </TabsContent>
 
-            {/* Infrações */}
             <TabsContent value="infracoes">
-              <Card className="border-border elevation-1">
+              <Card className="bg-card border-border">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                    <CardTitle className="text-[13px] font-medium flex items-center gap-2">
                       <AlertTriangle className="h-4 w-4 text-warning" /> Registro de Infrações
                     </CardTitle>
-                    <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30 font-mono">
+                    <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30 font-mono text-[10px]">
                       {totalInfracoes} abertas
                     </Badge>
                   </div>
@@ -346,13 +341,13 @@ const CompliancePage = () => {
                   <Table>
                     <TableHeader>
                       <TableRow className="border-border hover:bg-transparent">
-                        <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">ID</TableHead>
-                        <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Concessionária</TableHead>
-                        <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Descrição</TableHead>
-                        <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Norma</TableHead>
-                        <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Gravidade</TableHead>
-                        <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Prazo</TableHead>
-                        <TableHead className="text-[11px] text-muted-foreground uppercase tracking-wider">Status</TableHead>
+                        <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">ID</TableHead>
+                        <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Concessionária</TableHead>
+                        <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Descrição</TableHead>
+                        <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Norma</TableHead>
+                        <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Gravidade</TableHead>
+                        <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Prazo</TableHead>
+                        <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Status</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -366,25 +361,25 @@ const CompliancePage = () => {
                         ))
                       ) : (
                         (infracoes || []).map((inf) => (
-                          <TableRow key={inf.id} className="border-border">
-                            <TableCell className="font-mono text-xs text-primary">{inf.codigo}</TableCell>
+                          <TableRow key={inf.id} className="border-border hover:bg-accent/50">
+                            <TableCell className="font-mono text-body-sm text-primary">{inf.codigo}</TableCell>
                             <TableCell>
-                              <p className="text-xs font-medium">{(inf.entidades as any)?.nome || "—"}</p>
+                              <p className="text-body-sm font-medium text-foreground">{(inf.entidades as any)?.nome || "—"}</p>
                             </TableCell>
-                            <TableCell className="text-xs max-w-[280px] truncate">{inf.descricao}</TableCell>
-                            <TableCell className="text-[10px] text-muted-foreground font-mono">{inf.norma}</TableCell>
+                            <TableCell className="text-body-sm max-w-[280px] truncate">{inf.descricao}</TableCell>
+                            <TableCell className="text-caption text-muted-foreground font-mono">{inf.norma}</TableCell>
                             <TableCell>
-                              <Badge variant="outline" className={gravidadeColor[inf.gravidade] || ""}>
+                              <Badge variant="outline" className={`text-[10px] ${gravidadeColor[inf.gravidade] || ""}`}>
                                 {inf.gravidade.charAt(0).toUpperCase() + inf.gravidade.slice(1)}
                               </Badge>
                             </TableCell>
                             <TableCell>
-                              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <div className="flex items-center gap-1 text-body-sm text-muted-foreground">
                                 <Calendar className="h-3 w-3" /> {inf.prazo}
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Badge variant="outline" className={infracaoStatusColor[inf.status] || ""}>
+                              <Badge variant="outline" className={`text-[10px] ${infracaoStatusColor[inf.status] || ""}`}>
                                 {inf.status === "aberta" ? "Aberta" : inf.status === "em_analise" ? "Em Análise" : "Resolvida"}
                               </Badge>
                             </TableCell>
