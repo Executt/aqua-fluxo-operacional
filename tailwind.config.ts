@@ -17,6 +17,14 @@ export default {
         sans: ["Inter", "system-ui", "sans-serif"],
         mono: ["JetBrains Mono", "monospace"],
       },
+      fontSize: {
+        "display": ["48px", { lineHeight: "1.1", fontWeight: "600" }],
+        "heading-1": ["24px", { lineHeight: "1.3", fontWeight: "600" }],
+        "heading-2": ["18px", { lineHeight: "1.4", fontWeight: "600" }],
+        "body-lg": ["14px", { lineHeight: "1.6", fontWeight: "400" }],
+        "body-sm": ["12px", { lineHeight: "1.5", fontWeight: "400" }],
+        "caption": ["10px", { lineHeight: "1.4", fontWeight: "500" }],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
