@@ -4,17 +4,17 @@ import { BrazilMap } from "@/components/dashboard/BrazilMap";
 import { ComplianceChart } from "@/components/dashboard/ComplianceChart";
 import { AlertsTable } from "@/components/dashboard/AlertsTable";
 import { Button } from "@/components/ui/button";
-import { FileText } from "lucide-react";
+import { FileText, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
 
 const stagger = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.12 } },
+  show: { transition: { staggerChildren: 0.08 } },
 };
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
 
 const Index = () => {
@@ -29,17 +29,22 @@ const Index = () => {
         {/* Header */}
         <motion.div variants={fadeUp} className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">
+            <h1 className="text-heading-1 text-foreground">
               Centro de Operações Federado
             </h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
+            <p className="text-body-sm text-muted-foreground mt-1">
               Monitorização em tempo real — Última atualização: há 2 min
             </p>
           </div>
-          <Button className="gap-2">
-            <FileText className="h-4 w-4" />
-            Gerar Relatório
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="gap-2 text-[12px] border-border">
+              Hoje <ChevronDown className="h-3 w-3" />
+            </Button>
+            <Button size="sm" className="gap-2 text-[12px]">
+              <FileText className="h-3.5 w-3.5" />
+              Gerar Relatório
+            </Button>
+          </div>
         </motion.div>
 
         {/* KPIs */}
