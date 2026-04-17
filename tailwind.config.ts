@@ -74,6 +74,11 @@ export default {
         shell: {
           DEFAULT: "hsl(var(--shell))",
           foreground: "hsl(var(--shell-foreground))",
+          border: "hsl(var(--shell-border))",
+        },
+        subnav: {
+          DEFAULT: "hsl(var(--subnav))",
+          foreground: "hsl(var(--subnav-foreground))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
