@@ -6,67 +6,73 @@
 
 @layer base {
   :root {
-    /* ── SnowUI Dark Theme (ByeWind Dashboard UI Kit) ── */
-    --background: 228 14% 11%;          /* #171821 */
-    --foreground: 0 0% 100%;            /* White 100% */
+    /* ── CRM Desktop Light Theme (Community-style) ── */
+    --background: 220 24% 97%;          /* #F4F6FA — app canvas */
+    --foreground: 222 32% 14%;          /* #182234 — primary text */
 
-    --card: 228 12% 14%;                /* #1E1F2B */
-    --card-foreground: 0 0% 100%;
+    --card: 0 0% 100%;                  /* #FFFFFF */
+    --card-foreground: 222 32% 14%;
 
-    --popover: 228 12% 14%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 32% 14%;
 
-    --primary: 246 58% 63%;             /* #7B6CF6 - SnowUI Purple */
+    --primary: 232 72% 56%;             /* #3D4ED8 — corporate indigo */
     --primary-foreground: 0 0% 100%;
+    --primary-soft: 232 88% 96%;        /* indigo tint background */
 
-    --secondary: 228 12% 18%;
-    --secondary-foreground: 0 0% 80%;
+    --secondary: 220 24% 94%;           /* #ECEFF5 */
+    --secondary-foreground: 222 24% 22%;
 
-    --muted: 228 12% 20%;
-    --muted-foreground: 0 0% 55%;
+    --muted: 220 20% 95%;
+    --muted-foreground: 220 12% 46%;    /* #6B7280-ish */
 
-    --accent: 228 12% 22%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 232 72% 96%;              /* hover tint */
+    --accent-foreground: 232 72% 40%;
 
-    --destructive: 0 72% 56%;           /* Red */
+    --destructive: 0 72% 51%;           /* #DC2626 */
     --destructive-foreground: 0 0% 100%;
 
-    --success: 152 56% 48%;             /* Green */
+    --success: 152 60% 38%;             /* #1F9D6E */
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 58%;              /* Yellow / Amber */
-    --warning-foreground: 228 14% 11%;
+    --warning: 38 92% 50%;              /* #F59E0B */
+    --warning-foreground: 222 32% 14%;
 
-    --informative: 213 90% 58%;         /* Blue */
+    --informative: 210 90% 50%;         /* #1E88E5 */
     --informative-foreground: 0 0% 100%;
 
-    --border: 228 10% 20%;
-    --input: 228 10% 22%;
-    --ring: 246 58% 63%;
+    --border: 220 18% 90%;              /* #DCE0E8 */
+    --input: 220 18% 90%;
+    --ring: 232 72% 56%;
 
-    --radius: 0.75rem;
+    --radius: 0.625rem;
 
-    /* ── Shell Header ── */
-    --shell: 228 14% 9%;
-    --shell-foreground: 0 0% 65%;
+    /* ── Topbar (CRM style: clean white) ── */
+    --shell: 0 0% 100%;
+    --shell-foreground: 222 24% 22%;
+    --shell-border: 220 18% 90%;
 
-    /* ── Sidebar ── */
-    --sidebar-background: 228 14% 9%;
-    --sidebar-foreground: 0 0% 55%;
-    --sidebar-primary: 246 58% 63%;
+    /* ── Sub-nav ── */
+    --subnav: 220 24% 98%;
+    --subnav-foreground: 220 12% 40%;
+
+    /* ── Sidebar (kept for compat, unused) ── */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 24% 22%;
+    --sidebar-primary: 232 72% 56%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 228 12% 16%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 228 10% 16%;
-    --sidebar-ring: 246 58% 63%;
+    --sidebar-accent: 220 24% 96%;
+    --sidebar-accent-foreground: 232 72% 40%;
+    --sidebar-border: 220 18% 90%;
+    --sidebar-ring: 232 72% 56%;
 
-    /* ── Chart Palette (SnowUI sequential) ── */
-    --chart-1: 246 58% 63%;             /* Purple primary */
-    --chart-2: 213 90% 58%;             /* Blue */
-    --chart-3: 152 56% 48%;             /* Green */
-    --chart-4: 38 92% 58%;              /* Yellow */
-    --chart-5: 0 72% 56%;               /* Red */
-    --chart-6: 280 60% 58%;             /* Purple B */
+    /* ── Chart Palette (CRM corporate) ── */
+    --chart-1: 232 72% 56%;             /* Indigo primary */
+    --chart-2: 210 90% 50%;             /* Blue */
+    --chart-3: 152 60% 38%;             /* Green */
+    --chart-4: 38 92% 50%;              /* Amber */
+    --chart-5: 0 72% 51%;               /* Red */
+    --chart-6: 270 60% 56%;             /* Violet */
   }
 }
 
@@ -77,46 +83,26 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "cv11", "ss01";
   }
 }
 
 @layer utilities {
-  /* SnowUI elevation system */
-  .elevation-0 {
-    box-shadow: none;
-  }
-  .elevation-1 {
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
-  }
-  .elevation-2 {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.35), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-  }
-  .elevation-3 {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
-  }
+  /* CRM elevation system — subtle, light */
+  .elevation-0 { box-shadow: none; }
+  .elevation-1 { box-shadow: 0 1px 2px 0 rgba(16, 24, 40, 0.05); }
+  .elevation-2 { box-shadow: 0 1px 3px 0 rgba(16, 24, 40, 0.08), 0 1px 2px -1px rgba(16, 24, 40, 0.05); }
+  .elevation-3 { box-shadow: 0 4px 8px -2px rgba(16, 24, 40, 0.08), 0 2px 4px -2px rgba(16, 24, 40, 0.04); }
 
-  /* Status indicators */
-  .status-positive {
-    box-shadow: 0 0 0 2px hsl(152 56% 48% / 0.2);
-  }
-  .status-negative {
-    box-shadow: 0 0 0 2px hsl(0 72% 56% / 0.2);
-  }
-  .status-critical {
-    box-shadow: 0 0 0 2px hsl(38 92% 58% / 0.2);
-  }
-  .status-informative {
-    box-shadow: 0 0 0 2px hsl(213 90% 58% / 0.2);
-  }
+  /* Status pills */
+  .pill-success { @apply bg-success/10 text-success border border-success/20; }
+  .pill-warning { @apply bg-warning/10 text-warning border border-warning/30; }
+  .pill-destructive { @apply bg-destructive/10 text-destructive border border-destructive/20; }
+  .pill-informative { @apply bg-informative/10 text-informative border border-informative/20; }
+  .pill-muted { @apply bg-muted text-muted-foreground border border-border; }
 
-  /* Glow effects */
-  .glow-primary {
-    box-shadow: 0 0 20px -4px hsl(246 58% 63% / 0.3);
-  }
-  .glow-success {
-    box-shadow: 0 0 16px -4px hsl(152 56% 48% / 0.3);
-  }
-  .glow-destructive {
-    box-shadow: 0 0 16px -4px hsl(0 72% 56% / 0.3);
+  /* CRM card surface */
+  .surface-card {
+    @apply bg-card border border-border rounded-[var(--radius)] elevation-1;
   }
 }

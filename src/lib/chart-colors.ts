@@ -1,17 +1,17 @@
 /**
- * SnowUI Dashboard chart color palette.
+ * CRM Desktop chart color palette.
  * These match the --chart-* CSS variables in index.css.
  */
 export const CHART_COLORS = {
-  primary: "hsl(246, 58%, 63%)",       // Purple
-  informative: "hsl(213, 90%, 58%)",   // Blue
-  success: "hsl(152, 56%, 48%)",       // Green
-  warning: "hsl(38, 92%, 58%)",        // Yellow
-  destructive: "hsl(0, 72%, 56%)",     // Red
-  purple: "hsl(280, 60%, 58%)",        // Purple B
-  teal: "hsl(187, 72%, 45%)",          // Teal
+  primary: "hsl(232, 72%, 56%)",       // Indigo
+  informative: "hsl(210, 90%, 50%)",   // Blue
+  success: "hsl(152, 60%, 38%)",       // Green
+  warning: "hsl(38, 92%, 50%)",        // Amber
+  destructive: "hsl(0, 72%, 51%)",     // Red
+  violet: "hsl(270, 60%, 56%)",        // Violet
+  teal: "hsl(187, 72%, 42%)",          // Teal
 } as const;
 
-/** Grid/axis colors for dark theme */
-export const CHART_GRID = "hsl(228, 10%, 22%)";
-export const CHART_TICK = "hsl(0, 0%, 45%)";
+/** Grid/axis colors for light CRM theme */
+export const CHART_GRID = "hsl(220, 18%, 92%)";
+export const CHART_TICK = "hsl(220, 12%, 46%)";
