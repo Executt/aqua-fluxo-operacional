@@ -9,6 +9,7 @@ export const CHART_COLORS = {
   warning: "hsl(38, 92%, 50%)",        // Amber
   destructive: "hsl(0, 72%, 51%)",     // Red
   violet: "hsl(270, 60%, 56%)",        // Violet
+  purple: "hsl(270, 60%, 56%)",        // Alias (legacy)
   teal: "hsl(187, 72%, 42%)",          // Teal
 } as const;
 
