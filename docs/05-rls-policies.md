@@ -83,3 +83,31 @@ CREATE POLICY "Auditores update infracoes" ON public.infracoes
 4. **Sem SQL cru** vindo do cliente — apenas RPC parametrizado ou SDK.
 5. **Imutabilidade** de telemetria e infrações (sem DELETE).
 6. **Auditoria** de toda alteração administrativa em `audit_log` (planejado).
+
+---
+
+## Módulo Curadoria (v3.0) — RBAC implementado
+
+Enum `app_role`: `admin`, `gestor`, `auditor`, `operador`.
+
+Helpers (todos SECURITY DEFINER): `has_role`, `is_staff`, `get_user_operador`.
+
+### Políticas por tabela
+
+| Tabela | SELECT | INSERT | UPDATE | DELETE |
+|---|---|---|---|---|
+| `profiles` | self OR staff | trigger | self OR admin | admin |
+| `user_roles` | self OR staff | admin | admin | admin |
+| `operadores` | staff OR `id = get_user_operador(uid)` | admin | admin | admin |
+| `operador_municipios` | staff OR `operador_id = get_user_operador(uid)` | admin | admin | admin |
+| `tipologias_tratamento` | authenticated | admin | admin | admin |
+| `etes_curadoria` | staff OR operador dono | operador OR staff | operador OR staff | admin |
+| `formulario_respostas` | staff OR operador dono | operador dono | (operador dono E estado IN rascunho/rejeitado) OR staff | **bloqueado** |
+
+Materialized views: `REVOKE ALL FROM anon, authenticated` — só `metabase_reader`.
+
+### Trigger de imutabilidade
+`validate_estado_transition()` bloqueia transições inválidas e edição de `payload` em estado validado/rejeitado.
+
+### Avisos do linter (legacy)
+14 políticas com `USING (true)` continuam nas tabelas pré-curadoria (`entidades`, `etes`, `sensores`, etc.). **TODO** próxima sprint: migrar para `is_staff()`.

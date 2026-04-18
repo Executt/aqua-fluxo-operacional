@@ -129,3 +129,35 @@ Nunca enviar dados pessoais (e-mail, CPF) ao modelo. Apenas IDs anonimizados.
 
 ### RN-503 — Auditoria
 Toda chamada à IA registra: usuário, timestamp, prompt-hash, modelo, tokens.
+
+## 7. Curadoria Nacional (módulo v3.0)
+
+### RN-601 — Categorização DBO (Atlas Esgotos)
+- **Baixa** < 60% · **Normal** 60–80% · **Alta** > 80%. Trigger `classify_faixa_dbo()` deriva no banco.
+
+### RN-602 — Status operacional ETE
+Enum: `ativa`, `em_construcao_ampliacao`, `inativa_desativada`, `planejada`. Apenas `ativa` entra nas agregações regionais.
+
+### RN-603 — State machine
+```
+RASCUNHO → SUBMETIDO → EM_ANALISE → VALIDADO ✓ (final)
+                                  ↘ REJEITADO → RASCUNHO
+```
+Validado/rejeitado têm `payload` **imutável**. Carimbos `submitted_at` / `reviewed_at` automáticos.
+
+### RN-604 — Limites físicos (DTO Zod)
+- `eficiencia_dbo_pct ∈ [0, 100]`
+- `vazao_atual_lps ≤ 1.2 × vazao_projeto_lps`
+- `pH ∈ [0,14]`, `OD ∈ [0,20]`, `populacao_atendida ≤ 50M`
+- Bulk: máx 1000 respostas/chamada
+
+### RN-605 — RBAC do módulo
+- **Operador** vê e submete só ETEs nos seus municípios
+- **Auditor/Gestor/Admin** veem tudo e fazem todas as transições
+- Sem `operador_id` no perfil → 403 limpo na Edge Function
+
+### RN-606 — Imutabilidade analítica
+MVs (`dim_*`, `fato_*`, `mv_*`) **não** acessíveis por `anon`/`authenticated` — apenas `metabase_reader`.
+
+### RN-607 — Periodicidade
+UNIQUE `(ete_id, ano_referencia, mes_referencia)`. Re-envio = upsert (só em estados editáveis).

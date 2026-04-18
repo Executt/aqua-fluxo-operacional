@@ -22,23 +22,21 @@
 
 | Método | Status |
 |---|---|
-| E-mail + senha (Supabase Auth) | 🟡 disponível, não habilitado por default |
-| Keycloak OIDC (Gov.br) | 🔵 planejado — UI pronta em `/admin?tab=sso` |
-| LDAP / Active Directory | 🔵 planejado — UI pronta em `/admin?tab=usuarios` |
+| **E-mail + senha (Lovable Cloud Auth)** | ✅ **HABILITADO** com verificação obrigatória |
+| **HIBP password check** | ✅ habilitado (rejeita senhas vazadas) |
+| **Anonymous signups** | ❌ desabilitado |
+| Keycloak OIDC (Gov.br) | 🔵 planejado |
+| LDAP / Active Directory | 🔵 planejado |
 
-**Quando ativarmos auth**:
-- Senhas: HIBP check habilitado (`password_hibp_enabled: true`)
-- Sem signup anônimo
-- Verificação de e-mail obrigatória
-- Reset de senha por link com expiração 1h
+Configurações ativas: verificação de e-mail antes do login · trigger `handle_new_user` cria profile no signup · reset por link 1h.
 
 ## 3. Autorização
 
-- **RLS sempre on** em todas as tabelas
-- **Roles em tabela dedicada** (`user_roles`) — nunca em JWT custom claims
-- Função `has_role(_user_id, _role)` `SECURITY DEFINER` com `search_path = public`
-- 4 perfis: admin, auditor, operador, visualizador (RN-405)
-- Verificação **server-side** — frontend só esconde UI, nunca confia em estado local
+- **RLS sempre on**
+- Roles em `user_roles` — `app_role` (admin, gestor, auditor, operador)
+- `has_role`, `is_staff`, `get_user_operador` (todos SECURITY DEFINER, search_path=public)
+- `ProtectedRoute` no frontend; **autoritativo** é a RLS
+- `/admin` exige role `admin`; `/curadoria` exige autenticação
 
 ## 4. Secrets management
 

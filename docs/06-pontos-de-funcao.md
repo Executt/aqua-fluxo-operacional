@@ -52,28 +52,56 @@
 | EQ | Histórico leituras sensor | 1 | 5 | Baixa | **3** |
 | **Subtotal transacional** | | | | | **107** |
 
-## 3. Total
+## 3. Módulo Curadoria Nacional (v3.0)
+
+### Funções de dados adicionais
+| Tipo | Nome | DET | Complex. | PF |
+|---|---|---:|---|---:|
+| ILF | profiles | 5 | Baixa | **7** |
+| ILF | user_roles | 4 | Baixa | **7** |
+| ILF | operadores | 9 | Média | **10** |
+| ILF | operador_municipios | 5 | Baixa | **7** |
+| ILF | tipologias_tratamento | 7 | Baixa | **7** |
+| ILF | etes_curadoria | 16 | Alta | **15** |
+| ILF | formulario_respostas | 11 | Média | **10** |
+| EIF | Atlas Esgotos / ANA | 4 | Baixa | **5** |
+| EIF | Metabase (consumer) | 6 | Baixa | **5** |
+| **Subtotal dados curadoria** | | | | **73** |
+
+### Funções transacionais adicionais
+| Tipo | Função | Complex. | PF |
+|---|---|---|---:|
+| EI | Login email/senha | Baixa | **3** |
+| EI | Signup + verificação | Média | **4** |
+| EI | Reset de senha | Baixa | **3** |
+| EI | Cadastrar operador | Média | **4** |
+| EI | Vincular munic. ao operador | Baixa | **3** |
+| EI | Cadastrar ETE curadoria | Alta | **6** |
+| EI | Submeter resposta (rascunho/submetido) | Alta | **6** |
+| EI | Transitar estado (state machine) | Média | **4** |
+| EI | Bulk insert (até 1000) | Alta | **6** |
+| EI | Validar / Rejeitar (auditor) | Média | **4** |
+| EO | Painel curadoria (KPIs por estado) | Média | **5** |
+| EO | Refresh Metabase views | Baixa | **4** |
+| EQ | Listar respostas com filtros | Média | **4** |
+| EQ | Detalhe de ETE curadoria | Média | **4** |
+| **Subtotal transacional curadoria** | | | **60** |
+
+## 4. Total
 
 | Categoria | PF |
 |---|---:|
-| Funções de dados | 90 |
-| Funções transacionais | 107 |
-| **TOTAL BRUTO (PFNA)** | **197** |
+| Dados (base) | 90 |
+| Transacional (base) | 107 |
+| Dados (curadoria) | 73 |
+| Transacional (curadoria) | 60 |
+| **TOTAL BRUTO (PFNA)** | **330** |
 
-### Fator de ajuste (VAF)
-14 GSC avaliados em média 3.5 → VAF ≈ 1.05 (+5 %).
+VAF ≈ 1.07 → **Total Ajustado: ≈ 353 PF**
 
-**Total Ajustado: ≈ 207 PF**
+## 5. Estimativa de esforço
 
-## 4. Estimativa de esforço (referência)
+8 h/PF × 353 = **2 824 h-h** · sugestão: 5 devs × 17 semanas.
 
-Considerando produtividade do time SIGSAN-FED de **8 h/PF**:
-
-- **Esforço estimado**: 207 × 8 = **1 656 horas-homem**
-- **Equipe sugerida**: 4 devs × 13 semanas (≈ 1 sprint trimestral)
-
-## 5. Backlog de PF futuros (não computado)
-
-- Mobile companion app (≈ 80 PF)
-- Workflow BPMN de fiscalização (≈ 120 PF)
-- Open Data API pública (≈ 40 PF)
+## 6. Backlog futuro
+- Mobile companion (≈ 80 PF) · Workflow BPMN fiscalização (≈ 120 PF) · Open Data API (≈ 40 PF) · Importação CSV UI (≈ 25 PF)
