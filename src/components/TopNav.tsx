@@ -46,6 +46,11 @@ const subNav: Record<string, { title: string; url: string }[]> = {
   "/cortex": [
     { title: "Chat IA", url: "/cortex" },
   ],
+  "/curadoria": [
+    { title: "Submissões", url: "/curadoria" },
+    { title: "Validações", url: "/curadoria?tab=validacoes" },
+    { title: "Importar lote", url: "/curadoria?tab=bulk" },
+  ],
   "/admin": [
     { title: "Usuários & LDAP", url: "/admin?tab=usuarios" },
     { title: "SMTP", url: "/admin?tab=smtp" },
