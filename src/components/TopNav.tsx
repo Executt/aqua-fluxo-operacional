@@ -1,16 +1,22 @@
-import { NavLink as RRNavLink, useLocation } from "react-router-dom";
+import { NavLink as RRNavLink, useLocation, useNavigate } from "react-router-dom";
 import {
-  Globe, Radio, ShieldCheck, Building2, BrainCircuit, Settings,
-  Search, Bell, Sun, HelpCircle, ChevronDown,
+  Globe, Radio, ShieldCheck, Building2, BrainCircuit, Settings, Droplets,
+  Search, Bell, Sun, HelpCircle, ChevronDown, LogOut, LogIn,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
+  DropdownMenuTrigger, DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 const modules = [
   { title: "Visão Global", url: "/", icon: Globe },
   { title: "IoT", url: "/iot", icon: Radio },
   { title: "Compliance", url: "/compliance", icon: ShieldCheck },
+  { title: "Curadoria", url: "/curadoria", icon: Droplets },
   { title: "Entidades", url: "/entidades", icon: Building2 },
   { title: "Cortex-San", url: "/cortex", icon: BrainCircuit },
   { title: "Administração", url: "/admin", icon: Settings },
