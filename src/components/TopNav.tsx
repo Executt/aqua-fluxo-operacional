@@ -69,10 +69,19 @@ function rootPath(pathname: string): string {
 
 export function TopNav() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, roles, signOut } = useAuth();
   const root = rootPath(location.pathname);
   const subs = subNav[root] ?? [];
   const search = new URLSearchParams(location.search);
   const activeTab = search.get("tab");
+
+  const meta = (user?.user_metadata ?? {}) as { nome?: string };
+  const displayName = meta.nome || user?.email?.split("@")[0] || "Convidado";
+  const initials = displayName.slice(0, 2).toUpperCase();
+  const roleLabel = roles[0]
+    ? roles[0].charAt(0).toUpperCase() + roles[0].slice(1)
+    : user ? "Sem perfil" : "Não autenticado";
 
   return (
     <header className="sticky top-0 z-30 bg-shell border-b border-shell-border">
@@ -132,16 +141,38 @@ export function TopNav() {
             <span className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-destructive" />
           </button>
           <div className="h-6 w-px bg-border mx-1" />
-          <button className="flex items-center gap-2 h-9 pl-1 pr-2 rounded-md hover:bg-secondary transition-colors">
-            <Avatar className="h-7 w-7">
-              <AvatarFallback className="bg-primary text-primary-foreground text-[11px] font-semibold">AN</AvatarFallback>
-            </Avatar>
-            <div className="hidden md:flex flex-col leading-none text-left">
-              <span className="text-[12px] font-medium text-foreground">Ana Souza</span>
-              <span className="text-[10px] text-muted-foreground">Administradora</span>
-            </div>
-            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-          </button>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 h-9 pl-1 pr-2 rounded-md hover:bg-secondary transition-colors">
+                  <Avatar className="h-7 w-7">
+                    <AvatarFallback className="bg-primary text-primary-foreground text-[11px] font-semibold">{initials}</AvatarFallback>
+                  </Avatar>
+                  <div className="hidden md:flex flex-col leading-none text-left">
+                    <span className="text-[12px] font-medium text-foreground">{displayName}</span>
+                    <span className="text-[10px] text-muted-foreground">{roleLabel}</span>
+                  </div>
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="text-[11px] text-muted-foreground font-normal">
+                  {user.email}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => signOut()}>
+                  <LogOut className="h-3.5 w-3.5 mr-2" /> Terminar sessão
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <button
+              onClick={() => navigate("/auth")}
+              className="flex items-center gap-1.5 h-9 px-3 rounded-md bg-primary text-primary-foreground text-[12px] font-medium hover:opacity-90 transition-opacity"
+            >
+              <LogIn className="h-3.5 w-3.5" /> Entrar
+            </button>
+          )}
         </div>
       </div>
 
