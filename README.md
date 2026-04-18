@@ -10,14 +10,15 @@
 
 ## ✨ Visão geral
 
-O SIGSAN-FED federa dados operacionais de **prestadores de serviços de saneamento** (companhias estaduais e municipais), **estações de tratamento de efluentes (ETEs)** e **sensores IoT** em tempo real, oferecendo:
+O SIGSAN-FED federa dados operacionais de **prestadores de saneamento**, **ETEs** e **sensores IoT** em tempo real:
 
-- 🌎 **Visão Global** — KPIs nacionais, mapa do Brasil, alertas críticos
-- 📡 **Monitorização IoT** — Telemetria de sensores (pH, OD, turbidez, vazão)
-- 🛡️ **Compliance / SARSB** — Scores, infrações CONAMA 357/2005, auditorias
-- 🏢 **Gestão de Entidades** — Cadastro de prestadores, ETEs e responsáveis técnicos
-- 🧠 **Cortex-San** — Assistente IA para análise normativa
-- ⚙️ **Administração** — LDAP, SMTP, SEI, SSO, parâmetros e auditoria
+- 🌎 **Visão Global** — KPIs nacionais, mapa, alertas
+- 📡 **Monitorização IoT** — Telemetria (pH, OD, turbidez, vazão)
+- 🛡️ **Compliance / SARSB** — Scores, infrações CONAMA 357/2005
+- 💧 **Curadoria Nacional** — Submissão e validação de dados das ETEs (Atlas Esgotos / ANA) com state machine + RBAC
+- 🏢 **Entidades** — Cadastro de prestadores, ETEs, responsáveis
+- 🧠 **Cortex-San** — Assistente IA normativo
+- ⚙️ **Administração** — LDAP, SMTP, SEI, SSO, parâmetros, auditoria
 
 ## 🚀 Quick start
 
@@ -56,21 +57,24 @@ Toda a documentação técnica está em [`/docs`](./docs):
 | [`docs/03-database-schema.md`](./docs/03-database-schema.md) | Schema relacional |
 | [`docs/04-rotas-api.md`](./docs/04-rotas-api.md) | Edge Functions + REST PostgREST |
 | [`docs/05-rls-policies.md`](./docs/05-rls-policies.md) | Row Level Security |
-| [`docs/06-pontos-de-funcao.md`](./docs/06-pontos-de-funcao.md) | Análise de Pontos de Função |
+| [`docs/06-pontos-de-funcao.md`](./docs/06-pontos-de-funcao.md) | Análise de Pontos de Função (≈ 353 PF) |
 | [`docs/07-inventario-funcoes.md`](./docs/07-inventario-funcoes.md) | Inventário de funções |
-| [`docs/08-regras-de-negocio.md`](./docs/08-regras-de-negocio.md) | Regras CONAMA, SLAs, scores |
+| [`docs/08-regras-de-negocio.md`](./docs/08-regras-de-negocio.md) | Regras CONAMA, SLAs, scores, curadoria |
 | [`docs/09-seguranca.md`](./docs/09-seguranca.md) | Segurança end-to-end |
+| [`docs/10-modulo-curadoria.md`](./docs/10-modulo-curadoria.md) | **Curadoria Nacional + Star Schema Metabase** |
 
 ## 🗺️ Rotas principais
 
-| Rota | Página |
-|---|---|
-| `/` | Visão Global |
-| `/iot` | Monitorização IoT |
-| `/compliance` | SARSB / Compliance |
-| `/entidades` | Gestão de Entidades |
-| `/cortex` | Cortex-San (IA) |
-| `/admin?tab=…` | Administração (Usuários, SMTP, SEI, SSO, Parâmetros, Auditoria) |
+| Rota | Página | Proteção |
+|---|---|---|
+| `/auth` | Login / Signup | pública |
+| `/` | Visão Global | pública |
+| `/iot` | Monitorização IoT | pública |
+| `/compliance` | SARSB / Compliance | pública |
+| `/curadoria` | **Curadoria Nacional** | autenticado |
+| `/entidades` | Gestão de Entidades | pública |
+| `/cortex` | Cortex-San (IA) | pública |
+| `/admin?tab=…` | Administração | role=admin |
 
 ## 📝 Licença
 

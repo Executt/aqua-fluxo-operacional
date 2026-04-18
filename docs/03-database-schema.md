@@ -98,7 +98,35 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.sensor_leituras;
 ```
 
 ## Próximos passos (planejados)
-- Tabela `user_roles` com enum `app_role` (`admin`, `auditor`, `operador`, `visualizador`)
-- Função `has_role(_user_id uuid, _role app_role)` `SECURITY DEFINER`
 - Tabela `system_settings` (chave/valor JSONB) para LDAP, SMTP, SEI, SSO
 - Tabela `audit_log` para trilha (action, target, user_id, ts)
+
+---
+
+## Módulo Curadoria Nacional (v3.0)
+
+Ver [`10-modulo-curadoria.md`](./10-modulo-curadoria.md) para diagrama, state machine e camada analítica.
+
+### Novas tabelas
+| Tabela | Propósito |
+|---|---|
+| `profiles` | Liga `auth.users` ao operador + nome/ativo |
+| `user_roles` | RBAC (`admin`, `gestor`, `auditor`, `operador`) |
+| `operadores` | Concessionárias / autarquias (CNPJ, tipo, UF) |
+| `operador_municipios` | N:N operador ↔ município IBGE |
+| `tipologias_tratamento` | Domínio de tipologias (UASB, Lodos Ativados, etc.) |
+| `etes_curadoria` | ETEs sob curadoria com status operacional, vazões, eficiência DBO categorizada |
+| `formulario_respostas` | Submissões mensais (JSONB) com state machine |
+
+### Novos enums
+`app_role`, `tipo_operador`, `status_operacional`, `faixa_eficiencia_dbo`, `estado_resposta`.
+
+### Novas funções (todas `SECURITY DEFINER`, `search_path = public`)
+- `has_role(user_id, role)`, `is_staff(user_id)`, `get_user_operador(user_id)`
+- `handle_new_user()` — trigger `on_auth_user_created`
+- `classify_faixa_dbo()` — deriva faixa baixa/normal/alta
+- `validate_estado_transition()` — força transições válidas + carimbos
+- `refresh_metabase_views()` — refresh CONCURRENTLY de todas matviews
+
+### Camada analítica (Star Schema)
+Materialized views: `dim_municipio`, `dim_tipologia`, `dim_operador`, `fato_etes_curadoria`, `mv_cobertura_municipal`, `mv_etes_por_tipologia`, `mv_dbo_regional`. Acesso REVOGADO de `anon`/`authenticated` — só `metabase_reader`.

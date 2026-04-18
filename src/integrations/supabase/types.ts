@@ -147,6 +147,184 @@ export type Database = {
           },
         ]
       }
+      etes_curadoria: {
+        Row: {
+          ano_inicio_operacao: number | null
+          codigo: string
+          created_at: string
+          eficiencia_dbo_pct: number | null
+          faixa_dbo: Database["public"]["Enums"]["faixa_eficiencia_dbo"] | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          municipio_ibge: string
+          municipio_nome: string
+          nome: string
+          observacoes: string | null
+          operador_id: string
+          populacao_atendida: number | null
+          status_operacional: Database["public"]["Enums"]["status_operacional"]
+          tipologia_id: string | null
+          uf: string
+          updated_at: string
+          vazao_atual_lps: number | null
+          vazao_projeto_lps: number | null
+        }
+        Insert: {
+          ano_inicio_operacao?: number | null
+          codigo: string
+          created_at?: string
+          eficiencia_dbo_pct?: number | null
+          faixa_dbo?: Database["public"]["Enums"]["faixa_eficiencia_dbo"] | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          municipio_ibge: string
+          municipio_nome: string
+          nome: string
+          observacoes?: string | null
+          operador_id: string
+          populacao_atendida?: number | null
+          status_operacional?: Database["public"]["Enums"]["status_operacional"]
+          tipologia_id?: string | null
+          uf: string
+          updated_at?: string
+          vazao_atual_lps?: number | null
+          vazao_projeto_lps?: number | null
+        }
+        Update: {
+          ano_inicio_operacao?: number | null
+          codigo?: string
+          created_at?: string
+          eficiencia_dbo_pct?: number | null
+          faixa_dbo?: Database["public"]["Enums"]["faixa_eficiencia_dbo"] | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          municipio_ibge?: string
+          municipio_nome?: string
+          nome?: string
+          observacoes?: string | null
+          operador_id?: string
+          populacao_atendida?: number | null
+          status_operacional?: Database["public"]["Enums"]["status_operacional"]
+          tipologia_id?: string | null
+          uf?: string
+          updated_at?: string
+          vazao_atual_lps?: number | null
+          vazao_projeto_lps?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "etes_curadoria_operador_id_fkey"
+            columns: ["operador_id"]
+            isOneToOne: false
+            referencedRelation: "dim_operador"
+            referencedColumns: ["operador_id"]
+          },
+          {
+            foreignKeyName: "etes_curadoria_operador_id_fkey"
+            columns: ["operador_id"]
+            isOneToOne: false
+            referencedRelation: "operadores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "etes_curadoria_tipologia_id_fkey"
+            columns: ["tipologia_id"]
+            isOneToOne: false
+            referencedRelation: "dim_tipologia"
+            referencedColumns: ["tipologia_id"]
+          },
+          {
+            foreignKeyName: "etes_curadoria_tipologia_id_fkey"
+            columns: ["tipologia_id"]
+            isOneToOne: false
+            referencedRelation: "tipologias_tratamento"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      formulario_respostas: {
+        Row: {
+          ano_referencia: number
+          created_at: string
+          estado: Database["public"]["Enums"]["estado_resposta"]
+          ete_id: string
+          id: string
+          mes_referencia: number
+          motivo_rejeicao: string | null
+          operador_id: string
+          payload: Json
+          reviewed_at: string | null
+          submitted_at: string | null
+          updated_at: string
+          user_revisor: string | null
+          user_submitter: string | null
+        }
+        Insert: {
+          ano_referencia: number
+          created_at?: string
+          estado?: Database["public"]["Enums"]["estado_resposta"]
+          ete_id: string
+          id?: string
+          mes_referencia: number
+          motivo_rejeicao?: string | null
+          operador_id: string
+          payload?: Json
+          reviewed_at?: string | null
+          submitted_at?: string | null
+          updated_at?: string
+          user_revisor?: string | null
+          user_submitter?: string | null
+        }
+        Update: {
+          ano_referencia?: number
+          created_at?: string
+          estado?: Database["public"]["Enums"]["estado_resposta"]
+          ete_id?: string
+          id?: string
+          mes_referencia?: number
+          motivo_rejeicao?: string | null
+          operador_id?: string
+          payload?: Json
+          reviewed_at?: string | null
+          submitted_at?: string | null
+          updated_at?: string
+          user_revisor?: string | null
+          user_submitter?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "formulario_respostas_ete_id_fkey"
+            columns: ["ete_id"]
+            isOneToOne: false
+            referencedRelation: "etes_curadoria"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "formulario_respostas_ete_id_fkey"
+            columns: ["ete_id"]
+            isOneToOne: false
+            referencedRelation: "fato_etes_curadoria"
+            referencedColumns: ["ete_id"]
+          },
+          {
+            foreignKeyName: "formulario_respostas_operador_id_fkey"
+            columns: ["operador_id"]
+            isOneToOne: false
+            referencedRelation: "dim_operador"
+            referencedColumns: ["operador_id"]
+          },
+          {
+            foreignKeyName: "formulario_respostas_operador_id_fkey"
+            columns: ["operador_id"]
+            isOneToOne: false
+            referencedRelation: "operadores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       infracoes: {
         Row: {
           codigo: string
@@ -193,6 +371,138 @@ export type Database = {
             columns: ["entidade_id"]
             isOneToOne: false
             referencedRelation: "entidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operador_municipios: {
+        Row: {
+          created_at: string
+          id: string
+          municipio_ibge: string
+          municipio_nome: string
+          operador_id: string
+          uf: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          municipio_ibge: string
+          municipio_nome: string
+          operador_id: string
+          uf: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          municipio_ibge?: string
+          municipio_nome?: string
+          operador_id?: string
+          uf?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operador_municipios_operador_id_fkey"
+            columns: ["operador_id"]
+            isOneToOne: false
+            referencedRelation: "dim_operador"
+            referencedColumns: ["operador_id"]
+          },
+          {
+            foreignKeyName: "operador_municipios_operador_id_fkey"
+            columns: ["operador_id"]
+            isOneToOne: false
+            referencedRelation: "operadores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operadores: {
+        Row: {
+          ativo: boolean
+          cnpj: string
+          created_at: string
+          email_contato: string | null
+          id: string
+          nome_fantasia: string | null
+          razao_social: string
+          telefone: string | null
+          tipo: Database["public"]["Enums"]["tipo_operador"]
+          uf: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          cnpj: string
+          created_at?: string
+          email_contato?: string | null
+          id?: string
+          nome_fantasia?: string | null
+          razao_social: string
+          telefone?: string | null
+          tipo: Database["public"]["Enums"]["tipo_operador"]
+          uf: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          cnpj?: string
+          created_at?: string
+          email_contato?: string | null
+          id?: string
+          nome_fantasia?: string | null
+          razao_social?: string
+          telefone?: string | null
+          tipo?: Database["public"]["Enums"]["tipo_operador"]
+          uf?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          email: string
+          id: string
+          nome: string
+          operador_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          email: string
+          id?: string
+          nome: string
+          operador_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          email?: string
+          id?: string
+          nome?: string
+          operador_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_operador_fk"
+            columns: ["operador_id"]
+            isOneToOne: false
+            referencedRelation: "dim_operador"
+            referencedColumns: ["operador_id"]
+          },
+          {
+            foreignKeyName: "profiles_operador_fk"
+            columns: ["operador_id"]
+            isOneToOne: false
+            referencedRelation: "operadores"
             referencedColumns: ["id"]
           },
         ]
@@ -282,15 +592,204 @@ export type Database = {
           },
         ]
       }
+      tipologias_tratamento: {
+        Row: {
+          ativo: boolean
+          categoria: string
+          codigo: string
+          descricao: string | null
+          eficiencia_dbo_tipica_max: number | null
+          eficiencia_dbo_tipica_min: number | null
+          id: string
+          nome: string
+        }
+        Insert: {
+          ativo?: boolean
+          categoria: string
+          codigo: string
+          descricao?: string | null
+          eficiencia_dbo_tipica_max?: number | null
+          eficiencia_dbo_tipica_min?: number | null
+          id?: string
+          nome: string
+        }
+        Update: {
+          ativo?: boolean
+          categoria?: string
+          codigo?: string
+          descricao?: string | null
+          eficiencia_dbo_tipica_max?: number | null
+          eficiencia_dbo_tipica_min?: number | null
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      dim_municipio: {
+        Row: {
+          municipio_ibge: string | null
+          municipio_nome: string | null
+          uf: string | null
+        }
+        Relationships: []
+      }
+      dim_operador: {
+        Row: {
+          cnpj: string | null
+          operador_id: string | null
+          razao_social: string | null
+          tipo: Database["public"]["Enums"]["tipo_operador"] | null
+          uf: string | null
+        }
+        Relationships: []
+      }
+      dim_tipologia: {
+        Row: {
+          categoria: string | null
+          codigo: string | null
+          nome: string | null
+          tipologia_id: string | null
+        }
+        Relationships: []
+      }
+      fato_etes_curadoria: {
+        Row: {
+          eficiencia_dbo_pct: number | null
+          ete_id: string | null
+          faixa_dbo: Database["public"]["Enums"]["faixa_eficiencia_dbo"] | null
+          municipio_ibge: string | null
+          operador_id: string | null
+          pct_utilizacao: number | null
+          populacao_atendida: number | null
+          status_operacional:
+            | Database["public"]["Enums"]["status_operacional"]
+            | null
+          tipologia_id: string | null
+          uf: string | null
+          vazao_atual_lps: number | null
+          vazao_projeto_lps: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "etes_curadoria_operador_id_fkey"
+            columns: ["operador_id"]
+            isOneToOne: false
+            referencedRelation: "dim_operador"
+            referencedColumns: ["operador_id"]
+          },
+          {
+            foreignKeyName: "etes_curadoria_operador_id_fkey"
+            columns: ["operador_id"]
+            isOneToOne: false
+            referencedRelation: "operadores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "etes_curadoria_tipologia_id_fkey"
+            columns: ["tipologia_id"]
+            isOneToOne: false
+            referencedRelation: "dim_tipologia"
+            referencedColumns: ["tipologia_id"]
+          },
+          {
+            foreignKeyName: "etes_curadoria_tipologia_id_fkey"
+            columns: ["tipologia_id"]
+            isOneToOne: false
+            referencedRelation: "tipologias_tratamento"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mv_cobertura_municipal: {
+        Row: {
+          eficiencia_media_dbo: number | null
+          municipio_ibge: string | null
+          pop_atendida: number | null
+          qt_ativas: number | null
+          qt_etes: number | null
+          uf: string | null
+        }
+        Relationships: []
+      }
+      mv_dbo_regional: {
+        Row: {
+          eficiencia_media_dbo: number | null
+          qt_alta: number | null
+          qt_baixa: number | null
+          qt_etes: number | null
+          qt_normal: number | null
+          regiao: string | null
+          uf: string | null
+        }
+        Relationships: []
+      }
+      mv_etes_por_tipologia: {
+        Row: {
+          categoria: string | null
+          codigo: string | null
+          eficiencia_media_dbo: number | null
+          nome: string | null
+          qt_etes: number | null
+          uf: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      get_user_operador: { Args: { _user_id: string }; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_staff: { Args: { _user_id: string }; Returns: boolean }
+      refresh_metabase_views: { Args: never; Returns: undefined }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "gestor" | "auditor" | "operador"
+      estado_resposta:
+        | "rascunho"
+        | "submetido"
+        | "em_analise"
+        | "validado"
+        | "rejeitado"
+      faixa_eficiencia_dbo: "baixa" | "normal" | "alta"
+      status_operacional:
+        | "ativa"
+        | "em_construcao_ampliacao"
+        | "inativa_desativada"
+        | "planejada"
+      tipo_operador:
+        | "estadual"
+        | "regional"
+        | "municipal"
+        | "privado"
+        | "autarquia"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -417,6 +916,29 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "gestor", "auditor", "operador"],
+      estado_resposta: [
+        "rascunho",
+        "submetido",
+        "em_analise",
+        "validado",
+        "rejeitado",
+      ],
+      faixa_eficiencia_dbo: ["baixa", "normal", "alta"],
+      status_operacional: [
+        "ativa",
+        "em_construcao_ampliacao",
+        "inativa_desativada",
+        "planejada",
+      ],
+      tipo_operador: [
+        "estadual",
+        "regional",
+        "municipal",
+        "privado",
+        "autarquia",
+      ],
+    },
   },
 } as const

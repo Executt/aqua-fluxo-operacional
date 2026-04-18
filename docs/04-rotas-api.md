@@ -73,15 +73,40 @@ Resposta:
 
 CORS habilitado para `*`. `verify_jwt = false` (default Lovable).
 
-## 3. Edge Functions planejadas
+## 3. Edge Functions — Curadoria (v3.0)
+
+Todas com `verify_jwt = true`. Header `Authorization: Bearer <jwt>` obrigatório.
+
+### `curadoria-submit` — POST
+```json
+{ "ete_id": "uuid", "ano_referencia": 2026, "mes_referencia": 4,
+  "payload": { "eficiencia_dbo_pct": 87.5, "vazao_media_lps": 120, "ph_medio": 7.2 },
+  "estado": "submetido" }
+```
+Upsert em `(ete_id, ano, mes)`. Valida que ETE pertence ao operador do utilizador.
+
+### `curadoria-transition` — POST
+```json
+{ "resposta_id": "uuid", "novo_estado": "em_analise", "motivo_rejeicao": "..." }
+```
+RBAC: `rascunho→submetido` e `rejeitado→rascunho` = operador dono; demais = auditor/gestor/admin.
+
+### `curadoria-bulk-insert` — POST
+```json
+{ "operador_id": "uuid", "respostas": [ /* até 1000 */ ] }
+```
+Retorna `{ inserted, errors[{idx, ete_id, error}] }`. Tolerante a falhas parciais.
+
+## 4. Edge Functions planejadas
 
 | Função | Verbo | Propósito |
 |---|---|---|
-| `iot-ingest` | POST | Receber telemetria de sensores (auth via API key do dispositivo) |
-| `sei-protocolar` | POST | Criar processo SEI a partir de auto de infração |
-| `smtp-test` | POST | Enviar e-mail de teste com credenciais informadas |
+| `iot-ingest` | POST | Telemetria de sensores (auth via API key) |
+| `sei-protocolar` | POST | Criar processo SEI a partir de validação/infração |
+| `smtp-test` | POST | Enviar e-mail de teste |
 | `ldap-sync` | POST | Sincronizar usuários do LDAP/AD |
 | `compliance-recalculate` | POST | Recalcular scores mensais |
+| `metabase-refresh` | POST | Disparar `refresh_metabase_views()` |
 
 ## 4. Convenções
 

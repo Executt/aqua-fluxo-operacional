@@ -66,15 +66,19 @@ sigsan-fed/
 
 ## 3. Mapa de rotas (frontend)
 
-| Rota | Componente | Sub-nav (`?tab=`) |
-|---|---|---|
-| `/` | `Index` | resumo, mapa, alertas |
-| `/iot` | `IoTMonitor` | sensores, leituras, saude |
-| `/compliance` | `Compliance` | scores, infracoes, auditorias |
-| `/entidades` | `Entidades` | lista, novo, etes |
-| `/cortex` | `CortexSan` | (sem sub-nav) |
-| `/admin` | `Administracao` | usuarios, smtp, sei, sso, parametros, auditoria |
-| `*` | `NotFound` | — |
+| Rota | Componente | Proteção | Sub-nav (`?tab=`) |
+|---|---|---|---|
+| `/auth` | `Auth` | pública | login / signup |
+| `/` | `Index` | pública | resumo, mapa, alertas |
+| `/iot` | `IoTMonitor` | pública | sensores, leituras, saude |
+| `/compliance` | `Compliance` | pública | scores, infracoes, auditorias |
+| `/curadoria` | `Curadoria` | **autenticado** | submissoes, validacoes, bulk |
+| `/entidades` | `Entidades` | pública | lista, novo, etes |
+| `/cortex` | `CortexSan` | pública | (sem sub-nav) |
+| `/admin` | `Administracao` | **role=admin** | usuarios, smtp, sei, sso, parametros, auditoria |
+| `*` | `NotFound` | — | — |
+
+Proteção via `<ProtectedRoute requireRoles={...}>` (`src/components/ProtectedRoute.tsx`). Auth state em `AuthContext` (`src/contexts/AuthContext.tsx`).
 
 ## 4. Camadas
 

@@ -70,7 +70,29 @@
 | F-509 | Persistência em `system_settings` + secrets | 🔵 |
 | F-510 | Auth real (Keycloak + LDAP bridge) | 🔵 |
 
-## 7. Plataforma / Infra
+## 7. Curadoria Nacional (`/curadoria`) — v3.0
+
+| ID | Função | Status |
+|---|---|---|
+| F-601 | Auth email/senha (signup + verificação obrigatória + login) | ✅ |
+| F-602 | RBAC 4 perfis (admin, gestor, auditor, operador) | ✅ |
+| F-603 | Operadores (concessionárias/autarquias) com tipo+UF | ✅ |
+| F-604 | Vínculo operador ↔ N municípios IBGE | ✅ |
+| F-605 | Tipologias de tratamento (10 pré-cadastradas) | ✅ |
+| F-606 | ETEs sob curadoria com status operacional | ✅ |
+| F-607 | Categorização automática DBO (baixa/normal/alta) | ✅ |
+| F-608 | Submissão mensal (formulário JSONB) | ✅ |
+| F-609 | State machine RASCUNHO→SUBMETIDO→EM_ANALISE→VALIDADO/REJEITADO | ✅ |
+| F-610 | Validação/rejeição com motivo (auditor/gestor/admin) | ✅ |
+| F-611 | Bulk insert até 1000 respostas (Edge Function) | ✅ |
+| F-612 | Star schema (dim/fato/MVs) para Metabase | ✅ |
+| F-613 | Função `refresh_metabase_views()` SECURITY DEFINER | ✅ |
+| F-614 | UI `/curadoria` com KPIs + formulário + lista | ✅ |
+| F-615 | Importação CSV pela UI | 🔵 |
+| F-616 | Cron `pg_cron` para refresh automático | 🔵 |
+| F-617 | Histórico de transições (`formulario_respostas_log`) | 🔵 |
+
+## 8. Plataforma / Infra
 
 | ID | Função | Status |
 |---|---|---|
@@ -85,7 +107,7 @@
 
 | Status | Qtd |
 |---|---:|
-| ✅ Implementado | 18 |
+| ✅ Implementado | 32 |
 | 🟡 UI / mock | 16 |
-| 🔵 Planejado | 16 |
-| **Total catalogado** | **50** |
+| 🔵 Planejado | 19 |
+| **Total catalogado** | **67** |

@@ -1,1 +1,13 @@
 project_id = "ckedcsipyoxssqgqmide"
+
+[functions.cortex-chat]
+verify_jwt = false
+
+[functions.curadoria-submit]
+verify_jwt = true
+
+[functions.curadoria-transition]
+verify_jwt = true
+
+[functions.curadoria-bulk-insert]
+verify_jwt = true
