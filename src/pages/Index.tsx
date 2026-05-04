@@ -3,6 +3,7 @@ import { KpiCards } from "@/components/dashboard/KpiCards";
 import { BrazilMap } from "@/components/dashboard/BrazilMap";
 import { ComplianceChart } from "@/components/dashboard/ComplianceChart";
 import { AlertsTable } from "@/components/dashboard/AlertsTable";
+import { MetabaseRefreshPanel } from "@/components/dashboard/MetabaseRefreshPanel";
 import { Button } from "@/components/ui/button";
 import { FileText, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
@@ -60,6 +61,11 @@ const Index = () => {
           <div className="lg:col-span-2">
             <ComplianceChart />
           </div>
+        </motion.div>
+
+        {/* Metabase refresh status */}
+        <motion.div variants={fadeUp}>
+          <MetabaseRefreshPanel />
         </motion.div>
 
         {/* Alerts Table */}
