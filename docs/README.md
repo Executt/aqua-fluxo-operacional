@@ -11,5 +11,6 @@
 | 07 | [Inventário de Funções](./07-inventario-funcoes.md) |
 | 08 | [Regras de Negócio](./08-regras-de-negocio.md) |
 | 09 | [Segurança](./09-seguranca.md) |
+| 10 | [Módulo Curadoria Nacional](./10-modulo-curadoria.md) |
 
 Voltar ao [README principal](../README.md).
