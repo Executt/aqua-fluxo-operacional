@@ -759,6 +759,7 @@ export type Database = {
       }
     }
     Functions: {
+      get_metabase_refresh_status: { Args: never; Returns: Json }
       get_user_operador: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
