@@ -152,8 +152,12 @@ export function MetabaseRefreshPanel() {
             <Select
               value={String(thresholdMin)}
               onValueChange={(v) => updateThreshold(Number(v))}
+              disabled={savingThreshold}
             >
-              <SelectTrigger className="h-8 w-[110px] text-[12px]">
+              <SelectTrigger className="h-8 w-[110px] text-[12px]" disabled={savingThreshold}>
+                {savingThreshold && (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground mr-1" />
+                )}
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
