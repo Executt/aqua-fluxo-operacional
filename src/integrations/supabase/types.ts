@@ -465,6 +465,7 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          metabase_overdue_threshold_min: number
           nome: string
           operador_id: string | null
           updated_at: string
@@ -475,6 +476,7 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          metabase_overdue_threshold_min?: number
           nome: string
           operador_id?: string | null
           updated_at?: string
@@ -485,6 +487,7 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          metabase_overdue_threshold_min?: number
           nome?: string
           operador_id?: string | null
           updated_at?: string
