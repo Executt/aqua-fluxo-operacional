@@ -33,7 +33,6 @@ type Status = {
 };
 
 const THRESHOLD_OPTIONS = [10, 20, 30, 45, 60] as const;
-const STORAGE_KEY = "metabase-refresh-overdue-threshold-min";
 const DEFAULT_THRESHOLD = 20;
 
 function formatAge(s: number | null | undefined) {
