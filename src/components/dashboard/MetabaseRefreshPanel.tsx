@@ -45,20 +45,45 @@ function formatAge(s: number | null | undefined) {
 export function MetabaseRefreshPanel() {
   const [status, setStatus] = useState<Status | null>(null);
   const [loading, setLoading] = useState(false);
-  const [thresholdMin, setThresholdMin] = useState<number>(() => {
-    if (typeof window === "undefined") return DEFAULT_THRESHOLD;
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    const n = raw ? Number(raw) : NaN;
-    return Number.isFinite(n) && n > 0 ? n : DEFAULT_THRESHOLD;
-  });
+  const [thresholdMin, setThresholdMin] = useState<number>(DEFAULT_THRESHOLD);
+  const [savingThreshold, setSavingThreshold] = useState(false);
 
+  // Carrega preferência do perfil do utilizador autenticado.
   useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      const uid = auth.user?.id;
+      if (!uid) return;
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("metabase_overdue_threshold_min")
+        .eq("user_id", uid)
+        .maybeSingle();
+      if (!cancelled && !error && data?.metabase_overdue_threshold_min) {
+        setThresholdMin(data.metabase_overdue_threshold_min);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const updateThreshold = async (next: number) => {
+    setThresholdMin(next);
+    setSavingThreshold(true);
     try {
-      window.localStorage.setItem(STORAGE_KEY, String(thresholdMin));
-    } catch {
-      /* ignore */
+      const { data: auth } = await supabase.auth.getUser();
+      const uid = auth.user?.id;
+      if (!uid) return;
+      await supabase
+        .from("profiles")
+        .update({ metabase_overdue_threshold_min: next })
+        .eq("user_id", uid);
+    } finally {
+      setSavingThreshold(false);
     }
-  }, [thresholdMin]);
+  };
 
   const load = async () => {
     setLoading(true);
