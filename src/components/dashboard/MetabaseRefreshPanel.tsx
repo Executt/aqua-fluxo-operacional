@@ -9,7 +9,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Database, RefreshCw, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
+import {
+  Database,
+  RefreshCw,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Loader2,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -145,8 +152,12 @@ export function MetabaseRefreshPanel() {
             <Select
               value={String(thresholdMin)}
               onValueChange={(v) => updateThreshold(Number(v))}
+              disabled={savingThreshold}
             >
-              <SelectTrigger className="h-8 w-[110px] text-[12px]">
+              <SelectTrigger className="h-8 w-[110px] text-[12px]" disabled={savingThreshold}>
+                {savingThreshold && (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground mr-1" />
+                )}
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -170,8 +181,11 @@ export function MetabaseRefreshPanel() {
         <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
           Limite de atraso
         </span>
-        <Select value={String(thresholdMin)} onValueChange={(v) => updateThreshold(Number(v))}>
-          <SelectTrigger className="h-8 w-[120px] text-[12px]">
+        <Select value={String(thresholdMin)} onValueChange={(v) => updateThreshold(Number(v))} disabled={savingThreshold}>
+          <SelectTrigger className="h-8 w-[120px] text-[12px]" disabled={savingThreshold}>
+            {savingThreshold && (
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground mr-1" />
+            )}
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
