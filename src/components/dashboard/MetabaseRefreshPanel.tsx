@@ -9,7 +9,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Database, RefreshCw, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
+import {
+  Database,
+  RefreshCw,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Loader2,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
