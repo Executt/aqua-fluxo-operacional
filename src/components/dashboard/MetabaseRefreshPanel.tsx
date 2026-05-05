@@ -33,7 +33,6 @@ type Status = {
 };
 
 const THRESHOLD_OPTIONS = [10, 20, 30, 45, 60] as const;
-const STORAGE_KEY = "metabase-refresh-overdue-threshold-min";
 const DEFAULT_THRESHOLD = 20;
 
 function formatAge(s: number | null | undefined) {
@@ -46,20 +45,45 @@ function formatAge(s: number | null | undefined) {
 export function MetabaseRefreshPanel() {
   const [status, setStatus] = useState<Status | null>(null);
   const [loading, setLoading] = useState(false);
-  const [thresholdMin, setThresholdMin] = useState<number>(() => {
-    if (typeof window === "undefined") return DEFAULT_THRESHOLD;
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    const n = raw ? Number(raw) : NaN;
-    return Number.isFinite(n) && n > 0 ? n : DEFAULT_THRESHOLD;
-  });
+  const [thresholdMin, setThresholdMin] = useState<number>(DEFAULT_THRESHOLD);
+  const [savingThreshold, setSavingThreshold] = useState(false);
 
+  // Carrega preferência do perfil do utilizador autenticado.
   useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      const uid = auth.user?.id;
+      if (!uid) return;
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("metabase_overdue_threshold_min")
+        .eq("user_id", uid)
+        .maybeSingle();
+      if (!cancelled && !error && data?.metabase_overdue_threshold_min) {
+        setThresholdMin(data.metabase_overdue_threshold_min);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const updateThreshold = async (next: number) => {
+    setThresholdMin(next);
+    setSavingThreshold(true);
     try {
-      window.localStorage.setItem(STORAGE_KEY, String(thresholdMin));
-    } catch {
-      /* ignore */
+      const { data: auth } = await supabase.auth.getUser();
+      const uid = auth.user?.id;
+      if (!uid) return;
+      await supabase
+        .from("profiles")
+        .update({ metabase_overdue_threshold_min: next })
+        .eq("user_id", uid);
+    } finally {
+      setSavingThreshold(false);
     }
-  }, [thresholdMin]);
+  };
 
   const load = async () => {
     setLoading(true);
@@ -120,7 +144,7 @@ export function MetabaseRefreshPanel() {
             </span>
             <Select
               value={String(thresholdMin)}
-              onValueChange={(v) => setThresholdMin(Number(v))}
+              onValueChange={(v) => updateThreshold(Number(v))}
             >
               <SelectTrigger className="h-8 w-[110px] text-[12px]">
                 <SelectValue />
@@ -134,7 +158,7 @@ export function MetabaseRefreshPanel() {
               </SelectContent>
             </Select>
           </div>
-          <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+          <Button variant="outline" size="sm" onClick={load} disabled={loading || savingThreshold}>
             <RefreshCw className={cn("h-3.5 w-3.5 mr-1.5", loading && "animate-spin")} />
             Atualizar
           </Button>
@@ -146,7 +170,7 @@ export function MetabaseRefreshPanel() {
         <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
           Limite de atraso
         </span>
-        <Select value={String(thresholdMin)} onValueChange={(v) => setThresholdMin(Number(v))}>
+        <Select value={String(thresholdMin)} onValueChange={(v) => updateThreshold(Number(v))}>
           <SelectTrigger className="h-8 w-[120px] text-[12px]">
             <SelectValue />
           </SelectTrigger>
