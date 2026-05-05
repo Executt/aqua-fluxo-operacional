@@ -85,10 +85,16 @@ export function MetabaseRefreshPanel() {
       const { data: auth } = await supabase.auth.getUser();
       const uid = auth.user?.id;
       if (!uid) return;
-      await supabase
+      const { error } = await supabase
         .from("profiles")
         .update({ metabase_overdue_threshold_min: next })
         .eq("user_id", uid);
+      if (!error) {
+        toast({
+          title: "Limite atualizado",
+          description: `Atraso definido para ${next} minutos.`,
+        });
+      }
     } finally {
       setSavingThreshold(false);
     }
