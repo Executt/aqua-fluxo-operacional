@@ -1,7 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Database, RefreshCw, AlertTriangle, CheckCircle2, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -25,6 +32,10 @@ type Status = {
   is_failing?: boolean;
 };
 
+const THRESHOLD_OPTIONS = [10, 20, 30, 45, 60] as const;
+const STORAGE_KEY = "metabase-refresh-overdue-threshold-min";
+const DEFAULT_THRESHOLD = 20;
+
 function formatAge(s: number | null | undefined) {
   if (s == null) return "—";
   if (s < 60) return `${s}s`;
@@ -35,6 +46,20 @@ function formatAge(s: number | null | undefined) {
 export function MetabaseRefreshPanel() {
   const [status, setStatus] = useState<Status | null>(null);
   const [loading, setLoading] = useState(false);
+  const [thresholdMin, setThresholdMin] = useState<number>(() => {
+    if (typeof window === "undefined") return DEFAULT_THRESHOLD;
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const n = raw ? Number(raw) : NaN;
+    return Number.isFinite(n) && n > 0 ? n : DEFAULT_THRESHOLD;
+  });
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, String(thresholdMin));
+    } catch {
+      /* ignore */
+    }
+  }, [thresholdMin]);
 
   const load = async () => {
     setLoading(true);
@@ -55,9 +80,15 @@ export function MetabaseRefreshPanel() {
     return () => clearInterval(id);
   }, []);
 
-  const failing = status?.is_failing;
-  const overdue = status?.is_overdue;
-  const healthy = status?.scheduled && !failing && !overdue;
+  // Cálculo client-side do "Atrasado" usando o limite configurável.
+  const overdue = useMemo(() => {
+    const s = status?.seconds_since_last_success;
+    if (s == null) return false;
+    return s > thresholdMin * 60;
+  }, [status, thresholdMin]);
+
+  const failing = !!status?.is_failing;
+  const healthy = !!status?.scheduled && !failing && !overdue;
 
   const stateColor = failing
     ? "bg-destructive/10 text-destructive border-destructive/30"
@@ -82,10 +113,51 @@ export function MetabaseRefreshPanel() {
             </p>
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={load} disabled={loading} className="shrink-0">
-          <RefreshCw className={cn("h-3.5 w-3.5 mr-1.5", loading && "animate-spin")} />
-          Atualizar
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="hidden sm:flex items-center gap-2">
+            <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+              Limite de atraso
+            </span>
+            <Select
+              value={String(thresholdMin)}
+              onValueChange={(v) => setThresholdMin(Number(v))}
+            >
+              <SelectTrigger className="h-8 w-[110px] text-[12px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {THRESHOLD_OPTIONS.map((m) => (
+                  <SelectItem key={m} value={String(m)} className="text-[12px]">
+                    {m} minutos
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+            <RefreshCw className={cn("h-3.5 w-3.5 mr-1.5", loading && "animate-spin")} />
+            Atualizar
+          </Button>
+        </div>
+      </div>
+
+      {/* Seletor mobile */}
+      <div className="sm:hidden mt-3 flex items-center gap-2">
+        <span className="text-[11px] uppercase tracking-wide text-muted-foreground">
+          Limite de atraso
+        </span>
+        <Select value={String(thresholdMin)} onValueChange={(v) => setThresholdMin(Number(v))}>
+          <SelectTrigger className="h-8 w-[120px] text-[12px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {THRESHOLD_OPTIONS.map((m) => (
+              <SelectItem key={m} value={String(m)} className="text-[12px]">
+                {m} minutos
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -95,6 +167,9 @@ export function MetabaseRefreshPanel() {
             <StateIcon className="h-3 w-3" />
             {failing ? "Falhando" : overdue ? "Atrasado" : healthy ? "Saudável" : "Desconhecido"}
           </Badge>
+          <div className="text-[11px] text-muted-foreground mt-1">
+            Limite: {thresholdMin} min
+          </div>
         </div>
 
         <div className="rounded-md border border-border bg-card p-3">
@@ -142,7 +217,7 @@ export function MetabaseRefreshPanel() {
                 ? "O job pg_cron falhou na última execução."
                 : status?.message
                   ? "Não foi possível ler o estado do pg_cron."
-                  : "Refresh atrasado — o último sucesso foi há mais de 20 minutos."}
+                  : `Refresh atrasado — o último sucesso foi há mais de ${thresholdMin} minutos.`}
             </div>
             {status?.last_run?.return_message && (
               <div className="font-mono text-[12px] mt-1 break-words opacity-80">
