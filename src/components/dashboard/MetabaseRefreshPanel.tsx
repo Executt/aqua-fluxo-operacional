@@ -55,6 +55,7 @@ export function MetabaseRefreshPanel() {
   const [loading, setLoading] = useState(false);
   const [thresholdMin, setThresholdMin] = useState<number>(DEFAULT_THRESHOLD);
   const [savingThreshold, setSavingThreshold] = useState(false);
+  const { toast } = useToast();
 
   // Carrega preferência do perfil do utilizador autenticado.
   useEffect(() => {
