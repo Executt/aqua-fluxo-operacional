@@ -18,6 +18,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 type Run = {
@@ -54,6 +55,7 @@ export function MetabaseRefreshPanel() {
   const [loading, setLoading] = useState(false);
   const [thresholdMin, setThresholdMin] = useState<number>(DEFAULT_THRESHOLD);
   const [savingThreshold, setSavingThreshold] = useState(false);
+  const { toast } = useToast();
 
   // Carrega preferência do perfil do utilizador autenticado.
   useEffect(() => {
@@ -83,10 +85,16 @@ export function MetabaseRefreshPanel() {
       const { data: auth } = await supabase.auth.getUser();
       const uid = auth.user?.id;
       if (!uid) return;
-      await supabase
+      const { error } = await supabase
         .from("profiles")
         .update({ metabase_overdue_threshold_min: next })
         .eq("user_id", uid);
+      if (!error) {
+        toast({
+          title: "Limite atualizado",
+          description: `Atraso definido para ${next} minutos.`,
+        });
+      }
     } finally {
       setSavingThreshold(false);
     }
