@@ -54,6 +54,7 @@ export function MetabaseRefreshPanel() {
   const [status, setStatus] = useState<Status | null>(null);
   const [loading, setLoading] = useState(false);
   const [thresholdMin, setThresholdMin] = useState<number>(DEFAULT_THRESHOLD);
+  const [draftThreshold, setDraftThreshold] = useState<number>(DEFAULT_THRESHOLD);
   const [savingThreshold, setSavingThreshold] = useState(false);
   const { toast } = useToast();
 
