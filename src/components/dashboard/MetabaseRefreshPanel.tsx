@@ -72,6 +72,7 @@ export function MetabaseRefreshPanel() {
         .maybeSingle();
       if (!cancelled && !error && data?.metabase_overdue_threshold_min) {
         setThresholdMin(data.metabase_overdue_threshold_min);
+        setDraftThreshold(data.metabase_overdue_threshold_min);
       }
     })();
     return () => {
