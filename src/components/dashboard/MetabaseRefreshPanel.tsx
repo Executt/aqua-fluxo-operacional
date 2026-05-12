@@ -97,6 +97,12 @@ export function MetabaseRefreshPanel() {
           title: "Limite atualizado",
           description: `Atraso definido para ${next} minutos. Status atual: ${isOverdue ? "Atrasado" : "Saudável"} (${ageText} desde o último sucesso).`,
         });
+      } else {
+        toast({
+          title: "Erro ao atualizar",
+          description: "Não foi possível gravar o novo limite de atraso no seu perfil. Tente novamente.",
+          variant: "destructive",
+        });
       }
     } finally {
       setSavingThreshold(false);
