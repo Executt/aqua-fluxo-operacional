@@ -90,9 +90,11 @@ export function MetabaseRefreshPanel() {
         .update({ metabase_overdue_threshold_min: next })
         .eq("user_id", uid);
       if (!error) {
+        const seconds = status?.seconds_since_last_success ?? null;
+        const isOverdue = seconds != null && seconds > next * 60;
         toast({
           title: "Limite atualizado",
-          description: `Atraso definido para ${next} minutos.`,
+          description: `Atraso definido para ${next} minutos. Status atual: ${isOverdue ? "Atrasado" : "Saudável"}.`,
         });
       }
     } finally {
