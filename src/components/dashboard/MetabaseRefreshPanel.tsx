@@ -92,9 +92,10 @@ export function MetabaseRefreshPanel() {
       if (!error) {
         const seconds = status?.seconds_since_last_success ?? null;
         const isOverdue = seconds != null && seconds > next * 60;
+        const ageText = formatAge(seconds);
         toast({
           title: "Limite atualizado",
-          description: `Atraso definido para ${next} minutos. Status atual: ${isOverdue ? "Atrasado" : "Saudável"}.`,
+          description: `Atraso definido para ${next} minutos. Status atual: ${isOverdue ? "Atrasado" : "Saudável"} (${ageText} desde o último sucesso).`,
         });
       }
     } finally {
