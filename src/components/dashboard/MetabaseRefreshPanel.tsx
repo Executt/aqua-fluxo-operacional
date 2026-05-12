@@ -169,8 +169,8 @@ export function MetabaseRefreshPanel() {
               Limite de atraso
             </span>
             <Select
-              value={String(thresholdMin)}
-              onValueChange={(v) => updateThreshold(Number(v))}
+              value={String(draftThreshold)}
+              onValueChange={(v) => setDraftThreshold(Number(v))}
               disabled={savingThreshold}
             >
               <SelectTrigger className="h-8 w-[110px] text-[12px]" disabled={savingThreshold}>
@@ -187,6 +187,17 @@ export function MetabaseRefreshPanel() {
                 ))}
               </SelectContent>
             </Select>
+            <Button
+              size="sm"
+              className="h-8 text-[12px]"
+              disabled={savingThreshold || draftThreshold === thresholdMin}
+              onClick={() => updateThreshold(draftThreshold)}
+            >
+              {savingThreshold ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+              ) : null}
+              Salvar
+            </Button>
           </div>
           <Button variant="outline" size="sm" onClick={load} disabled={loading || savingThreshold}>
             <RefreshCw className={cn("h-3.5 w-3.5 mr-1.5", loading && "animate-spin")} />
