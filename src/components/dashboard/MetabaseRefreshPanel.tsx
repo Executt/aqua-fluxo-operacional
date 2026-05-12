@@ -81,7 +81,6 @@ export function MetabaseRefreshPanel() {
   }, []);
 
   const updateThreshold = async (next: number) => {
-    setThresholdMin(next);
     setSavingThreshold(true);
     try {
       const { data: auth } = await supabase.auth.getUser();
@@ -92,6 +91,7 @@ export function MetabaseRefreshPanel() {
         .update({ metabase_overdue_threshold_min: next })
         .eq("user_id", uid);
       if (!error) {
+        setThresholdMin(next);
         const seconds = status?.seconds_since_last_success ?? null;
         const isOverdue = seconds != null && seconds > next * 60;
         const ageText = formatAge(seconds);
