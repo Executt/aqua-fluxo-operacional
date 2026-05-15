@@ -242,6 +242,9 @@ export function MetabaseRefreshPanel() {
           {savingThreshold ? "A gravar…" : "Salvar"}
         </Button>
       </div>
+      {savingThreshold && (
+        <Skeleton className="h-1.5 w-full mt-2 sm:hidden rounded-full" />
+      )}
 
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="rounded-md border border-border bg-card p-3">
