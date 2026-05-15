@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -196,9 +197,12 @@ export function MetabaseRefreshPanel() {
               {savingThreshold ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
               ) : null}
-              {savingThreshold ? "A gravar…" : "Salvar"}
+            {savingThreshold ? "A gravar…" : "Salvar"}
             </Button>
           </div>
+          {savingThreshold && (
+            <Skeleton className="h-1.5 w-full mt-2 hidden sm:block rounded-full" />
+          )}
           <Button variant="outline" size="sm" onClick={load} disabled={loading || savingThreshold}>
             <RefreshCw className={cn("h-3.5 w-3.5 mr-1.5", loading && "animate-spin")} />
             Atualizar
@@ -238,6 +242,9 @@ export function MetabaseRefreshPanel() {
           {savingThreshold ? "A gravar…" : "Salvar"}
         </Button>
       </div>
+      {savingThreshold && (
+        <Skeleton className="h-1.5 w-full mt-2 sm:hidden rounded-full" />
+      )}
 
       <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="rounded-md border border-border bg-card p-3">
