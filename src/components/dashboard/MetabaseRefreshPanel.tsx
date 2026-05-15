@@ -197,9 +197,12 @@ export function MetabaseRefreshPanel() {
               {savingThreshold ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
               ) : null}
-              {savingThreshold ? "A gravar…" : "Salvar"}
+            {savingThreshold ? "A gravar…" : "Salvar"}
             </Button>
           </div>
+          {savingThreshold && (
+            <Skeleton className="h-1.5 w-full mt-2 hidden sm:block rounded-full" />
+          )}
           <Button variant="outline" size="sm" onClick={load} disabled={loading || savingThreshold}>
             <RefreshCw className={cn("h-3.5 w-3.5 mr-1.5", loading && "animate-spin")} />
             Atualizar
