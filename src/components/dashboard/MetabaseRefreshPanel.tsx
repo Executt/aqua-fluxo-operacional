@@ -196,7 +196,7 @@ export function MetabaseRefreshPanel() {
               {savingThreshold ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
               ) : null}
-              Salvar
+              {savingThreshold ? "A gravar…" : "Salvar"}
             </Button>
           </div>
           <Button variant="outline" size="sm" onClick={load} disabled={loading || savingThreshold}>
@@ -235,7 +235,7 @@ export function MetabaseRefreshPanel() {
           {savingThreshold ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
           ) : null}
-          Salvar
+          {savingThreshold ? "A gravar…" : "Salvar"}
         </Button>
       </div>
 
