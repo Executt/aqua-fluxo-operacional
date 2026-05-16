@@ -18,19 +18,25 @@ import {
 } from "@/components/ui/select";
 import {
   Shield, Settings as SettingsIcon, Server, Mail, FileSignature, KeyRound,
-  Users as UsersIcon, History, Plus, RefreshCw, Check, Search,
+  Users as UsersIcon, History, Plus, RefreshCw, Check, Search, Brain, Plug, BookOpen,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { LLMConfig } from "@/components/admin/LLMConfig";
+import { MCPConfig } from "@/components/admin/MCPConfig";
+import { KnowledgeBaseConfig } from "@/components/admin/KnowledgeBaseConfig";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
   show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
 
-type TabKey = "usuarios" | "smtp" | "sei" | "sso" | "parametros" | "auditoria";
+type TabKey = "usuarios" | "smtp" | "sei" | "sso" | "parametros" | "auditoria" | "llm" | "mcp" | "kb";
 
 const TAB_META: Record<TabKey, { label: string; icon: typeof UsersIcon; desc: string }> = {
   usuarios: { label: "Usuários & LDAP", icon: UsersIcon, desc: "Cadastro local e diretório LDAP/AD" },
+  llm: { label: "Modelos de LLM", icon: Brain, desc: "Catálogo de modelos de IA disponíveis" },
+  mcp: { label: "Servidores MCP", icon: Plug, desc: "Conectores Model Context Protocol" },
+  kb: { label: "Base de conhecimento", icon: BookOpen, desc: "Artigos e contexto para os agentes" },
   smtp: { label: "SMTP / E-mail", icon: Mail, desc: "Servidor de envio de notificações" },
   sei: { label: "Integração SEI", icon: FileSignature, desc: "Sistema Eletrônico de Informações" },
   sso: { label: "SSO / Keycloak", icon: KeyRound, desc: "Autenticação federada OIDC" },
