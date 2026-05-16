@@ -99,6 +99,9 @@ const Administracao = () => {
         {/* Content */}
         <motion.div variants={fadeUp} initial="hidden" animate="show" className="grid gap-6 lg:grid-cols-3">
           {tab === "usuarios" && <UsuariosLDAP onSave={handleSave} onTest={handleTest} />}
+          {tab === "llm" && <LLMConfig />}
+          {tab === "mcp" && <MCPConfig />}
+          {tab === "kb" && <KnowledgeBaseConfig />}
           {tab === "smtp" && <SMTPConfig onSave={handleSave} onTest={handleTest} />}
           {tab === "sei" && <SEIConfig onSave={handleSave} onTest={handleTest} />}
           {tab === "sso" && <SSOConfig onSave={handleSave} onTest={handleTest} />}
