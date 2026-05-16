@@ -53,6 +53,9 @@ const subNav: Record<string, { title: string; url: string }[]> = {
   ],
   "/admin": [
     { title: "Usuários & LDAP", url: "/admin?tab=usuarios" },
+    { title: "Modelos de LLM", url: "/admin?tab=llm" },
+    { title: "Servidores MCP", url: "/admin?tab=mcp" },
+    { title: "Base de conhecimento", url: "/admin?tab=kb" },
     { title: "SMTP", url: "/admin?tab=smtp" },
     { title: "SEI", url: "/admin?tab=sei" },
     { title: "SSO / Keycloak", url: "/admin?tab=sso" },
