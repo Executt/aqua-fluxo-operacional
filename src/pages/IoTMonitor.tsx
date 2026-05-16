@@ -20,7 +20,7 @@ import {
   CheckCircle2, Clock, RefreshCw, Gauge, Zap,
 } from "lucide-react";
 import { CHART_COLORS, CHART_GRID, CHART_TICK } from "@/lib/chart-colors";
-import { useSensores } from "@/hooks/use-sigsan-data";
+import { useSensores, useSensorTimeSeries } from "@/hooks/use-sigsan-data";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const fadeUp = {
@@ -28,15 +28,6 @@ const fadeUp = {
   show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
-
-const sensorTimeSeries = Array.from({ length: 24 }, (_, i) => ({
-  hora: `${String(i).padStart(2, "0")}:00`,
-  ph: +(6.5 + Math.random() * 2.5).toFixed(1),
-  turbidez: +(8 + Math.random() * 35).toFixed(1),
-  dbo: +(15 + Math.random() * 50).toFixed(1),
-  cloro: +(0.1 + Math.random() * 0.8).toFixed(2),
-  temperatura: +(20 + Math.random() * 12).toFixed(1),
-}));
 
 const statusColor: Record<string, string> = {
   normal: "bg-success/15 text-success border-success/30",
@@ -68,6 +59,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 const IoTMonitor = () => {
   const { data: sensores, isLoading } = useSensores();
+  const { data: sensorTimeSeries = [] } = useSensorTimeSeries(24);
   const [selectedEte, setSelectedEte] = useState("all");
   const [selectedParam, setSelectedParam] = useState("turbidez");
 
