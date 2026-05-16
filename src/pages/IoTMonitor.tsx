@@ -59,6 +59,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 const IoTMonitor = () => {
   const { data: sensores, isLoading } = useSensores();
+  const { data: sensorTimeSeries = [] } = useSensorTimeSeries(24);
   const [selectedEte, setSelectedEte] = useState("all");
   const [selectedParam, setSelectedParam] = useState("turbidez");
 
