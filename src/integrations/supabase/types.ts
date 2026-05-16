@@ -375,6 +375,123 @@ export type Database = {
           },
         ]
       }
+      knowledge_base: {
+        Row: {
+          active: boolean
+          author_user_id: string | null
+          category: string
+          content: string
+          created_at: string
+          id: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          author_user_id?: string | null
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          author_user_id?: string | null
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      llm_models: {
+        Row: {
+          active: boolean
+          capabilities: string[] | null
+          context_window: number | null
+          created_at: string
+          description: string | null
+          display_name: string
+          id: string
+          model_id: string
+          provider: string
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          capabilities?: string[] | null
+          context_window?: number | null
+          created_at?: string
+          description?: string | null
+          display_name: string
+          id?: string
+          model_id: string
+          provider: string
+          tier?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          capabilities?: string[] | null
+          context_window?: number | null
+          created_at?: string
+          description?: string | null
+          display_name?: string
+          id?: string
+          model_id?: string
+          provider?: string
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      mcp_servers: {
+        Row: {
+          active: boolean
+          auth_config: Json | null
+          auth_type: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          transport: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          active?: boolean
+          auth_config?: Json | null
+          auth_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          transport?: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          active?: boolean
+          auth_config?: Json | null
+          auth_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          transport?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       operador_municipios: {
         Row: {
           created_at: string
