@@ -219,6 +219,48 @@ const CortexSan = () => {
     mcpEnabled: false,
   });
 
+  // ── Active LLMs from admin DB ────────────────────────
+  const { data: activeLlms = [] } = useQuery({
+    queryKey: ["llm_models_active"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("llm_models")
+        .select("model_id, display_name, tier, is_default, active")
+        .eq("active", true)
+        .order("is_default", { ascending: false })
+        .order("tier")
+        .order("display_name");
+      if (error) throw error;
+      return data as { model_id: string; display_name: string; tier: string; is_default: boolean }[];
+    },
+  });
+
+  const PROVIDER_MODELS = useMemo(() => ({
+    lovable: {
+      label: "Lovable AI",
+      models: activeLlms.length
+        ? activeLlms.map((m) => ({
+            value: m.model_id,
+            label: `${m.display_name}${m.is_default ? " ★" : ""}`,
+          }))
+        : [{ value: "google/gemini-3-flash-preview", label: "Gemini 3 Flash" }],
+    },
+    ...STATIC_PROVIDER_MODELS,
+  }), [activeLlms]);
+
+  // Sync default model from admin selection on first load
+  useEffect(() => {
+    if (aiConfig.provider !== "lovable") return;
+    const def = activeLlms.find((m) => m.is_default);
+    if (def && aiConfig.model !== def.model_id) {
+      // Only auto-apply if user hasn't picked a model from the current active set
+      const userPicked = activeLlms.some((m) => m.model_id === aiConfig.model);
+      if (!userPicked) {
+        setAiConfig((prev) => ({ ...prev, model: def.model_id }));
+      }
+    }
+  }, [activeLlms, aiConfig.provider, aiConfig.model]);
+
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
