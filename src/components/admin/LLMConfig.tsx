@@ -17,7 +17,7 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
-import { Brain, Plus, Trash2, Sparkles, DollarSign, Gift } from "lucide-react";
+import { Brain, Plus, Trash2, Sparkles, DollarSign, Gift, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type LLMModel = {
@@ -30,6 +30,7 @@ type LLMModel = {
   description: string | null;
   capabilities: string[];
   active: boolean;
+  is_default: boolean;
 };
 
 const tierMeta: Record<string, { label: string; icon: any; cls: string }> = {

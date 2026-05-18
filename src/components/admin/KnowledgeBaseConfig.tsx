@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -14,7 +14,7 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
-import { BookOpen, Plus, Trash2, Tag, Edit3 } from "lucide-react";
+import { BookOpen, Plus, Trash2, Tag, Edit3, Search, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type KBItem = {
@@ -44,6 +44,11 @@ export function KnowledgeBaseConfig() {
     category: "geral", active: true, tagsText: "",
   });
 
+  // ── Filters ──────────────────────────────────────────
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["knowledge_base"],
     queryFn: async () => {
@@ -53,6 +58,37 @@ export function KnowledgeBaseConfig() {
       return data as KBItem[];
     },
   });
+
+  // Derived: all unique tags + category counts
+  const allTags = useMemo(() => {
+    const set = new Set<string>();
+    items.forEach((it) => it.tags?.forEach((t) => set.add(t)));
+    return Array.from(set).sort();
+  }, [items]);
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    items.forEach((it) => { counts[it.category] = (counts[it.category] || 0) + 1; });
+    return counts;
+  }, [items]);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return items.filter((it) => {
+      if (categoryFilter !== "all" && it.category !== categoryFilter) return false;
+      if (selectedTags.length && !selectedTags.every((t) => it.tags?.includes(t))) return false;
+      if (q) {
+        const hay = `${it.title} ${it.content} ${(it.tags || []).join(" ")}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [items, search, categoryFilter, selectedTags]);
+
+  const toggleTag = (t: string) =>
+    setSelectedTags((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]);
+
+  const clearFilters = () => { setSearch(""); setCategoryFilter("all"); setSelectedTags([]); };
 
   const openNew = () => {
     setEditing(null);
@@ -105,6 +141,9 @@ export function KnowledgeBaseConfig() {
     onError: (e: any) => toast({ title: "Erro", description: e.message, variant: "destructive" }),
   });
 
+  const hasFilters = search || categoryFilter !== "all" || selectedTags.length > 0;
+  const categories = Object.keys(categoryLabel);
+
   return (
     <Card className="lg:col-span-3 surface-card">
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
@@ -121,13 +160,88 @@ export function KnowledgeBaseConfig() {
         </Button>
       </CardHeader>
       <CardContent>
+        {/* Search + Category navigation */}
+        <div className="space-y-3 mb-4">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              className="h-9 pl-8 text-[12px]"
+              placeholder="Buscar por título, conteúdo ou tag..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button
+              onClick={() => setCategoryFilter("all")}
+              className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors ${
+                categoryFilter === "all"
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-background border-border hover:bg-accent"
+              }`}
+            >
+              Todas <span className="opacity-70">({items.length})</span>
+            </button>
+            {categories.map((c) => (
+              <button
+                key={c}
+                onClick={() => setCategoryFilter(c)}
+                className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors ${
+                  categoryFilter === c
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background border-border hover:bg-accent"
+                }`}
+              >
+                {categoryLabel[c]} <span className="opacity-70">({categoryCounts[c] || 0})</span>
+              </button>
+            ))}
+          </div>
+
+          {allTags.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1">
+              <Tag className="h-3 w-3 text-muted-foreground mr-1" />
+              {allTags.map((t) => {
+                const sel = selectedTags.includes(t);
+                return (
+                  <button
+                    key={t}
+                    onClick={() => toggleTag(t)}
+                    className={`text-[10px] px-1.5 py-0.5 rounded inline-flex items-center gap-0.5 transition-colors ${
+                      sel
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-primary-soft text-primary hover:bg-primary/20"
+                    }`}
+                  >
+                    {t}
+                  </button>
+                );
+              })}
+              {hasFilters && (
+                <button
+                  onClick={clearFilters}
+                  className="text-[10px] ml-2 text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5"
+                >
+                  <X className="h-3 w-3" /> Limpar filtros
+                </button>
+              )}
+            </div>
+          )}
+
+          <p className="text-caption text-muted-foreground">
+            {filtered.length} de {items.length} artigo(s)
+          </p>
+        </div>
+
         {isLoading ? (
           <p className="text-body-sm text-muted-foreground">A carregar...</p>
-        ) : items.length === 0 ? (
-          <p className="text-body-sm text-muted-foreground py-6 text-center">Nenhum artigo cadastrado.</p>
+        ) : filtered.length === 0 ? (
+          <p className="text-body-sm text-muted-foreground py-6 text-center">
+            {hasFilters ? "Nenhum artigo corresponde aos filtros." : "Nenhum artigo cadastrado."}
+          </p>
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
-            {items.map((it) => (
+            {filtered.map((it) => (
               <div key={it.id} className="rounded-lg border border-border p-4 hover:bg-accent/30 transition-colors">
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="flex-1 min-w-0">
@@ -152,9 +266,17 @@ export function KnowledgeBaseConfig() {
                 {it.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {it.tags.map((t) => (
-                      <span key={t} className="text-[10px] px-1.5 py-0.5 rounded bg-primary-soft text-primary inline-flex items-center gap-0.5">
+                      <button
+                        key={t}
+                        onClick={() => toggleTag(t)}
+                        className={`text-[10px] px-1.5 py-0.5 rounded inline-flex items-center gap-0.5 transition-colors ${
+                          selectedTags.includes(t)
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-primary-soft text-primary hover:bg-primary/20"
+                        }`}
+                      >
                         <Tag className="h-2.5 w-2.5" />{t}
-                      </span>
+                      </button>
                     ))}
                   </div>
                 )}
