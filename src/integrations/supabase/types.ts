@@ -420,6 +420,7 @@ export type Database = {
           description: string | null
           display_name: string
           id: string
+          is_default: boolean
           model_id: string
           provider: string
           tier: string
@@ -433,6 +434,7 @@ export type Database = {
           description?: string | null
           display_name: string
           id?: string
+          is_default?: boolean
           model_id: string
           provider: string
           tier?: string
@@ -446,6 +448,7 @@ export type Database = {
           description?: string | null
           display_name?: string
           id?: string
+          is_default?: boolean
           model_id?: string
           provider?: string
           tier?: string

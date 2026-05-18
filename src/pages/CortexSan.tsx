@@ -1,5 +1,7 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,17 +84,8 @@ const initialMessage: Message = {
   timestamp: new Date(),
 };
 
-const PROVIDER_MODELS: Record<string, { label: string; models: { value: string; label: string }[] }> = {
-  lovable: {
-    label: "Lovable AI",
-    models: [
-      { value: "google/gemini-3-flash-preview", label: "Gemini 3 Flash (Rápido)" },
-      { value: "google/gemini-2.5-pro", label: "Gemini 2.5 Pro (Avançado)" },
-      { value: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash" },
-      { value: "openai/gpt-5", label: "GPT-5 (Raciocínio)" },
-      { value: "openai/gpt-5-mini", label: "GPT-5 Mini" },
-    ],
-  },
+// Static fallback for non-Lovable providers (lovable models come from DB)
+const STATIC_PROVIDER_MODELS: Record<string, { label: string; models: { value: string; label: string }[] }> = {
   openai: {
     label: "OpenAI Direto",
     models: [
@@ -225,6 +218,48 @@ const CortexSan = () => {
     mcpEndpoint: "",
     mcpEnabled: false,
   });
+
+  // ── Active LLMs from admin DB ────────────────────────
+  const { data: activeLlms = [] } = useQuery({
+    queryKey: ["llm_models_active"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("llm_models")
+        .select("model_id, display_name, tier, is_default, active")
+        .eq("active", true)
+        .order("is_default", { ascending: false })
+        .order("tier")
+        .order("display_name");
+      if (error) throw error;
+      return data as { model_id: string; display_name: string; tier: string; is_default: boolean }[];
+    },
+  });
+
+  const PROVIDER_MODELS = useMemo(() => ({
+    lovable: {
+      label: "Lovable AI",
+      models: activeLlms.length
+        ? activeLlms.map((m) => ({
+            value: m.model_id,
+            label: `${m.display_name}${m.is_default ? " ★" : ""}`,
+          }))
+        : [{ value: "google/gemini-3-flash-preview", label: "Gemini 3 Flash" }],
+    },
+    ...STATIC_PROVIDER_MODELS,
+  }), [activeLlms]);
+
+  // Sync default model from admin selection on first load
+  useEffect(() => {
+    if (aiConfig.provider !== "lovable") return;
+    const def = activeLlms.find((m) => m.is_default);
+    if (def && aiConfig.model !== def.model_id) {
+      // Only auto-apply if user hasn't picked a model from the current active set
+      const userPicked = activeLlms.some((m) => m.model_id === aiConfig.model);
+      if (!userPicked) {
+        setAiConfig((prev) => ({ ...prev, model: def.model_id }));
+      }
+    }
+  }, [activeLlms, aiConfig.provider, aiConfig.model]);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
