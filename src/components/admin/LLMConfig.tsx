@@ -84,6 +84,21 @@ export function LLMConfig() {
     onError: (e: any) => toast({ title: "Erro", description: e.message, variant: "destructive" }),
   });
 
+  const setDefault = useMutation({
+    mutationFn: async (id: string) => {
+      const { error: e1 } = await supabase.from("llm_models").update({ is_default: false }).eq("is_default", true);
+      if (e1) throw e1;
+      const { error: e2 } = await supabase.from("llm_models").update({ is_default: true, active: true }).eq("id", id);
+      if (e2) throw e2;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["llm_models"] });
+      qc.invalidateQueries({ queryKey: ["llm_models_active"] });
+      toast({ title: "Modelo definido como ativo padrão" });
+    },
+    onError: (e: any) => toast({ title: "Erro", description: e.message, variant: "destructive" }),
+  });
+
   const createModel = useMutation({
     mutationFn: async () => {
       if (!form.model_id || !form.display_name || !form.provider) {
@@ -229,9 +244,16 @@ export function LLMConfig() {
                     </TableHeader>
                     <TableBody>
                       {list.map((m) => (
-                        <TableRow key={m.id}>
+                        <TableRow key={m.id} className={m.is_default ? "bg-primary/5" : ""}>
                           <TableCell>
-                            <div className="font-medium text-[13px]">{m.display_name}</div>
+                            <div className="flex items-center gap-1.5">
+                              {m.is_default && (
+                                <Badge variant="outline" className="text-[9px] gap-0.5 bg-primary/15 text-primary border-primary/30">
+                                  <Star className="h-2.5 w-2.5 fill-current" /> Ativo
+                                </Badge>
+                              )}
+                              <div className="font-medium text-[13px]">{m.display_name}</div>
+                            </div>
                             {m.description && (
                               <div className="text-caption text-muted-foreground line-clamp-1">{m.description}</div>
                             )}
@@ -246,10 +268,19 @@ export function LLMConfig() {
                               onCheckedChange={(v) => toggleActive.mutate({ id: m.id, active: v })} />
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0"
-                              onClick={() => removeModel.mutate(m.id)}>
-                              <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                            </Button>
+                            <div className="flex items-center justify-end gap-0.5">
+                              <Button
+                                variant="ghost" size="sm" className="h-7 w-7 p-0"
+                                title={m.is_default ? "Modelo ativo atual" : "Definir como modelo ativo"}
+                                disabled={m.is_default || !m.active || setDefault.isPending}
+                                onClick={() => setDefault.mutate(m.id)}>
+                                <Star className={`h-3.5 w-3.5 ${m.is_default ? "fill-primary text-primary" : "text-muted-foreground"}`} />
+                              </Button>
+                              <Button variant="ghost" size="sm" className="h-7 w-7 p-0"
+                                onClick={() => removeModel.mutate(m.id)}>
+                                <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
