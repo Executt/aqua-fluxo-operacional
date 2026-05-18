@@ -1,5 +1,7 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,17 +84,8 @@ const initialMessage: Message = {
   timestamp: new Date(),
 };
 
-const PROVIDER_MODELS: Record<string, { label: string; models: { value: string; label: string }[] }> = {
-  lovable: {
-    label: "Lovable AI",
-    models: [
-      { value: "google/gemini-3-flash-preview", label: "Gemini 3 Flash (Rápido)" },
-      { value: "google/gemini-2.5-pro", label: "Gemini 2.5 Pro (Avançado)" },
-      { value: "google/gemini-2.5-flash", label: "Gemini 2.5 Flash" },
-      { value: "openai/gpt-5", label: "GPT-5 (Raciocínio)" },
-      { value: "openai/gpt-5-mini", label: "GPT-5 Mini" },
-    ],
-  },
+// Static fallback for non-Lovable providers (lovable models come from DB)
+const STATIC_PROVIDER_MODELS: Record<string, { label: string; models: { value: string; label: string }[] }> = {
   openai: {
     label: "OpenAI Direto",
     models: [
