@@ -578,7 +578,9 @@ const CortexSan = () => {
                 </div>
               </SheetContent>
             </Sheet>
+            </div>
           </div>
+
 
           {/* Messages */}
           <ScrollArea className="flex-1 px-6">
