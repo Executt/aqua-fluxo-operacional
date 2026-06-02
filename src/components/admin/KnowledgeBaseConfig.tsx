@@ -14,7 +14,7 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
-import { BookOpen, Plus, Trash2, Tag, Edit3, Search, X } from "lucide-react";
+import { BookOpen, Plus, Trash2, Tag, Edit3, Search, X, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type KBItem = {
