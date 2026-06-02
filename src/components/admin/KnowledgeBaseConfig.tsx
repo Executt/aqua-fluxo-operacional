@@ -386,6 +386,30 @@ export function KnowledgeBaseConfig() {
           </div>
         )}
 
+        {filtered.length > 0 && totalPages > 1 && (
+          <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
+            <span className="text-caption text-muted-foreground">
+              Página {currentPage} de {totalPages}
+            </span>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline" size="sm" className="h-7 px-2 gap-1 text-[11px]"
+                disabled={currentPage <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                <ChevronLeft className="h-3.5 w-3.5" /> Anterior
+              </Button>
+              <Button
+                variant="outline" size="sm" className="h-7 px-2 gap-1 text-[11px]"
+                disabled={currentPage >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              >
+                Próxima <ChevronRight className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+        )}
+
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
