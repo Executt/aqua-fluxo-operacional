@@ -48,6 +48,13 @@ export function KnowledgeBaseConfig() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // ── Sorting + pagination ─────────────────────────────
+  type SortKey = "updated_desc" | "updated_asc" | "title_asc" | "title_desc";
+  const [sortBy, setSortBy] = useState<SortKey>("updated_desc");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(6);
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["knowledge_base"],
