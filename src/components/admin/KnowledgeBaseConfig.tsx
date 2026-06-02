@@ -81,7 +81,7 @@ export function KnowledgeBaseConfig() {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return items.filter((it) => {
+    const list = items.filter((it) => {
       if (categoryFilter !== "all" && it.category !== categoryFilter) return false;
       if (selectedTags.length && !selectedTags.every((t) => it.tags?.includes(t))) return false;
       if (q) {
@@ -90,12 +90,48 @@ export function KnowledgeBaseConfig() {
       }
       return true;
     });
-  }, [items, search, categoryFilter, selectedTags]);
+    const sorted = [...list].sort((a, b) => {
+      switch (sortBy) {
+        case "updated_asc":  return a.updated_at.localeCompare(b.updated_at);
+        case "title_asc":    return a.title.localeCompare(b.title, "pt");
+        case "title_desc":   return b.title.localeCompare(a.title, "pt");
+        case "updated_desc":
+        default:             return b.updated_at.localeCompare(a.updated_at);
+      }
+    });
+    return sorted;
+  }, [items, search, categoryFilter, selectedTags, sortBy]);
+
+  // Reset page when filters/sort change
+  useEffect(() => { setPage(1); }, [search, categoryFilter, selectedTags, sortBy, pageSize]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = useMemo(
+    () => filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize),
+    [filtered, currentPage, pageSize]
+  );
+
+  // Tag autocomplete suggestions based on current search input
+  const tagSuggestions = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return [];
+    return allTags
+      .filter((t) => t.toLowerCase().includes(q) && !selectedTags.includes(t))
+      .slice(0, 8);
+  }, [allTags, search, selectedTags]);
 
   const toggleTag = (t: string) =>
     setSelectedTags((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]);
 
+  const addTagFromSuggestion = (t: string) => {
+    toggleTag(t);
+    setSearch("");
+    setShowSuggestions(false);
+  };
+
   const clearFilters = () => { setSearch(""); setCategoryFilter("all"); setSelectedTags([]); };
+
 
   const openNew = () => {
     setEditing(null);
