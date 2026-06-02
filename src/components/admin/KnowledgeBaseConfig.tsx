@@ -211,9 +211,45 @@ export function KnowledgeBaseConfig() {
               className="h-9 pl-8 text-[12px]"
               placeholder="Buscar por título, conteúdo ou tag..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => { setSearch(e.target.value); setShowSuggestions(true); }}
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
             />
+            {showSuggestions && tagSuggestions.length > 0 && (
+              <div className="absolute z-20 mt-1 w-full rounded-md border border-border bg-popover shadow-md overflow-hidden">
+                <div className="px-2 py-1 text-[10px] uppercase tracking-wider text-muted-foreground border-b border-border bg-muted/30">
+                  Tags sugeridas
+                </div>
+                {tagSuggestions.map((t) => (
+                  <button
+                    key={t}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => addTagFromSuggestion(t)}
+                    className="w-full text-left flex items-center gap-1.5 px-2.5 py-1.5 text-[12px] hover:bg-accent"
+                  >
+                    <Tag className="h-3 w-3 text-primary" /> {t}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
+
+          {/* Selected tags (multi-select chips) */}
+          {selectedTags.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1">
+              <span className="text-[10px] text-muted-foreground mr-1">Filtrando por:</span>
+              {selectedTags.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => toggleTag(t)}
+                  className="text-[10px] px-1.5 py-0.5 rounded inline-flex items-center gap-1 bg-primary text-primary-foreground"
+                >
+                  <Tag className="h-2.5 w-2.5" />{t}
+                  <X className="h-2.5 w-2.5" />
+                </button>
+              ))}
+            </div>
+          )}
 
           <div className="flex flex-wrap items-center gap-1.5">
             <button
