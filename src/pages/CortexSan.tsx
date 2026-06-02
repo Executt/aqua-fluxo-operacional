@@ -389,10 +389,48 @@ const CortexSan = () => {
               <div>
                 <h2 className="text-sm font-semibold text-foreground">Cortex-San</h2>
                 <p className="text-[10px] text-muted-foreground">
-                  {currentProviderInfo.label} — {PROVIDER_MODELS[aiConfig.provider].models.find(m => m.value === aiConfig.model)?.label || aiConfig.model}
+                  {currentProviderInfo.label} — sobrescrita por conversa
                 </p>
               </div>
             </div>
+
+            <div className="flex items-center gap-2">
+              {/* Inline per-conversation model override */}
+              {aiConfig.provider !== "mcp" && (
+                <div className="flex items-center gap-1.5">
+                  <Cpu className="h-3.5 w-3.5 text-muted-foreground" />
+                  <Select
+                    value={aiConfig.model}
+                    onValueChange={(v) => setAiConfig((prev) => ({ ...prev, model: v }))}
+                  >
+                    <SelectTrigger className="h-8 text-[11px] w-[220px] bg-background">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {currentProviderInfo.models.map((m) => (
+                        <SelectItem key={m.value} value={m.value} className="text-[12px]">
+                          {m.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {activeLlms.find((m) => m.is_default) && aiConfig.provider === "lovable" && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-[10px]"
+                      title="Restaurar modelo padrão da Administração"
+                      onClick={() => {
+                        const def = activeLlms.find((m) => m.is_default);
+                        if (def) setAiConfig((prev) => ({ ...prev, model: def.model_id }));
+                      }}
+                      disabled={aiConfig.provider === "lovable" && activeLlms.find((m) => m.is_default)?.model_id === aiConfig.model}
+                    >
+                      Padrão
+                    </Button>
+                  )}
+                </div>
+              )}
 
             {/* Settings Sheet */}
             <Sheet>
