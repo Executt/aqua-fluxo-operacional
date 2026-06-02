@@ -307,9 +307,31 @@ export function KnowledgeBaseConfig() {
             </div>
           )}
 
-          <p className="text-caption text-muted-foreground">
-            {filtered.length} de {items.length} artigo(s)
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-caption text-muted-foreground">
+              {filtered.length} de {items.length} artigo(s)
+            </p>
+            <div className="flex items-center gap-2">
+              <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
+              <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
+                <SelectTrigger className="h-7 text-[11px] w-[180px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="updated_desc" className="text-[12px]">Mais recentes</SelectItem>
+                  <SelectItem value="updated_asc" className="text-[12px]">Mais antigos</SelectItem>
+                  <SelectItem value="title_asc" className="text-[12px]">Título (A→Z)</SelectItem>
+                  <SelectItem value="title_desc" className="text-[12px]">Título (Z→A)</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={String(pageSize)} onValueChange={(v) => setPageSize(+v)}>
+                <SelectTrigger className="h-7 text-[11px] w-[90px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="6" className="text-[12px]">6 / pág</SelectItem>
+                  <SelectItem value="12" className="text-[12px]">12 / pág</SelectItem>
+                  <SelectItem value="24" className="text-[12px]">24 / pág</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
 
         {isLoading ? (
@@ -320,7 +342,7 @@ export function KnowledgeBaseConfig() {
           </p>
         ) : (
           <div className="grid gap-3 md:grid-cols-2">
-            {filtered.map((it) => (
+            {paginated.map((it) => (
               <div key={it.id} className="rounded-lg border border-border p-4 hover:bg-accent/30 transition-colors">
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="flex-1 min-w-0">
