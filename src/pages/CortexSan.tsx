@@ -204,6 +204,21 @@ function renderMarkdown(text: string) {
 
 // ── Component ────────────────────────────────────────
 
+const STORAGE_KEY = "cortex-san:conv-ai-config:v1";
+const NEW_KEY = "__new";
+
+type ConfigMap = Record<string, AIConfig>;
+
+function loadConfigMap(): ConfigMap {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as ConfigMap) : {};
+  } catch { return {}; }
+}
+function saveConfigMap(map: ConfigMap) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(map)); } catch { /* ignore */ }
+}
+
 const CortexSan = () => {
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([initialMessage]);
@@ -212,11 +227,17 @@ const CortexSan = () => {
   const [activeConversation, setActiveConversation] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const [aiConfig, setAiConfig] = useState<AIConfig>({
-    provider: "lovable",
-    model: "google/gemini-3-flash-preview",
-    mcpEndpoint: "",
-    mcpEnabled: false,
+  const conversationKey = activeConversation ?? NEW_KEY;
+
+  // Initial config: load persisted override for the active conversation if any.
+  const [aiConfig, setAiConfig] = useState<AIConfig>(() => {
+    const map = loadConfigMap();
+    return map[NEW_KEY] ?? {
+      provider: "lovable",
+      model: "google/gemini-3-flash-preview",
+      mcpEndpoint: "",
+      mcpEnabled: false,
+    };
   });
 
   // ── Active LLMs from admin DB ────────────────────────
@@ -248,18 +269,40 @@ const CortexSan = () => {
     ...STATIC_PROVIDER_MODELS,
   }), [activeLlms]);
 
-  // Sync default model from admin selection on first load
+  // When switching conversations, restore the saved override (or fall back to default).
   useEffect(() => {
-    if (aiConfig.provider !== "lovable") return;
-    const def = activeLlms.find((m) => m.is_default);
-    if (def && aiConfig.model !== def.model_id) {
-      // Only auto-apply if user hasn't picked a model from the current active set
-      const userPicked = activeLlms.some((m) => m.model_id === aiConfig.model);
-      if (!userPicked) {
-        setAiConfig((prev) => ({ ...prev, model: def.model_id }));
+    const map = loadConfigMap();
+    const saved = map[conversationKey];
+    if (saved) {
+      setAiConfig(saved);
+    } else {
+      // No override saved → apply admin default if available
+      const def = activeLlms.find((m) => m.is_default);
+      if (def) {
+        setAiConfig((prev) => ({ ...prev, provider: "lovable", model: def.model_id }));
       }
     }
-  }, [activeLlms, aiConfig.provider, aiConfig.model]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversationKey]);
+
+  // Auto-apply admin default the first time it loads, only when no override is saved.
+  useEffect(() => {
+    if (aiConfig.provider !== "lovable") return;
+    const map = loadConfigMap();
+    if (map[conversationKey]) return; // user already chose for this conversation
+    const def = activeLlms.find((m) => m.is_default);
+    if (def && aiConfig.model !== def.model_id) {
+      setAiConfig((prev) => ({ ...prev, model: def.model_id }));
+    }
+  }, [activeLlms, aiConfig.provider, aiConfig.model, conversationKey]);
+
+  // Persist the config for the current conversation whenever it changes.
+  useEffect(() => {
+    const map = loadConfigMap();
+    map[conversationKey] = aiConfig;
+    saveConfigMap(map);
+  }, [aiConfig, conversationKey]);
+
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
