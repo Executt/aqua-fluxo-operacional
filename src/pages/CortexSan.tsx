@@ -466,6 +466,10 @@ const CortexSan = () => {
                       onClick={() => {
                         const def = activeLlms.find((m) => m.is_default);
                         if (def) setAiConfig((prev) => ({ ...prev, model: def.model_id }));
+                        // Clear persisted override for this conversation so it follows admin default again.
+                        const map = loadConfigMap();
+                        delete map[conversationKey];
+                        saveConfigMap(map);
                       }}
                       disabled={aiConfig.provider === "lovable" && activeLlms.find((m) => m.is_default)?.model_id === aiConfig.model}
                     >
