@@ -14,7 +14,10 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
-import { BookOpen, Plus, Trash2, Tag, Edit3, Search, X, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
+import { BookOpen, Plus, Trash2, Tag, Edit3, Search, X, ChevronLeft, ChevronRight, ArrowUpDown, FolderArchive, Database } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PdfRepositoriesConfig } from "./PdfRepositoriesConfig";
+import { SasbDatasetsConfig } from "./SasbDatasetsConfig";
 import { useToast } from "@/hooks/use-toast";
 
 type KBItem = {
@@ -36,6 +39,35 @@ const categoryLabel: Record<string, string> = {
 };
 
 export function KnowledgeBaseConfig() {
+  return (
+    <div className="lg:col-span-3">
+      <Tabs defaultValue="articles" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="articles" className="gap-1.5 text-[12px]">
+            <BookOpen className="h-3.5 w-3.5" /> Artigos
+          </TabsTrigger>
+          <TabsTrigger value="pdfs" className="gap-1.5 text-[12px]">
+            <FolderArchive className="h-3.5 w-3.5" /> Repositórios PDF
+          </TabsTrigger>
+          <TabsTrigger value="sasb" className="gap-1.5 text-[12px]">
+            <Database className="h-3.5 w-3.5" /> Base SARSB
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="articles" className="grid gap-6 lg:grid-cols-3">
+          <ArticlesPanel />
+        </TabsContent>
+        <TabsContent value="pdfs" className="grid gap-6 lg:grid-cols-3">
+          <PdfRepositoriesConfig />
+        </TabsContent>
+        <TabsContent value="sasb" className="grid gap-6 lg:grid-cols-3">
+          <SasbDatasetsConfig />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+function ArticlesPanel() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
