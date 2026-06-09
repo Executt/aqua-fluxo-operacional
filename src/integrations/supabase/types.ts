@@ -630,6 +630,131 @@ export type Database = {
           },
         ]
       }
+      sasb_datasets: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          dimension: string
+          enabled: boolean
+          endpoint: string
+          id: string
+          last_sync_at: string | null
+          name: string
+          quality_score: number | null
+          records: number
+          source_org: string
+          status: string
+          sync_interval_minutes: number
+          updated_at: string
+          used_in_score: boolean
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          dimension: string
+          enabled?: boolean
+          endpoint: string
+          id?: string
+          last_sync_at?: string | null
+          name: string
+          quality_score?: number | null
+          records?: number
+          source_org: string
+          status?: string
+          sync_interval_minutes?: number
+          updated_at?: string
+          used_in_score?: boolean
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          dimension?: string
+          enabled?: boolean
+          endpoint?: string
+          id?: string
+          last_sync_at?: string | null
+          name?: string
+          quality_score?: number | null
+          records?: number
+          source_org?: string
+          status?: string
+          sync_interval_minutes?: number
+          updated_at?: string
+          used_in_score?: boolean
+        }
+        Relationships: []
+      }
+      sasb_sync_logs: {
+        Row: {
+          completeness_pct: number | null
+          created_at: string
+          dataset_id: string
+          duration_ms: number | null
+          finished_at: string | null
+          freshness_days: number | null
+          id: string
+          message: string | null
+          quality_score: number | null
+          records_in: number | null
+          records_invalid: number | null
+          records_out: number | null
+          started_at: string
+          status: string
+          triggered_by: string
+          validity_pct: number | null
+          warnings: Json | null
+        }
+        Insert: {
+          completeness_pct?: number | null
+          created_at?: string
+          dataset_id: string
+          duration_ms?: number | null
+          finished_at?: string | null
+          freshness_days?: number | null
+          id?: string
+          message?: string | null
+          quality_score?: number | null
+          records_in?: number | null
+          records_invalid?: number | null
+          records_out?: number | null
+          started_at?: string
+          status?: string
+          triggered_by?: string
+          validity_pct?: number | null
+          warnings?: Json | null
+        }
+        Update: {
+          completeness_pct?: number | null
+          created_at?: string
+          dataset_id?: string
+          duration_ms?: number | null
+          finished_at?: string | null
+          freshness_days?: number | null
+          id?: string
+          message?: string | null
+          quality_score?: number | null
+          records_in?: number | null
+          records_invalid?: number | null
+          records_out?: number | null
+          started_at?: string
+          status?: string
+          triggered_by?: string
+          validity_pct?: number | null
+          warnings?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sasb_sync_logs_dataset_id_fkey"
+            columns: ["dataset_id"]
+            isOneToOne: false
+            referencedRelation: "sasb_datasets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sensor_leituras: {
         Row: {
           created_at: string
