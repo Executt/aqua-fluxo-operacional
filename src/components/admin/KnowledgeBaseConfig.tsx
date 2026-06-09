@@ -39,6 +39,35 @@ const categoryLabel: Record<string, string> = {
 };
 
 export function KnowledgeBaseConfig() {
+  return (
+    <div className="lg:col-span-3">
+      <Tabs defaultValue="articles" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="articles" className="gap-1.5 text-[12px]">
+            <BookOpen className="h-3.5 w-3.5" /> Artigos
+          </TabsTrigger>
+          <TabsTrigger value="pdfs" className="gap-1.5 text-[12px]">
+            <FolderArchive className="h-3.5 w-3.5" /> Repositórios PDF
+          </TabsTrigger>
+          <TabsTrigger value="sasb" className="gap-1.5 text-[12px]">
+            <Database className="h-3.5 w-3.5" /> Base SARSB
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="articles" className="grid gap-6 lg:grid-cols-3">
+          <ArticlesPanel />
+        </TabsContent>
+        <TabsContent value="pdfs" className="grid gap-6 lg:grid-cols-3">
+          <PdfRepositoriesConfig />
+        </TabsContent>
+        <TabsContent value="sasb" className="grid gap-6 lg:grid-cols-3">
+          <SasbDatasetsConfig />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+function ArticlesPanel() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
