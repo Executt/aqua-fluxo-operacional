@@ -14,7 +14,10 @@ import {
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
-import { BookOpen, Plus, Trash2, Tag, Edit3, Search, X, ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
+import { BookOpen, Plus, Trash2, Tag, Edit3, Search, X, ChevronLeft, ChevronRight, ArrowUpDown, FolderArchive, Database } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PdfRepositoriesConfig } from "./PdfRepositoriesConfig";
+import { SasbDatasetsConfig } from "./SasbDatasetsConfig";
 import { useToast } from "@/hooks/use-toast";
 
 type KBItem = {
