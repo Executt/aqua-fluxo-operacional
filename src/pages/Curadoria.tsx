@@ -78,6 +78,12 @@ export default function Curadoria() {
     observacoes: "",
   });
 
+  // Diálogo de rejeição com validação Zod
+  const [rejectTarget, setRejectTarget] = useState<Resposta | null>(null);
+  const [motivo, setMotivo] = useState("");
+  const [motivoError, setMotivoError] = useState<string | null>(null);
+  const [rejecting, setRejecting] = useState(false);
+
   useEffect(() => {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -132,10 +138,30 @@ export default function Curadoria() {
     });
     if (error) {
       toast({ title: "Falha", description: error.message, variant: "destructive" });
-      return;
+      return false;
     }
     toast({ title: `Resposta ${novo_estado}` });
     void load();
+    return true;
+  }
+
+  function openRejectDialog(r: Resposta) {
+    setRejectTarget(r);
+    setMotivo("");
+    setMotivoError(null);
+  }
+
+  async function confirmReject() {
+    const parsed = motivoRejeicaoSchema.safeParse(motivo);
+    if (!parsed.success) {
+      setMotivoError(parsed.error.issues[0].message);
+      return;
+    }
+    if (!rejectTarget) return;
+    setRejecting(true);
+    const ok = await transition(rejectTarget.id, "rejeitado", parsed.data);
+    setRejecting(false);
+    if (ok) setRejectTarget(null);
   }
 
   return (
