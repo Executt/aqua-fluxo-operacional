@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { z } from "zod";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,12 +14,20 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Droplets, FileText, Send, CheckCircle2, XCircle, Clock, FileSearch, Plus,
+  Droplets, FileText, Send, CheckCircle2, XCircle, Clock, FileSearch, Plus, AlertTriangle,
 } from "lucide-react";
+
+const motivoRejeicaoSchema = z.string()
+  .trim()
+  .min(20, "O motivo deve ter pelo menos 20 caracteres para garantir rastreabilidade")
+  .max(1000, "O motivo não pode exceder 1000 caracteres");
 
 type Estado = "rascunho" | "submetido" | "em_analise" | "validado" | "rejeitado";
 
@@ -68,6 +77,12 @@ export default function Curadoria() {
     od_medio_mg_l: "",
     observacoes: "",
   });
+
+  // Diálogo de rejeição com validação Zod
+  const [rejectTarget, setRejectTarget] = useState<Resposta | null>(null);
+  const [motivo, setMotivo] = useState("");
+  const [motivoError, setMotivoError] = useState<string | null>(null);
+  const [rejecting, setRejecting] = useState(false);
 
   useEffect(() => {
     void load();
@@ -123,10 +138,30 @@ export default function Curadoria() {
     });
     if (error) {
       toast({ title: "Falha", description: error.message, variant: "destructive" });
-      return;
+      return false;
     }
     toast({ title: `Resposta ${novo_estado}` });
     void load();
+    return true;
+  }
+
+  function openRejectDialog(r: Resposta) {
+    setRejectTarget(r);
+    setMotivo("");
+    setMotivoError(null);
+  }
+
+  async function confirmReject() {
+    const parsed = motivoRejeicaoSchema.safeParse(motivo);
+    if (!parsed.success) {
+      setMotivoError(parsed.error.issues[0].message);
+      return;
+    }
+    if (!rejectTarget) return;
+    setRejecting(true);
+    const ok = await transition(rejectTarget.id, "rejeitado", parsed.data);
+    setRejecting(false);
+    if (ok) setRejectTarget(null);
   }
 
   return (
@@ -300,10 +335,7 @@ export default function Curadoria() {
                               Validar
                             </Button>
                             <Button size="sm" variant="destructive"
-                              onClick={() => {
-                                const m = window.prompt("Motivo da rejeição:");
-                                if (m) transition(r.id, "rejeitado", m);
-                              }}>
+                              onClick={() => openRejectDialog(r)}>
                               Rejeitar
                             </Button>
                           </>
@@ -330,6 +362,47 @@ export default function Curadoria() {
           </CardContent>
         </Card>
       </motion.div>
+
+      <Dialog open={!!rejectTarget} onOpenChange={(o) => !o && setRejectTarget(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-destructive" />
+              Rejeitar submissão
+            </DialogTitle>
+            <DialogDescription>
+              Indique o motivo da rejeição. Esta informação é registada na trilha de auditoria
+              e enviada ao operador responsável.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="motivo">Motivo da rejeição</Label>
+            <Textarea
+              id="motivo"
+              rows={5}
+              value={motivo}
+              onChange={(e) => { setMotivo(e.target.value); setMotivoError(null); }}
+              placeholder="Ex.: Eficiência DBO informada (95%) está fora da faixa típica da tipologia. Reveja os parâmetros laboratoriais e reenvie."
+              maxLength={1000}
+              aria-invalid={!!motivoError}
+            />
+            <div className="flex items-center justify-between text-[11px]">
+              <span className={motivoError ? "text-destructive" : "text-muted-foreground"}>
+                {motivoError ?? "Mínimo de 20 caracteres."}
+              </span>
+              <span className="text-muted-foreground tabular-nums">{motivo.length}/1000</span>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRejectTarget(null)} disabled={rejecting}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={confirmReject} disabled={rejecting}>
+              {rejecting ? "A rejeitar..." : "Confirmar rejeição"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }

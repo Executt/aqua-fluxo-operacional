@@ -1,6 +1,7 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,24 +14,12 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Building2, Key, Plus, Copy, Globe, Trash2, Eye, EyeOff } from "lucide-react";
+import { Building2, Key, Plus, Globe, ShieldAlert } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useEntidades } from "@/hooks/use-sigsan-data";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
-
-interface ApiKey {
-  id: string; name: string; key: string; created: string; lastUsed: string; status: "active" | "revoked";
-}
-
-const mockApiKeys: ApiKey[] = [
-  { id: "1", name: "Produção — CEDAE", key: "sk_live_4f8a2c9d7e1b3f6a8c0d2e4f6a8b0c2d", created: "2026-01-15", lastUsed: "Há 2 horas", status: "active" },
-  { id: "2", name: "Staging — CEDAE", key: "sk_test_9b7c5d3e1f0a8b6c4d2e0f8a6b4c2d0e", created: "2026-02-20", lastUsed: "Há 5 dias", status: "active" },
-  { id: "3", name: "Integração Legacy", key: "sk_live_1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d", created: "2025-11-03", lastUsed: "Há 30 dias", status: "revoked" },
-];
-
-const maskKey = (key: string) => key.slice(0, 8) + "••••••••••••••••" + key.slice(-4);
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
@@ -38,43 +27,46 @@ const fadeUp = {
 };
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.08 } } };
 
+// Validação: CNPJ formato livre 14 dígitos (com ou sem máscara), nome 3-120 chars
+const entidadeSchema = z.object({
+  nome: z.string().trim().min(3, "Nome muito curto").max(120, "Nome muito longo"),
+  cnpj: z.string()
+    .trim()
+    .transform((v) => v.replace(/\D/g, ""))
+    .refine((v) => v.length === 14, "CNPJ deve ter 14 dígitos"),
+  area: z.string().min(1, "Selecione a área de atuação"),
+});
+
 const Entidades = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: entidades, isLoading } = useEntidades();
-  const [revealedKeys, setRevealedKeys] = useState<Set<string>>(new Set());
   const [nome, setNome] = useState("");
   const [cnpj, setCnpj] = useState("");
   const [area, setArea] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const toggleReveal = (id: string) => {
-    setRevealedKeys((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
-
-  const copyKey = (key: string) => {
-    navigator.clipboard.writeText(key);
-    toast({ title: "Chave copiada", description: "A API key foi copiada para a área de transferência." });
-  };
-
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nome || !cnpj || !area) {
-      toast({ title: "Campos obrigatórios", description: "Preencha todos os campos.", variant: "destructive" });
+    const parsed = entidadeSchema.safeParse({ nome, cnpj, area });
+    if (!parsed.success) {
+      const first = parsed.error.issues[0];
+      toast({ title: "Dados inválidos", description: first.message, variant: "destructive" });
       return;
     }
     setSaving(true);
-    const { error } = await supabase.from("entidades").insert({ nome, cnpj, area_atuacao: area, status: "Pendente" });
+    const { error } = await supabase.from("entidades").insert({
+      nome: parsed.data.nome,
+      cnpj: parsed.data.cnpj,
+      area_atuacao: parsed.data.area,
+      status: "Pendente",
+    });
     setSaving(false);
     if (error) {
       toast({ title: "Erro ao registar", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "Concessionária registada", description: `${nome} foi adicionada com sucesso.` });
+    toast({ title: "Concessionária registada", description: `${parsed.data.nome} foi adicionada com sucesso.` });
     setNome(""); setCnpj(""); setArea("");
     queryClient.invalidateQueries({ queryKey: ["entidades"] });
   };
@@ -86,7 +78,7 @@ const Entidades = () => {
           <div>
             <h1 className="text-heading-1 text-foreground">Gestão de Entidades</h1>
             <p className="text-body-sm text-muted-foreground mt-1">
-              Registo de concessionárias, gestão de API keys e configuração de integração
+              Registo de concessionárias e configuração de integração
             </p>
           </div>
         </motion.div>
@@ -117,11 +109,11 @@ const Entidades = () => {
                     <form onSubmit={handleRegister} className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="nome" className="text-body-sm">Nome da Concessionária</Label>
-                        <Input id="nome" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex: CEDAE" className="bg-secondary border-border" />
+                        <Input id="nome" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex: CEDAE" maxLength={120} className="bg-secondary border-border" />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="cnpj" className="text-body-sm">CNPJ</Label>
-                        <Input id="cnpj" value={cnpj} onChange={(e) => setCnpj(e.target.value)} placeholder="00.000.000/0000-00" className="bg-secondary border-border font-mono" />
+                        <Input id="cnpj" value={cnpj} onChange={(e) => setCnpj(e.target.value)} placeholder="00.000.000/0000-00" maxLength={18} className="bg-secondary border-border font-mono" />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="area" className="text-body-sm">Área de Atuação</Label>
@@ -196,63 +188,30 @@ const Entidades = () => {
             <TabsContent value="apikeys" className="space-y-6">
               <Card className="bg-card border-border">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-[13px] font-medium flex items-center gap-2">
-                        <Key className="h-4 w-4 text-primary" /> Chaves de Integração (API Keys)
-                      </CardTitle>
-                      <CardDescription className="text-body-sm mt-1">
-                        Gerencie os tokens de acesso à API do SIGSAN-FED.
-                      </CardDescription>
-                    </div>
-                    <Button size="sm" className="gap-2 text-[12px]"><Plus className="h-3.5 w-3.5" /> Gerar Novo Token</Button>
-                  </div>
+                  <CardTitle className="text-[13px] font-medium flex items-center gap-2">
+                    <Key className="h-4 w-4 text-primary" /> Chaves de Integração (API Keys)
+                  </CardTitle>
+                  <CardDescription className="text-body-sm mt-1">
+                    Gestão de tokens de acesso à API do SIGSAN-FED.
+                  </CardDescription>
                 </CardHeader>
-                <CardContent className="p-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="border-border hover:bg-transparent">
-                        <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Nome</TableHead>
-                        <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Chave</TableHead>
-                        <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Criada em</TableHead>
-                        <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Último Uso</TableHead>
-                        <TableHead className="text-caption text-muted-foreground uppercase tracking-wider">Status</TableHead>
-                        <TableHead className="text-caption text-muted-foreground uppercase tracking-wider text-right">Ações</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {mockApiKeys.map((apiKey) => (
-                        <TableRow key={apiKey.id} className="border-border hover:bg-accent/50">
-                          <TableCell className="text-[13px] font-medium text-foreground">{apiKey.name}</TableCell>
-                          <TableCell>
-                            <code className="text-body-sm font-mono bg-secondary px-2 py-1 rounded border border-border">
-                              {revealedKeys.has(apiKey.id) ? apiKey.key : maskKey(apiKey.key)}
-                            </code>
-                          </TableCell>
-                          <TableCell className="text-body-sm text-muted-foreground font-mono">{apiKey.created}</TableCell>
-                          <TableCell className="text-body-sm text-muted-foreground">{apiKey.lastUsed}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className={`text-[10px] ${apiKey.status === "active" ? "bg-success/15 text-success border-success/30" : "bg-destructive/15 text-destructive border-destructive/30"}`}>
-                              {apiKey.status === "active" ? "Ativa" : "Revogada"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-1">
-                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => toggleReveal(apiKey.id)}>
-                                {revealedKeys.has(apiKey.id) ? <EyeOff className="h-3.5 w-3.5 text-muted-foreground" /> : <Eye className="h-3.5 w-3.5 text-muted-foreground" />}
-                              </Button>
-                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => copyKey(apiKey.key)}>
-                                <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-                              </Button>
-                              {apiKey.status === "active" && (
-                                <Button variant="ghost" size="icon" className="h-8 w-8"><Trash2 className="h-3.5 w-3.5 text-destructive/70" /></Button>
-                              )}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                <CardContent>
+                  <div className="rounded-md border border-warning/30 bg-warning/10 p-4 flex gap-3">
+                    <ShieldAlert className="h-5 w-5 text-warning shrink-0 mt-0.5" />
+                    <div className="text-[13px] space-y-1">
+                      <p className="font-medium text-foreground">Módulo em preparação</p>
+                      <p className="text-muted-foreground">
+                        A emissão e revogação de chaves de API exige backend dedicado com hashing
+                        (SHA-256), exibição única no momento da criação, rotação programada e trilha
+                        de auditoria. Esta funcionalidade será disponibilizada após a aprovação do
+                        modelo de segurança pela equipa de governança.
+                      </p>
+                      <p className="text-muted-foreground">
+                        Até lá, integrações devem usar as credenciais de serviço fornecidas pela
+                        equipa de plataforma.
+                      </p>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
