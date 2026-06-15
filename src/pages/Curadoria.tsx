@@ -335,10 +335,7 @@ export default function Curadoria() {
                               Validar
                             </Button>
                             <Button size="sm" variant="destructive"
-                              onClick={() => {
-                                const m = window.prompt("Motivo da rejeição:");
-                                if (m) transition(r.id, "rejeitado", m);
-                              }}>
+                              onClick={() => openRejectDialog(r)}>
                               Rejeitar
                             </Button>
                           </>
@@ -365,6 +362,47 @@ export default function Curadoria() {
           </CardContent>
         </Card>
       </motion.div>
+
+      <Dialog open={!!rejectTarget} onOpenChange={(o) => !o && setRejectTarget(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-destructive" />
+              Rejeitar submissão
+            </DialogTitle>
+            <DialogDescription>
+              Indique o motivo da rejeição. Esta informação é registada na trilha de auditoria
+              e enviada ao operador responsável.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="motivo">Motivo da rejeição</Label>
+            <Textarea
+              id="motivo"
+              rows={5}
+              value={motivo}
+              onChange={(e) => { setMotivo(e.target.value); setMotivoError(null); }}
+              placeholder="Ex.: Eficiência DBO informada (95%) está fora da faixa típica da tipologia. Reveja os parâmetros laboratoriais e reenvie."
+              maxLength={1000}
+              aria-invalid={!!motivoError}
+            />
+            <div className="flex items-center justify-between text-[11px]">
+              <span className={motivoError ? "text-destructive" : "text-muted-foreground"}>
+                {motivoError ?? "Mínimo de 20 caracteres."}
+              </span>
+              <span className="text-muted-foreground tabular-nums">{motivo.length}/1000</span>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRejectTarget(null)} disabled={rejecting}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={confirmReject} disabled={rejecting}>
+              {rejecting ? "A rejeitar..." : "Confirmar rejeição"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
