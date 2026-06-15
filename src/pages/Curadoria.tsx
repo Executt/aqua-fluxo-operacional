@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { z } from "zod";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,12 +14,20 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Droplets, FileText, Send, CheckCircle2, XCircle, Clock, FileSearch, Plus,
+  Droplets, FileText, Send, CheckCircle2, XCircle, Clock, FileSearch, Plus, AlertTriangle,
 } from "lucide-react";
+
+const motivoRejeicaoSchema = z.string()
+  .trim()
+  .min(20, "O motivo deve ter pelo menos 20 caracteres para garantir rastreabilidade")
+  .max(1000, "O motivo não pode exceder 1000 caracteres");
 
 type Estado = "rascunho" | "submetido" | "em_analise" | "validado" | "rejeitado";
 
