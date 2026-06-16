@@ -106,6 +106,35 @@ export default function Curadoria() {
   const [motivoError, setMotivoError] = useState<string | null>(null);
   const [rejecting, setRejecting] = useState(false);
 
+  // Pré-validação IA
+  type PrecheckResult = { warnings: string[]; recomendacoes: string[]; summary: string };
+  const [precheck, setPrecheck] = useState<PrecheckResult | null>(null);
+  const precheckMut = useMutation({
+    mutationFn: async () => {
+      const payload: Record<string, unknown> = {};
+      if (form.eficiencia_dbo_pct) payload.eficiencia_dbo_pct = Number(form.eficiencia_dbo_pct);
+      if (form.vazao_media_lps)    payload.vazao_media_lps    = Number(form.vazao_media_lps);
+      if (form.ph_medio)           payload.ph_medio           = Number(form.ph_medio);
+      if (form.od_medio_mg_l)      payload.od_medio_mg_l      = Number(form.od_medio_mg_l);
+      if (form.observacoes)        payload.observacoes        = form.observacoes;
+
+      if (Object.keys(payload).length === 0) throw new Error("Preencha ao menos um parâmetro antes de pré-validar.");
+
+      const { data, error } = await supabase.functions.invoke("curadoria-ai-precheck", {
+        body: {
+          ete_id: form.ete_id || undefined,
+          ano_referencia: form.ano_referencia,
+          mes_referencia: form.mes_referencia,
+          payload,
+        },
+      });
+      if (error) throw error;
+      return data as PrecheckResult;
+    },
+    onSuccess: (data) => setPrecheck(data),
+    onError: (err: Error) => toast({ title: "Pré-validação IA", description: err.message, variant: "destructive" }),
+  });
+
   // ETEs — cache longa
   const { data: etes = [] } = useQuery({
     queryKey: ["etes-curadoria", operadorId],
