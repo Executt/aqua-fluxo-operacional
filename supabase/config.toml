@@ -14,3 +14,6 @@ verify_jwt = true
 
 [functions.metabase-refresh-status]
 verify_jwt = false
+
+[functions.curadoria-ai-precheck]
+verify_jwt = true
