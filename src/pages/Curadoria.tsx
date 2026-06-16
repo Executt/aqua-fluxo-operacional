@@ -23,8 +23,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
   Droplets, FileText, Send, CheckCircle2, XCircle, Clock, FileSearch, Plus, AlertTriangle,
-  Filter, ChevronLeft, ChevronRight, X,
+  Filter, ChevronLeft, ChevronRight, X, Sparkles, Lightbulb,
 } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const motivoRejeicaoSchema = z.string()
   .trim()
