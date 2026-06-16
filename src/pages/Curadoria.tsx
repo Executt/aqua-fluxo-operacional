@@ -146,7 +146,7 @@ export default function Curadoria() {
         .select("*", { count: "exact" })
         .order("created_at", { ascending: false });
 
-      if (filters.estado !== "all") query = query.eq("estado", filters.estado);
+      if (filters.estado !== "all") query = query.eq("estado", filters.estado as Estado);
       if (filters.ano !== "all") query = query.eq("ano_referencia", Number(filters.ano));
       if (filters.mes !== "all") query = query.eq("mes_referencia", Number(filters.mes));
       if (filteredEteIds) {
