@@ -23,8 +23,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import {
   Droplets, FileText, Send, CheckCircle2, XCircle, Clock, FileSearch, Plus, AlertTriangle,
-  Filter, ChevronLeft, ChevronRight, X,
+  Filter, ChevronLeft, ChevronRight, X, Sparkles, Lightbulb,
 } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const motivoRejeicaoSchema = z.string()
   .trim()
@@ -104,6 +105,35 @@ export default function Curadoria() {
   const [motivo, setMotivo] = useState("");
   const [motivoError, setMotivoError] = useState<string | null>(null);
   const [rejecting, setRejecting] = useState(false);
+
+  // Pré-validação IA
+  type PrecheckResult = { warnings: string[]; recomendacoes: string[]; summary: string };
+  const [precheck, setPrecheck] = useState<PrecheckResult | null>(null);
+  const precheckMut = useMutation({
+    mutationFn: async () => {
+      const payload: Record<string, unknown> = {};
+      if (form.eficiencia_dbo_pct) payload.eficiencia_dbo_pct = Number(form.eficiencia_dbo_pct);
+      if (form.vazao_media_lps)    payload.vazao_media_lps    = Number(form.vazao_media_lps);
+      if (form.ph_medio)           payload.ph_medio           = Number(form.ph_medio);
+      if (form.od_medio_mg_l)      payload.od_medio_mg_l      = Number(form.od_medio_mg_l);
+      if (form.observacoes)        payload.observacoes        = form.observacoes;
+
+      if (Object.keys(payload).length === 0) throw new Error("Preencha ao menos um parâmetro antes de pré-validar.");
+
+      const { data, error } = await supabase.functions.invoke("curadoria-ai-precheck", {
+        body: {
+          ete_id: form.ete_id || undefined,
+          ano_referencia: form.ano_referencia,
+          mes_referencia: form.mes_referencia,
+          payload,
+        },
+      });
+      if (error) throw error;
+      return data as PrecheckResult;
+    },
+    onSuccess: (data) => setPrecheck(data),
+    onError: (err: Error) => toast({ title: "Pré-validação IA", description: err.message, variant: "destructive" }),
+  });
 
   // ETEs — cache longa
   const { data: etes = [] } = useQuery({
@@ -384,7 +414,40 @@ export default function Curadoria() {
                     onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
                 </div>
               </div>
-              <div className="flex gap-2 justify-end pt-1">
+
+              {precheck && (
+                <Alert className={precheck.warnings.length ? "border-warning/50" : "border-success/50"}>
+                  <Sparkles className="h-4 w-4" />
+                  <AlertTitle className="flex items-center justify-between">
+                    <span>Pré-validação IA · {precheck.warnings.length ? `${precheck.warnings.length} aviso(s)` : "sem avisos"}</span>
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => setPrecheck(null)}>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </AlertTitle>
+                  <AlertDescription className="space-y-2 mt-2">
+                    {precheck.summary && <p className="text-[12px]">{precheck.summary}</p>}
+                    {precheck.warnings.length > 0 && (
+                      <ul className="list-disc pl-5 text-[12px] space-y-0.5">
+                        {precheck.warnings.map((w, i) => <li key={i} className="text-warning-foreground">{w}</li>)}
+                      </ul>
+                    )}
+                    {precheck.recomendacoes.length > 0 && (
+                      <div className="text-[12px]">
+                        <p className="font-medium flex items-center gap-1 mb-1"><Lightbulb className="h-3 w-3" /> Recomendações</p>
+                        <ul className="list-disc pl-5 space-y-0.5">
+                          {precheck.recomendacoes.map((r, i) => <li key={i}>{r}</li>)}
+                        </ul>
+                      </div>
+                    )}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              <div className="flex gap-2 justify-end pt-1 flex-wrap">
+                <Button variant="ghost" onClick={() => precheckMut.mutate()} disabled={precheckMut.isPending}>
+                  <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                  {precheckMut.isPending ? "Analisando..." : "Pré-validar com IA"}
+                </Button>
                 <Button variant="outline" onClick={() => submitMut.mutate("rascunho")} disabled={submitMut.isPending}>
                   Guardar rascunho
                 </Button>
