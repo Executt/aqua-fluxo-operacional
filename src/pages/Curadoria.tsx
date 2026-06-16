@@ -414,7 +414,40 @@ export default function Curadoria() {
                     onChange={(e) => setForm({ ...form, observacoes: e.target.value })} />
                 </div>
               </div>
-              <div className="flex gap-2 justify-end pt-1">
+
+              {precheck && (
+                <Alert className={precheck.warnings.length ? "border-warning/50" : "border-success/50"}>
+                  <Sparkles className="h-4 w-4" />
+                  <AlertTitle className="flex items-center justify-between">
+                    <span>Pré-validação IA · {precheck.warnings.length ? `${precheck.warnings.length} aviso(s)` : "sem avisos"}</span>
+                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={() => setPrecheck(null)}>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </AlertTitle>
+                  <AlertDescription className="space-y-2 mt-2">
+                    {precheck.summary && <p className="text-[12px]">{precheck.summary}</p>}
+                    {precheck.warnings.length > 0 && (
+                      <ul className="list-disc pl-5 text-[12px] space-y-0.5">
+                        {precheck.warnings.map((w, i) => <li key={i} className="text-warning-foreground">{w}</li>)}
+                      </ul>
+                    )}
+                    {precheck.recomendacoes.length > 0 && (
+                      <div className="text-[12px]">
+                        <p className="font-medium flex items-center gap-1 mb-1"><Lightbulb className="h-3 w-3" /> Recomendações</p>
+                        <ul className="list-disc pl-5 space-y-0.5">
+                          {precheck.recomendacoes.map((r, i) => <li key={i}>{r}</li>)}
+                        </ul>
+                      </div>
+                    )}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              <div className="flex gap-2 justify-end pt-1 flex-wrap">
+                <Button variant="ghost" onClick={() => precheckMut.mutate()} disabled={precheckMut.isPending}>
+                  <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                  {precheckMut.isPending ? "Analisando..." : "Pré-validar com IA"}
+                </Button>
                 <Button variant="outline" onClick={() => submitMut.mutate("rascunho")} disabled={submitMut.isPending}>
                   Guardar rascunho
                 </Button>
