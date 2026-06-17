@@ -48,6 +48,14 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/curadoria/auditoria"
+              element={
+                <ProtectedRoute>
+                  <CuradoriaAuditoria />
+                </ProtectedRoute>
+              }
+            />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
