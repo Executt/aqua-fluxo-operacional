@@ -50,6 +50,7 @@ const subNav: Record<string, { title: string; url: string }[]> = {
     { title: "Submissões", url: "/curadoria" },
     { title: "Validações", url: "/curadoria?tab=validacoes" },
     { title: "Importar lote", url: "/curadoria?tab=bulk" },
+    { title: "Histórico", url: "/curadoria/auditoria" },
   ],
   "/admin": [
     { title: "Usuários & LDAP", url: "/admin?tab=usuarios" },
