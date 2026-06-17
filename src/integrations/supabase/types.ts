@@ -328,6 +328,57 @@ export type Database = {
           },
         ]
       }
+      formulario_respostas_audit: {
+        Row: {
+          ano: number | null
+          changed_at: string
+          changed_by: string | null
+          estado_anterior: string | null
+          estado_novo: string | null
+          ete_id: string | null
+          id: string
+          mes: number | null
+          motivo_rejeicao: string | null
+          operacao: string
+          operador_id: string | null
+          payload_anterior: Json | null
+          payload_novo: Json | null
+          resposta_id: string
+        }
+        Insert: {
+          ano?: number | null
+          changed_at?: string
+          changed_by?: string | null
+          estado_anterior?: string | null
+          estado_novo?: string | null
+          ete_id?: string | null
+          id?: string
+          mes?: number | null
+          motivo_rejeicao?: string | null
+          operacao: string
+          operador_id?: string | null
+          payload_anterior?: Json | null
+          payload_novo?: Json | null
+          resposta_id: string
+        }
+        Update: {
+          ano?: number | null
+          changed_at?: string
+          changed_by?: string | null
+          estado_anterior?: string | null
+          estado_novo?: string | null
+          ete_id?: string | null
+          id?: string
+          mes?: number | null
+          motivo_rejeicao?: string | null
+          operacao?: string
+          operador_id?: string | null
+          payload_anterior?: Json | null
+          payload_novo?: Json | null
+          resposta_id?: string
+        }
+        Relationships: []
+      }
       infracoes: {
         Row: {
           codigo: string
