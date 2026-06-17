@@ -12,6 +12,7 @@ import Administracao from "./pages/Administracao.tsx";
 import IoTMonitor from "./pages/IoTMonitor.tsx";
 import CompliancePage from "./pages/Compliance.tsx";
 import Curadoria from "./pages/Curadoria.tsx";
+import CuradoriaAuditoria from "./pages/CuradoriaAuditoria.tsx";
 import Auth from "./pages/Auth.tsx";
 import NotFound from "./pages/NotFound.tsx";
 
