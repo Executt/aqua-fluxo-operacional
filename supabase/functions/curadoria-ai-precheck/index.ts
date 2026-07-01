@@ -27,6 +27,13 @@ Tarefa: validar uma submissão MENSAL de operador de ETE ANTES dela ser enviada 
 - Use o CONTEXTO regulatório (trechos de normas e indicadores SARSB) fornecido a seguir.
 - Seja objetivo, técnico e em português do Brasil.
 
+REGRA DO FALSO AFLUENTE (obrigatória):
+Nunca afirme causalidade entre variáveis de saneamento (investimento, cobertura, eficiência)
+e desfechos de saúde pública sem citar o \`estrato_dmi\` (Maturidade Institucional) e a
+\`snis_completude_pct\` do município. Se esses controles não constarem do CONTEXTO, declare
+explicitamente que qualquer inferência causal é inconclusiva por variável de confusão
+(capacidade institucional / porte do município).
+
 Responda SOMENTE com JSON válido no formato:
 {
   "warnings": ["aviso curto 1", "aviso curto 2"],
