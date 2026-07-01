@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      analytics_guardrail_log: {
+        Row: {
+          created_at: string
+          id: string
+          metric: string
+          outcome: string
+          reason_code: string | null
+          reason_msg: string | null
+          requested_controls: Json | null
+          stratify_by: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metric: string
+          outcome: string
+          reason_code?: string | null
+          reason_msg?: string | null
+          requested_controls?: Json | null
+          stratify_by?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metric?: string
+          outcome?: string
+          reason_code?: string | null
+          reason_msg?: string | null
+          requested_controls?: Json | null
+          stratify_by?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       compliance_scores: {
         Row: {
           created_at: string
@@ -66,6 +102,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      dim_maturidade_municipal: {
+        Row: {
+          atualizado_em: string
+          estrato_dmi: Database["public"]["Enums"]["estrato_dmi"]
+          fonte: string | null
+          idh_m: number | null
+          municipio_ibge: string
+          municipio_nome: string
+          pop_estimada: number | null
+          receita_corrente_pc: number | null
+          score_dmi: number | null
+          servidores_reg_local: number | null
+          snis_completude_pct: number | null
+          uf: string
+        }
+        Insert: {
+          atualizado_em?: string
+          estrato_dmi?: Database["public"]["Enums"]["estrato_dmi"]
+          fonte?: string | null
+          idh_m?: number | null
+          municipio_ibge: string
+          municipio_nome: string
+          pop_estimada?: number | null
+          receita_corrente_pc?: number | null
+          score_dmi?: number | null
+          servidores_reg_local?: number | null
+          snis_completude_pct?: number | null
+          uf: string
+        }
+        Update: {
+          atualizado_em?: string
+          estrato_dmi?: Database["public"]["Enums"]["estrato_dmi"]
+          fonte?: string | null
+          idh_m?: number | null
+          municipio_ibge?: string
+          municipio_nome?: string
+          pop_estimada?: number | null
+          receita_corrente_pc?: number | null
+          score_dmi?: number | null
+          servidores_reg_local?: number | null
+          snis_completude_pct?: number | null
+          uf?: string
+        }
+        Relationships: []
       }
       entidades: {
         Row: {
@@ -256,6 +337,7 @@ export type Database = {
           motivo_rejeicao: string | null
           operador_id: string
           payload: Json
+          payload_sha256: string | null
           reviewed_at: string | null
           submitted_at: string | null
           updated_at: string
@@ -273,6 +355,7 @@ export type Database = {
           motivo_rejeicao?: string | null
           operador_id: string
           payload?: Json
+          payload_sha256?: string | null
           reviewed_at?: string | null
           submitted_at?: string | null
           updated_at?: string
@@ -290,6 +373,7 @@ export type Database = {
           motivo_rejeicao?: string | null
           operador_id?: string
           payload?: Json
+          payload_sha256?: string | null
           reviewed_at?: string | null
           submitted_at?: string | null
           updated_at?: string
@@ -809,6 +893,39 @@ export type Database = {
           },
         ]
       }
+      sensitive_access_log: {
+        Row: {
+          action: string
+          created_at: string
+          filters: Json | null
+          id: string
+          ip: unknown
+          resource: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          filters?: Json | null
+          id?: string
+          ip?: unknown
+          resource: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          filters?: Json | null
+          id?: string
+          ip?: unknown
+          resource?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       sensor_leituras: {
         Row: {
           created_at: string
@@ -893,6 +1010,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      system_settings: {
+        Row: {
+          description: string | null
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          description?: string | null
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value: Json
+        }
+        Update: {
+          description?: string | null
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
       }
       tipologias_tratamento: {
         Row: {
@@ -1081,6 +1222,7 @@ export type Database = {
         | "em_analise"
         | "validado"
         | "rejeitado"
+      estrato_dmi: "A" | "B" | "C" | "D" | "E"
       faixa_eficiencia_dbo: "baixa" | "normal" | "alta"
       status_operacional:
         | "ativa"
@@ -1228,6 +1370,7 @@ export const Constants = {
         "validado",
         "rejeitado",
       ],
+      estrato_dmi: ["A", "B", "C", "D", "E"],
       faixa_eficiencia_dbo: ["baixa", "normal", "alta"],
       status_operacional: [
         "ativa",
