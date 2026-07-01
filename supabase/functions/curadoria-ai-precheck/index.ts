@@ -121,8 +121,23 @@ Deno.serve(async (req) => {
     .slice(0, 6)
     .map((d: any) => `- ${d.code} (${d.dimension}, ${d.source_org}): ${d.name} — ${d.description ?? ""}`);
 
+  // DMI (Maturidade Institucional) do município da ETE — contexto anti-confounding
+  let dmiCtx: Record<string, unknown> | null = null;
+  if (eteCtx?.municipio_nome && eteCtx?.uf) {
+    const { data: dmiRow } = await supabase
+      .from("dim_maturidade_municipal")
+      .select("municipio_nome, uf, idh_m, estrato_dmi, snis_completude_pct, servidores_reg_local")
+      .eq("uf", eteCtx.uf as string)
+      .ilike("municipio_nome", eteCtx.municipio_nome as string)
+      .maybeSingle();
+    dmiCtx = dmiRow ?? null;
+  }
+
   const contexto = [
     eteCtx ? `ETE de referência: ${JSON.stringify(eteCtx)}` : "ETE: (sem contexto)",
+    dmiCtx
+      ? `Maturidade Institucional (DMI) do município: ${JSON.stringify(dmiCtx)}`
+      : "Maturidade Institucional (DMI): (município não classificado — inferência causal proibida)",
     "Indicadores SARSB ativos:",
     ...dsCtx,
     "",
