@@ -29,6 +29,7 @@ const CompliancePage = () => {
   const { data: infracoes, isLoading: loadingInfracoes } = useInfracoes();
 
   const [filterUf, setFilterUf] = useState("all");
+  const [filterEstrato, setFilterEstrato] = useState<"all" | EstratoDmi>("all");
   const [infSearch, setInfSearch] = useState("");
   const [infStatus, setInfStatus] = useState("all");
   const [infGravidade, setInfGravidade] = useState("all");
@@ -36,6 +37,11 @@ const CompliancePage = () => {
   const [scoreFocus, setScoreFocus] = useState<string>("SABESP");
   const [audStatus, setAudStatus] = useState("all");
   const [selectedAud, setSelectedAud] = useState<any | null>(null);
+
+  const { data: dmiCounts } = useDmiCounts();
+  const { data: dmiPesos } = useDmiPesos();
+  const minGroupSize = dmiPesos?.min_group_size ?? 30;
+  const selectedN = filterEstrato === "all" ? null : (dmiCounts?.[filterEstrato] ?? 0);
 
   const concessionarias: Concessionaria[] = (scores || []).map((s: any) => ({
     ...s,
