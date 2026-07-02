@@ -1169,10 +1169,12 @@ export type Database = {
       mv_cobertura_municipal: {
         Row: {
           eficiencia_media_dbo: number | null
+          estrato_dmi: Database["public"]["Enums"]["estrato_dmi"] | null
           municipio_ibge: string | null
           pop_atendida: number | null
           qt_ativas: number | null
           qt_etes: number | null
+          snis_completude_pct: number | null
           uf: string | null
         }
         Relationships: []
@@ -1180,6 +1182,7 @@ export type Database = {
       mv_dbo_regional: {
         Row: {
           eficiencia_media_dbo: number | null
+          estrato_dmi: Database["public"]["Enums"]["estrato_dmi"] | null
           qt_alta: number | null
           qt_baixa: number | null
           qt_etes: number | null
@@ -1197,6 +1200,19 @@ export type Database = {
           nome: string | null
           qt_etes: number | null
           uf: string | null
+        }
+        Relationships: []
+      }
+      mv_saude_vs_saneamento_por_estrato: {
+        Row: {
+          completude_media: number | null
+          eficiencia_media_dbo: number | null
+          estrato_dmi: Database["public"]["Enums"]["estrato_dmi"] | null
+          incidencia_doencas_hidricas_100k: number | null
+          internacoes_dia_100k: number | null
+          pop_atendida: number | null
+          qt_etes: number | null
+          qt_municipios: number | null
         }
         Relationships: []
       }
