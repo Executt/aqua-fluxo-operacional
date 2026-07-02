@@ -103,14 +103,39 @@ const CompliancePage = () => {
   return (
     <DashboardLayout>
       <motion.div className="p-6 space-y-6" variants={stagger} initial="hidden" animate="show">
-        <motion.div variants={fadeUp} className="flex items-center justify-between">
+        <motion.div variants={fadeUp} className="flex items-center justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-heading-1 text-foreground">Gestão SARSB — Compliance</h1>
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-heading-1 text-foreground">Gestão SARSB — Compliance</h1>
+              <ConfoundingBadge
+                estrato={filterEstrato === "all" ? null : filterEstrato}
+                n={selectedN}
+                minGroupSize={minGroupSize}
+              />
+            </div>
             <p className="text-body-sm text-muted-foreground mt-1">
               Monitorização do cumprimento regulatório das concessionárias de saneamento
             </p>
           </div>
-          <Button size="sm" className="gap-2 text-[12px]"><FileText className="h-3.5 w-3.5" /> Gerar Relatório</Button>
+          <div className="flex items-end gap-3">
+            <div className="space-y-1">
+              <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">Estrato DMI</Label>
+              <Select value={filterEstrato} onValueChange={(v) => setFilterEstrato(v as any)}>
+                <SelectTrigger className="h-9 w-[190px] text-[12px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos (não estratificado)</SelectItem>
+                  {(["A", "B", "C", "D", "E"] as EstratoDmi[]).map((e) => (
+                    <SelectItem key={e} value={e}>
+                      DMI-{e} · {dmiCounts?.[e] ?? 0} municípios
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button size="sm" className="gap-2 text-[12px]"><FileText className="h-3.5 w-3.5" /> Gerar Relatório</Button>
+          </div>
         </motion.div>
 
         <motion.div variants={fadeUp} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
