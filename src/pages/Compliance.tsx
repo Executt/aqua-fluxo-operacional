@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import {
   AlertTriangle, Award, BarChart3, CheckCircle2, ClipboardCheck, FileText, Gauge, Target, XCircle,
 } from "lucide-react";
@@ -19,6 +21,8 @@ import { EvolucaoTab } from "@/components/compliance/EvolucaoTab";
 import { InfracoesTab } from "@/components/compliance/InfracoesTab";
 import { AuditoriasTab } from "@/components/compliance/AuditoriasTab";
 import { AuditoriaDialog, InfracaoDialog } from "@/components/compliance/DetailDialogs";
+import { ConfoundingBadge } from "@/components/analytics/ConfoundingBadge";
+import { useDmiCounts, useDmiPesos, type EstratoDmi } from "@/hooks/use-dmi";
 
 const CompliancePage = () => {
   const { data: scores, isLoading: loadingScores } = useComplianceScores();
