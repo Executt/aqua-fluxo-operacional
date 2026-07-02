@@ -104,6 +104,7 @@ const Administracao = () => {
           {tab === "llm" && <LLMConfig />}
           {tab === "mcp" && <MCPConfig />}
           {tab === "kb" && <KnowledgeBaseConfig />}
+          {tab === "dmi" && <DmiPesosConfig />}
           {tab === "smtp" && <SMTPConfig onSave={handleSave} onTest={handleTest} />}
           {tab === "sei" && <SEIConfig onSave={handleSave} onTest={handleTest} />}
           {tab === "sso" && <SSOConfig onSave={handleSave} onTest={handleTest} />}
