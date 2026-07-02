@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import {
   AlertTriangle, Award, BarChart3, CheckCircle2, ClipboardCheck, FileText, Gauge, Target, XCircle,
 } from "lucide-react";
@@ -19,12 +21,15 @@ import { EvolucaoTab } from "@/components/compliance/EvolucaoTab";
 import { InfracoesTab } from "@/components/compliance/InfracoesTab";
 import { AuditoriasTab } from "@/components/compliance/AuditoriasTab";
 import { AuditoriaDialog, InfracaoDialog } from "@/components/compliance/DetailDialogs";
+import { ConfoundingBadge } from "@/components/analytics/ConfoundingBadge";
+import { useDmiCounts, useDmiPesos, type EstratoDmi } from "@/hooks/use-dmi";
 
 const CompliancePage = () => {
   const { data: scores, isLoading: loadingScores } = useComplianceScores();
   const { data: infracoes, isLoading: loadingInfracoes } = useInfracoes();
 
   const [filterUf, setFilterUf] = useState("all");
+  const [filterEstrato, setFilterEstrato] = useState<"all" | EstratoDmi>("all");
   const [infSearch, setInfSearch] = useState("");
   const [infStatus, setInfStatus] = useState("all");
   const [infGravidade, setInfGravidade] = useState("all");
@@ -32,6 +37,11 @@ const CompliancePage = () => {
   const [scoreFocus, setScoreFocus] = useState<string>("SABESP");
   const [audStatus, setAudStatus] = useState("all");
   const [selectedAud, setSelectedAud] = useState<any | null>(null);
+
+  const { data: dmiCounts } = useDmiCounts();
+  const { data: dmiPesos } = useDmiPesos();
+  const minGroupSize = dmiPesos?.min_group_size ?? 30;
+  const selectedN = filterEstrato === "all" ? null : (dmiCounts?.[filterEstrato] ?? 0);
 
   const concessionarias: Concessionaria[] = (scores || []).map((s: any) => ({
     ...s,
@@ -93,14 +103,39 @@ const CompliancePage = () => {
   return (
     <DashboardLayout>
       <motion.div className="p-6 space-y-6" variants={stagger} initial="hidden" animate="show">
-        <motion.div variants={fadeUp} className="flex items-center justify-between">
+        <motion.div variants={fadeUp} className="flex items-center justify-between gap-4 flex-wrap">
           <div>
-            <h1 className="text-heading-1 text-foreground">Gestão SARSB — Compliance</h1>
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-heading-1 text-foreground">Gestão SARSB — Compliance</h1>
+              <ConfoundingBadge
+                estrato={filterEstrato === "all" ? null : filterEstrato}
+                n={selectedN}
+                minGroupSize={minGroupSize}
+              />
+            </div>
             <p className="text-body-sm text-muted-foreground mt-1">
               Monitorização do cumprimento regulatório das concessionárias de saneamento
             </p>
           </div>
-          <Button size="sm" className="gap-2 text-[12px]"><FileText className="h-3.5 w-3.5" /> Gerar Relatório</Button>
+          <div className="flex items-end gap-3">
+            <div className="space-y-1">
+              <Label className="text-[10px] uppercase tracking-wide text-muted-foreground">Estrato DMI</Label>
+              <Select value={filterEstrato} onValueChange={(v) => setFilterEstrato(v as any)}>
+                <SelectTrigger className="h-9 w-[190px] text-[12px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos (não estratificado)</SelectItem>
+                  {(["A", "B", "C", "D", "E"] as EstratoDmi[]).map((e) => (
+                    <SelectItem key={e} value={e}>
+                      DMI-{e} · {dmiCounts?.[e] ?? 0} municípios
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button size="sm" className="gap-2 text-[12px]"><FileText className="h-3.5 w-3.5" /> Gerar Relatório</Button>
+          </div>
         </motion.div>
 
         <motion.div variants={fadeUp} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

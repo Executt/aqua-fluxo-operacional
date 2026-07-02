@@ -82,7 +82,7 @@ Editar via UI de Administração (Fase 4) — reflete imediatamente no guard-rai
 
 - [x] Fase 1 — Fundação de dados (esta migração)
 - [x] Fase 2 — Guard-rail server-side (`analytics-guardrail`)
-- [ ] Fase 3 — MVs estratificadas por DMI
-- [ ] Fase 4 — UI: `<ConfoundingBadge/>`, filtro global de estrato, editor de pesos
+- [x] Fase 3 — MVs estratificadas por DMI (`mv_cobertura_municipal`, `mv_dbo_regional`, `mv_saude_vs_saneamento_por_estrato`)
+- [x] Fase 4 — UI: `<ConfoundingBadge/>`, filtro global de estrato em Compliance, editor de pesos em Administração › DMI
 - [ ] Fase 5 — Hardening: MFA obrigatório para staff, verificação de hash em transições, role `analytics_reader`
 - [ ] Fase 6 — Governança: painel de bloqueios + procedimento de publicação normativa
