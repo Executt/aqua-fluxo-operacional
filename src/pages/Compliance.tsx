@@ -175,6 +175,9 @@ const CompliancePage = () => {
               <TabsTrigger value="auditorias" className="gap-2 text-[12px] data-[state=active]:bg-primary/15 data-[state=active]:text-primary">
                 <ClipboardCheck className="h-4 w-4" /> Auditorias
               </TabsTrigger>
+              <TabsTrigger value="automacao" className="gap-2 text-[12px] data-[state=active]:bg-primary/15 data-[state=active]:text-primary">
+                <Zap className="h-4 w-4" /> Automação
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="scores">
