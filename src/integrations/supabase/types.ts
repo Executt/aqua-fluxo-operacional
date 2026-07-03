@@ -50,6 +50,186 @@ export type Database = {
         }
         Relationships: []
       }
+      compliance_escalonamentos: {
+        Row: {
+          created_at: string
+          de_gravidade: string | null
+          disparado_por: string
+          id: string
+          infracao_id: string | null
+          motivo: string
+          nivel: number
+          para_gravidade: string | null
+          plano_acao_id: string | null
+          regra_id: string | null
+          sancao_sugerida: string | null
+        }
+        Insert: {
+          created_at?: string
+          de_gravidade?: string | null
+          disparado_por?: string
+          id?: string
+          infracao_id?: string | null
+          motivo: string
+          nivel: number
+          para_gravidade?: string | null
+          plano_acao_id?: string | null
+          regra_id?: string | null
+          sancao_sugerida?: string | null
+        }
+        Update: {
+          created_at?: string
+          de_gravidade?: string | null
+          disparado_por?: string
+          id?: string
+          infracao_id?: string | null
+          motivo?: string
+          nivel?: number
+          para_gravidade?: string | null
+          plano_acao_id?: string | null
+          regra_id?: string | null
+          sancao_sugerida?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_escalonamentos_plano_acao_id_fkey"
+            columns: ["plano_acao_id"]
+            isOneToOne: false
+            referencedRelation: "planos_acao"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compliance_escalonamentos_regra_id_fkey"
+            columns: ["regra_id"]
+            isOneToOne: false
+            referencedRelation: "compliance_regras"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compliance_notificacoes: {
+        Row: {
+          assunto: string
+          canal: string
+          created_at: string
+          destinatario_email: string | null
+          destinatario_user_id: string | null
+          entidade_id: string | null
+          enviado_em: string | null
+          erro: string | null
+          id: string
+          infracao_id: string | null
+          lido_em: string | null
+          mensagem: string
+          payload_json: Json | null
+          plano_acao_id: string | null
+          status: string
+          tentativas: number
+          updated_at: string
+        }
+        Insert: {
+          assunto: string
+          canal: string
+          created_at?: string
+          destinatario_email?: string | null
+          destinatario_user_id?: string | null
+          entidade_id?: string | null
+          enviado_em?: string | null
+          erro?: string | null
+          id?: string
+          infracao_id?: string | null
+          lido_em?: string | null
+          mensagem: string
+          payload_json?: Json | null
+          plano_acao_id?: string | null
+          status?: string
+          tentativas?: number
+          updated_at?: string
+        }
+        Update: {
+          assunto?: string
+          canal?: string
+          created_at?: string
+          destinatario_email?: string | null
+          destinatario_user_id?: string | null
+          entidade_id?: string | null
+          enviado_em?: string | null
+          erro?: string | null
+          id?: string
+          infracao_id?: string | null
+          lido_em?: string | null
+          mensagem?: string
+          payload_json?: Json | null
+          plano_acao_id?: string | null
+          status?: string
+          tentativas?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_notificacoes_entidade_id_fkey"
+            columns: ["entidade_id"]
+            isOneToOne: false
+            referencedRelation: "entidades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compliance_notificacoes_plano_acao_id_fkey"
+            columns: ["plano_acao_id"]
+            isOneToOne: false
+            referencedRelation: "planos_acao"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compliance_regras: {
+        Row: {
+          ativa: boolean
+          codigo: string
+          created_at: string
+          criado_por: string | null
+          descricao: string | null
+          expressao_json: Json
+          gravidade_default: string
+          id: string
+          nome: string
+          prazo_dias: number
+          tipo: string
+          updated_at: string
+          usa_ia: boolean
+        }
+        Insert: {
+          ativa?: boolean
+          codigo: string
+          created_at?: string
+          criado_por?: string | null
+          descricao?: string | null
+          expressao_json?: Json
+          gravidade_default?: string
+          id?: string
+          nome: string
+          prazo_dias?: number
+          tipo: string
+          updated_at?: string
+          usa_ia?: boolean
+        }
+        Update: {
+          ativa?: boolean
+          codigo?: string
+          created_at?: string
+          criado_por?: string | null
+          descricao?: string | null
+          expressao_json?: Json
+          gravidade_default?: string
+          id?: string
+          nome?: string
+          prazo_dias?: number
+          tipo?: string
+          updated_at?: string
+          usa_ia?: boolean
+        }
+        Relationships: []
+      }
       compliance_scores: {
         Row: {
           created_at: string
@@ -470,10 +650,15 @@ export type Database = {
           data_ocorrencia: string
           descricao: string
           entidade_id: string
+          escalonamento_nivel: number
           gravidade: string
           id: string
           norma: string
+          origem: string
+          plano_acao_id: string | null
           prazo: string
+          prazo_tratativa: string | null
+          regra_id: string | null
           status: string
           updated_at: string
         }
@@ -483,10 +668,15 @@ export type Database = {
           data_ocorrencia?: string
           descricao: string
           entidade_id: string
+          escalonamento_nivel?: number
           gravidade?: string
           id?: string
           norma: string
+          origem?: string
+          plano_acao_id?: string | null
           prazo: string
+          prazo_tratativa?: string | null
+          regra_id?: string | null
           status?: string
           updated_at?: string
         }
@@ -496,10 +686,15 @@ export type Database = {
           data_ocorrencia?: string
           descricao?: string
           entidade_id?: string
+          escalonamento_nivel?: number
           gravidade?: string
           id?: string
           norma?: string
+          origem?: string
+          plano_acao_id?: string | null
           prazo?: string
+          prazo_tratativa?: string | null
+          regra_id?: string | null
           status?: string
           updated_at?: string
         }
@@ -509,6 +704,20 @@ export type Database = {
             columns: ["entidade_id"]
             isOneToOne: false
             referencedRelation: "entidades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "infracoes_plano_acao_id_fkey"
+            columns: ["plano_acao_id"]
+            isOneToOne: false
+            referencedRelation: "planos_acao"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "infracoes_regra_id_fkey"
+            columns: ["regra_id"]
+            isOneToOne: false
+            referencedRelation: "compliance_regras"
             referencedColumns: ["id"]
           },
         ]
@@ -716,6 +925,125 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      planos_acao: {
+        Row: {
+          concluido_em: string | null
+          created_at: string
+          descricao: string | null
+          entidade_id: string
+          estado: string
+          id: string
+          infracao_id: string | null
+          motivo_rejeicao: string | null
+          prazo_final: string
+          revisado_em: string | null
+          revisado_por: string | null
+          submetido_em: string | null
+          submetido_por: string | null
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          concluido_em?: string | null
+          created_at?: string
+          descricao?: string | null
+          entidade_id: string
+          estado?: string
+          id?: string
+          infracao_id?: string | null
+          motivo_rejeicao?: string | null
+          prazo_final: string
+          revisado_em?: string | null
+          revisado_por?: string | null
+          submetido_em?: string | null
+          submetido_por?: string | null
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          concluido_em?: string | null
+          created_at?: string
+          descricao?: string | null
+          entidade_id?: string
+          estado?: string
+          id?: string
+          infracao_id?: string | null
+          motivo_rejeicao?: string | null
+          prazo_final?: string
+          revisado_em?: string | null
+          revisado_por?: string | null
+          submetido_em?: string | null
+          submetido_por?: string | null
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planos_acao_entidade_id_fkey"
+            columns: ["entidade_id"]
+            isOneToOne: false
+            referencedRelation: "entidades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planos_acao_infracao_fk"
+            columns: ["infracao_id"]
+            isOneToOne: false
+            referencedRelation: "infracoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      planos_acao_itens: {
+        Row: {
+          acao: string
+          concluido: boolean
+          concluido_em: string | null
+          created_at: string
+          evidencia_url: string | null
+          id: string
+          ordem: number
+          plano_id: string
+          prazo: string | null
+          responsavel: string | null
+          updated_at: string
+        }
+        Insert: {
+          acao: string
+          concluido?: boolean
+          concluido_em?: string | null
+          created_at?: string
+          evidencia_url?: string | null
+          id?: string
+          ordem?: number
+          plano_id: string
+          prazo?: string | null
+          responsavel?: string | null
+          updated_at?: string
+        }
+        Update: {
+          acao?: string
+          concluido?: boolean
+          concluido_em?: string | null
+          created_at?: string
+          evidencia_url?: string | null
+          id?: string
+          ordem?: number
+          plano_id?: string
+          prazo?: string | null
+          responsavel?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "planos_acao_itens_plano_id_fkey"
+            columns: ["plano_id"]
+            isOneToOne: false
+            referencedRelation: "planos_acao"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

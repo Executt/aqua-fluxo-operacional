@@ -37,6 +37,7 @@ const subNav: Record<string, { title: string; url: string }[]> = {
     { title: "Scores", url: "/compliance" },
     { title: "Infrações", url: "/compliance?tab=infracoes" },
     { title: "Auditorias", url: "/compliance?tab=auditorias" },
+    { title: "Automação", url: "/compliance?tab=automacao" },
   ],
   "/entidades": [
     { title: "Lista", url: "/entidades" },

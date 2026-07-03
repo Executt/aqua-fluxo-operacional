@@ -17,3 +17,13 @@ verify_jwt = false
 
 [functions.curadoria-ai-precheck]
 verify_jwt = true
+
+[functions.compliance-auto-detect]
+verify_jwt = true
+
+[functions.compliance-notify-dispatch]
+verify_jwt = true
+
+[functions.compliance-plano-transition]
+verify_jwt = true
+
