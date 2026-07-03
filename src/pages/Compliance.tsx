@@ -225,6 +225,10 @@ const CompliancePage = () => {
                 onSelect={setSelectedAud}
               />
             </TabsContent>
+
+            <TabsContent value="automacao">
+              <AutomacaoTab />
+            </TabsContent>
           </Tabs>
         </motion.div>
       </motion.div>
