@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import {
-  AlertTriangle, Award, BarChart3, CheckCircle2, ClipboardCheck, FileText, Gauge, Target, XCircle,
+  AlertTriangle, Award, BarChart3, CheckCircle2, ClipboardCheck, FileText, Gauge, Target, XCircle, Zap,
 } from "lucide-react";
 import { CHART_COLORS, CHART_GRID } from "@/lib/chart-colors";
 import { useComplianceScores, useInfracoes } from "@/hooks/use-sigsan-data";
@@ -18,6 +18,7 @@ import {
 import { ScoresTab } from "@/components/compliance/ScoresTab";
 import { RankingTab } from "@/components/compliance/RankingTab";
 import { EvolucaoTab } from "@/components/compliance/EvolucaoTab";
+import { AutomacaoTab } from "@/components/compliance/AutomacaoTab";
 import { InfracoesTab } from "@/components/compliance/InfracoesTab";
 import { AuditoriasTab } from "@/components/compliance/AuditoriasTab";
 import { AuditoriaDialog, InfracaoDialog } from "@/components/compliance/DetailDialogs";
