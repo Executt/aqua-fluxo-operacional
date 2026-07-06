@@ -1,7 +1,7 @@
 import { NavLink as RRNavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Globe, Radio, ShieldCheck, Building2, BrainCircuit, Settings, Droplets,
-  Search, Bell, Sun, HelpCircle, ChevronDown, LogOut, LogIn,
+  Search, Sun, HelpCircle, ChevronDown, LogOut, LogIn,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { NotificationBell } from "@/components/NotificationBell";
 
 const modules = [
   { title: "Visão Global", url: "/", icon: Globe },
@@ -58,6 +59,7 @@ const subNav: Record<string, { title: string; url: string }[]> = {
     { title: "Modelos de LLM", url: "/admin?tab=llm" },
     { title: "Servidores MCP", url: "/admin?tab=mcp" },
     { title: "Base de conhecimento", url: "/admin?tab=kb" },
+    { title: "Regras compliance", url: "/admin?tab=regras" },
     { title: "SMTP", url: "/admin?tab=smtp" },
     { title: "SEI", url: "/admin?tab=sei" },
     { title: "SSO / Keycloak", url: "/admin?tab=sso" },
@@ -141,10 +143,7 @@ export function TopNav() {
           <button className="h-9 w-9 rounded-md flex items-center justify-center hover:bg-secondary text-muted-foreground transition-colors">
             <Sun className="h-4 w-4" />
           </button>
-          <button className="h-9 w-9 rounded-md flex items-center justify-center hover:bg-secondary text-muted-foreground transition-colors relative">
-            <Bell className="h-4 w-4" />
-            <span className="absolute top-2 right-2 h-1.5 w-1.5 rounded-full bg-destructive" />
-          </button>
+          <NotificationBell />
           <div className="h-6 w-px bg-border mx-1" />
           {user ? (
             <DropdownMenu>
