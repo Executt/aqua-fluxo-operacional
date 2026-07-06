@@ -27,3 +27,6 @@ verify_jwt = true
 [functions.compliance-plano-transition]
 verify_jwt = true
 
+[functions.compliance-escalonamento-cron]
+verify_jwt = false
+
