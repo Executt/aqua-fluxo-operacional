@@ -30,3 +30,7 @@ verify_jwt = true
 [functions.compliance-escalonamento-cron]
 verify_jwt = false
 
+[functions.entidade-api-keys]
+verify_jwt = true
+
+
