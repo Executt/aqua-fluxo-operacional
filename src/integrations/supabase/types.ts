@@ -328,6 +328,106 @@ export type Database = {
         }
         Relationships: []
       }
+      entidade_api_keys: {
+        Row: {
+          created_at: string
+          criada_por: string | null
+          entidade_id: string
+          expires_at: string | null
+          id: string
+          key_hash: string
+          key_prefix: string
+          last_used_at: string | null
+          nome: string
+          revoked_at: string | null
+          revoked_by: string | null
+          scopes: string[]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          criada_por?: string | null
+          entidade_id: string
+          expires_at?: string | null
+          id?: string
+          key_hash: string
+          key_prefix: string
+          last_used_at?: string | null
+          nome: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          scopes?: string[]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          criada_por?: string | null
+          entidade_id?: string
+          expires_at?: string | null
+          id?: string
+          key_hash?: string
+          key_prefix?: string
+          last_used_at?: string | null
+          nome?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          scopes?: string[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entidade_api_keys_entidade_id_fkey"
+            columns: ["entidade_id"]
+            isOneToOne: false
+            referencedRelation: "entidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      entidade_integracao_config: {
+        Row: {
+          atualizado_por: string | null
+          contatos: Json
+          created_at: string
+          entidade_id: string
+          id: string
+          notificacoes_ativas: boolean
+          updated_at: string
+          webhook_secret_name: string | null
+          webhook_url: string | null
+        }
+        Insert: {
+          atualizado_por?: string | null
+          contatos?: Json
+          created_at?: string
+          entidade_id: string
+          id?: string
+          notificacoes_ativas?: boolean
+          updated_at?: string
+          webhook_secret_name?: string | null
+          webhook_url?: string | null
+        }
+        Update: {
+          atualizado_por?: string | null
+          contatos?: Json
+          created_at?: string
+          entidade_id?: string
+          id?: string
+          notificacoes_ativas?: boolean
+          updated_at?: string
+          webhook_secret_name?: string | null
+          webhook_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entidade_integracao_config_entidade_id_fkey"
+            columns: ["entidade_id"]
+            isOneToOne: true
+            referencedRelation: "entidades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       entidades: {
         Row: {
           area_atuacao: string
