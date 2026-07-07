@@ -44,7 +44,10 @@ const subNav: Record<string, { title: string; url: string }[]> = {
     { title: "Lista", url: "/entidades" },
     { title: "Cadastro", url: "/entidades?tab=novo" },
     { title: "ETEs", url: "/entidades?tab=etes" },
+    { title: "Chaves de API", url: "/entidades?tab=chaves" },
+    { title: "Integração", url: "/entidades?tab=integracao" },
   ],
+
   "/cortex": [
     { title: "Chat IA", url: "/cortex" },
   ],
