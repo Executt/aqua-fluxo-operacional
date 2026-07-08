@@ -283,6 +283,132 @@ export type Database = {
           },
         ]
       }
+      data_repositories: {
+        Row: {
+          active: boolean
+          config: Json
+          created_at: string
+          created_by: string | null
+          credentials_ref: string | null
+          description: string | null
+          doc_count: number
+          id: string
+          kind: Database["public"]["Enums"]["repo_kind"]
+          last_test_at: string | null
+          last_test_message: string | null
+          last_test_status:
+            | Database["public"]["Enums"]["conn_test_status"]
+            | null
+          name: string
+          provider: Database["public"]["Enums"]["repo_provider"]
+          size_bytes: number
+          tags: string[]
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          credentials_ref?: string | null
+          description?: string | null
+          doc_count?: number
+          id?: string
+          kind?: Database["public"]["Enums"]["repo_kind"]
+          last_test_at?: string | null
+          last_test_message?: string | null
+          last_test_status?:
+            | Database["public"]["Enums"]["conn_test_status"]
+            | null
+          name: string
+          provider: Database["public"]["Enums"]["repo_provider"]
+          size_bytes?: number
+          tags?: string[]
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          credentials_ref?: string | null
+          description?: string | null
+          doc_count?: number
+          id?: string
+          kind?: Database["public"]["Enums"]["repo_kind"]
+          last_test_at?: string | null
+          last_test_message?: string | null
+          last_test_status?:
+            | Database["public"]["Enums"]["conn_test_status"]
+            | null
+          name?: string
+          provider?: Database["public"]["Enums"]["repo_provider"]
+          size_bytes?: number
+          tags?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      database_connections: {
+        Row: {
+          active: boolean
+          config: Json
+          created_at: string
+          created_by: string | null
+          credentials_ref: string | null
+          description: string | null
+          engine: Database["public"]["Enums"]["db_engine"]
+          id: string
+          last_test_at: string | null
+          last_test_message: string | null
+          last_test_status:
+            | Database["public"]["Enums"]["conn_test_status"]
+            | null
+          name: string
+          read_only: boolean
+          tags: string[]
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          credentials_ref?: string | null
+          description?: string | null
+          engine: Database["public"]["Enums"]["db_engine"]
+          id?: string
+          last_test_at?: string | null
+          last_test_message?: string | null
+          last_test_status?:
+            | Database["public"]["Enums"]["conn_test_status"]
+            | null
+          name: string
+          read_only?: boolean
+          tags?: string[]
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          config?: Json
+          created_at?: string
+          created_by?: string | null
+          credentials_ref?: string | null
+          description?: string | null
+          engine?: Database["public"]["Enums"]["db_engine"]
+          id?: string
+          last_test_at?: string | null
+          last_test_message?: string | null
+          last_test_status?:
+            | Database["public"]["Enums"]["conn_test_status"]
+            | null
+          name?: string
+          read_only?: boolean
+          tags?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       dim_maturidade_municipal: {
         Row: {
           atualizado_em: string
@@ -1660,6 +1786,24 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "gestor" | "auditor" | "operador"
+      conn_test_status: "ok" | "warn" | "fail" | "pending"
+      db_engine:
+        | "postgres"
+        | "mysql"
+        | "mssql"
+        | "mariadb"
+        | "mongodb"
+        | "oracle"
+        | "oci_autonomous"
+        | "snowflake"
+        | "bigquery"
+        | "redshift"
+        | "clickhouse"
+        | "dynamodb"
+        | "cosmosdb"
+        | "sqlite"
+        | "duckdb"
+        | "outro"
       estado_resposta:
         | "rascunho"
         | "submetido"
@@ -1668,6 +1812,23 @@ export type Database = {
         | "rejeitado"
       estrato_dmi: "A" | "B" | "C" | "D" | "E"
       faixa_eficiencia_dbo: "baixa" | "normal" | "alta"
+      repo_kind: "documents" | "images" | "geospatial" | "mixed"
+      repo_provider:
+        | "aws_s3"
+        | "azure_blob"
+        | "gcp_gcs"
+        | "oci_object"
+        | "google_drive"
+        | "onedrive"
+        | "sharepoint"
+        | "dropbox"
+        | "box"
+        | "filesystem"
+        | "ftp"
+        | "sftp"
+        | "http"
+        | "minio"
+        | "outro"
       status_operacional:
         | "ativa"
         | "em_construcao_ampliacao"
@@ -1807,6 +1968,25 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "gestor", "auditor", "operador"],
+      conn_test_status: ["ok", "warn", "fail", "pending"],
+      db_engine: [
+        "postgres",
+        "mysql",
+        "mssql",
+        "mariadb",
+        "mongodb",
+        "oracle",
+        "oci_autonomous",
+        "snowflake",
+        "bigquery",
+        "redshift",
+        "clickhouse",
+        "dynamodb",
+        "cosmosdb",
+        "sqlite",
+        "duckdb",
+        "outro",
+      ],
       estado_resposta: [
         "rascunho",
         "submetido",
@@ -1816,6 +1996,24 @@ export const Constants = {
       ],
       estrato_dmi: ["A", "B", "C", "D", "E"],
       faixa_eficiencia_dbo: ["baixa", "normal", "alta"],
+      repo_kind: ["documents", "images", "geospatial", "mixed"],
+      repo_provider: [
+        "aws_s3",
+        "azure_blob",
+        "gcp_gcs",
+        "oci_object",
+        "google_drive",
+        "onedrive",
+        "sharepoint",
+        "dropbox",
+        "box",
+        "filesystem",
+        "ftp",
+        "sftp",
+        "http",
+        "minio",
+        "outro",
+      ],
       status_operacional: [
         "ativa",
         "em_construcao_ampliacao",
