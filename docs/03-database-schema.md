@@ -130,3 +130,32 @@ Ver [`10-modulo-curadoria.md`](./10-modulo-curadoria.md) para diagrama, state ma
 
 ### Camada analítica (Star Schema)
 Materialized views: `dim_municipio`, `dim_tipologia`, `dim_operador`, `fato_etes_curadoria`, `mv_cobertura_municipal`, `mv_etes_por_tipologia`, `mv_dbo_regional`. Acesso REVOGADO de `anon`/`authenticated` — só `metabase_reader`.
+
+---
+
+## Módulo Base de Conhecimento — Repositórios & Bases de Dados (v3.2)
+
+### `data_repositories` — Repositórios de arquivos
+Metadados de repositórios que hospedam documentos (PDF/Word/Excel/TXT/CSV/MD), imagens ou arquivos geoespaciais.
+
+| Coluna | Tipo | Notas |
+|---|---|---|
+| `kind` | `repo_kind` | `documents` / `images` / `geospatial` / `mixed` |
+| `provider` | `repo_provider` | `aws_s3`, `azure_blob`, `gcp_gcs`, `oci_object`, `minio`, `google_drive`, `onedrive`, `sharepoint`, `dropbox`, `box`, `filesystem`, `ftp`, `sftp`, `http`, `outro` |
+| `config` | jsonb | Campos específicos por provider (bucket, endpoint, região, path…) |
+| `credentials_ref` | text | Nome do segredo no cofre |
+| `last_test_status` | `conn_test_status` | `ok` / `warn` / `fail` / `pending` |
+| `last_test_message`, `last_test_at` | — | Resultado do último teste |
+| `tags`, `active`, `doc_count`, `size_bytes` | — | Metadados |
+
+### `database_connections` — Conexões a bancos de dados
+| Coluna | Tipo | Notas |
+|---|---|---|
+| `engine` | `db_engine` | `postgres`, `mysql`, `mariadb`, `mssql`, `oracle`, `oci_autonomous`, `mongodb`, `dynamodb`, `cosmosdb`, `snowflake`, `bigquery`, `redshift`, `clickhouse`, `sqlite`, `duckdb`, `outro` |
+| `config` | jsonb | host/port/database/schema/account/… |
+| `read_only` | bool | Flag de segurança |
+| `last_test_*` | — | mesmo padrão de `data_repositories` |
+
+**RLS**: leitura por staff (`is_staff`); escrita apenas admin/gestor. Segredos ficam idealmente em `credentials_ref` → cofre.
+
+> Substitui as tabelas anteriores focadas em PDF/SARSB: agora qualquer tipo de repositório de arquivo ou base de dados corporativa pode ser cadastrado com formulário dinâmico por provider/engine e teste de conexão automático via edge function `connection-test`.

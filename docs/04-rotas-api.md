@@ -128,3 +128,20 @@ Retorna `{ inserted, errors[{idx, ete_id, error}] }`. Tolerante a falhas parciai
 | `409` | Conflito (ex: CNPJ duplicado) |
 | `429` | Rate limit |
 | `500` | Erro interno |
+
+## 5. Edge Function — `connection-test` (v3.2)
+
+**POST** `/functions/v1/connection-test` — `verify_jwt = true`, requer role admin/gestor.
+
+```json
+{ "target": "repository" | "database", "id": "uuid" }
+```
+
+Resposta:
+```json
+{ "status": "ok" | "warn" | "fail", "message": "…", "latency_ms": 234 }
+```
+
+Executa reachability HTTP/HTTPS quando aplicável (S3, Azure Blob, GCS, Snowflake, BigQuery, SharePoint, Drive, HTTP/WebDAV). Para engines cujo driver nativo não roda em Deno Edge (Postgres, MySQL, Mongo, Oracle, FTP, SFTP, filesystem) retorna `warn` validando apenas o schema da configuração — o teste real deve ser feito por worker/agent dedicado.
+
+O resultado é persistido em `last_test_status` / `last_test_message` / `last_test_at` da tabela alvo.
