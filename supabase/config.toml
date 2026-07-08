@@ -33,4 +33,8 @@ verify_jwt = false
 [functions.entidade-api-keys]
 verify_jwt = true
 
+[functions.connection-test]
+verify_jwt = true
+
+
 
