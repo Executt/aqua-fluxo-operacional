@@ -435,10 +435,8 @@ export function DataRepositoriesConfig() {
                       )}
                     </div>
                     <div className="flex flex-col gap-1 shrink-0">
-                      <Switch checked={r.active} onCheckedChange={async (v) => {
-                        await supabase.from("data_repositories" as any).update({ active: v }).eq("id", r.id);
-                        qc.invalidateQueries({ queryKey: ["data_repositories"] });
-                      }} className="scale-75" />
+                      <Switch checked={r.active} onCheckedChange={(v) => toggleActive(r, v)} className="scale-75" />
+
                       <div className="flex gap-1">
                         <Button variant="ghost" size="sm" className="h-7 w-7 p-0"
                           onClick={() => testConn(r)} disabled={testingId === r.id} title="Testar conexão (assíncrono)">
