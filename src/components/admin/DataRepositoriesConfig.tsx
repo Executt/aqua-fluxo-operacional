@@ -518,6 +518,17 @@ export function DataRepositoriesConfig() {
                   onChange={(e) => setForm({ ...form, credentials_ref: e.target.value })} />
               </div>
 
+              <div className="space-y-1.5">
+                <Label className="text-[11px]">
+                  Motivo da alteração <span className="text-destructive">*</span>
+                </Label>
+                <Input className="h-9 text-[12px]" placeholder="Ex.: novo bucket de normativos da ANA"
+                  value={motivo} onChange={(e) => setMotivo(e.target.value)} />
+                <p className="text-[10px] text-muted-foreground">
+                  Registado na trilha de auditoria com o seu utilizador e data/hora.
+                </p>
+              </div>
+
               <div className="flex items-center gap-2">
                 <Switch checked={form.active ?? true} onCheckedChange={(v) => setForm({ ...form, active: v })} />
                 <Label className="text-[12px]">Ativo</Label>
@@ -531,6 +542,20 @@ export function DataRepositoriesConfig() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <ConnectionJobsDialog
+          open={jobsOpen}
+          onOpenChange={setJobsOpen}
+          target="repository"
+          targetId={jobsTarget?.id ?? null}
+          targetName={jobsTarget?.name}
+        />
+        <RepositorySyncDialog
+          open={syncOpen}
+          onOpenChange={setSyncOpen}
+          repo={syncTarget}
+        />
+
       </CardContent>
     </Card>
   );
