@@ -401,7 +401,7 @@ export function DataRepositoriesConfig() {
                         </Button>
                         <Button variant="ghost" size="sm" className="h-7 w-7 p-0" title="Histórico de testes"
                           onClick={() => { setJobsTarget(r); setJobsOpen(true); }}>
-                          <History className="h-3.5 w-3.5" />
+                          <HistoryIcon className="h-3.5 w-3.5" />
                         </Button>
                         <Button variant="ghost" size="sm" className="h-7 w-7 p-0" title="Sincronizar"
                           onClick={() => { setSyncTarget(r); setSyncOpen(true); }}>
