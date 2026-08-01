@@ -12,9 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Database, Plus, Trash2, Edit3, Search, Zap, Loader2,
-  CheckCircle2, AlertTriangle, XCircle, Lock, Unlock,
+  CheckCircle2, AlertTriangle, XCircle, Lock, Unlock, History as HistoryIcon,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ConnectionJobsDialog } from "@/components/admin/ConnectionJobsDialog";
+import { logInfraAudit, redact } from "@/lib/infra-audit";
+
 
 type Engine =
   | "postgres" | "mysql" | "mssql" | "mariadb" | "mongodb" | "oracle"
