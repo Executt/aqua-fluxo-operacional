@@ -207,6 +207,11 @@ export function DataRepositoriesConfig() {
     kind: "documents", provider: "aws_s3", active: true, tagsText: "", config: {},
   });
   const [testingId, setTestingId] = useState<string | null>(null);
+  const [motivo, setMotivo] = useState("");
+  const [jobsOpen, setJobsOpen] = useState(false);
+  const [jobsTarget, setJobsTarget] = useState<Repo | null>(null);
+  const [syncOpen, setSyncOpen] = useState(false);
+  const [syncTarget, setSyncTarget] = useState<Repo | null>(null);
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["data_repositories"],
@@ -229,11 +234,13 @@ export function DataRepositoriesConfig() {
 
   const openNew = () => {
     setEditing(null);
+    setMotivo("");
     setForm({ kind: "documents", provider: "aws_s3", active: true, tagsText: "", config: {} });
     setOpen(true);
   };
   const openEdit = (r: Repo) => {
     setEditing(r);
+    setMotivo("");
     setForm({ ...r, tagsText: r.tags?.join(", ") ?? "", config: r.config || {} });
     setOpen(true);
   };
@@ -241,6 +248,7 @@ export function DataRepositoriesConfig() {
   const save = useMutation({
     mutationFn: async () => {
       if (!form.name) throw new Error("Nome é obrigatório");
+      if (motivo.trim().length < 5) throw new Error("Informe o motivo da alteração (mín. 5 caracteres) para a trilha de auditoria");
       const spec = CONFIG_SCHEMA[form.provider as Provider] || [];
       for (const f of spec) {
         if (f.required && !form.config?.[f.key]) throw new Error(`Campo obrigatório: ${f.label}`);
@@ -257,15 +265,29 @@ export function DataRepositoriesConfig() {
         active: form.active ?? true,
       };
       if (editing) {
-        const { error } = await supabase.from("data_repositories" as any).update(payload).eq("id", editing.id);
+        const { error } = await supabase.from("data_repositories" as any)
+          .update({ ...payload, version: (editing as any).version ? (editing as any).version + 1 : 2 })
+          .eq("id", editing.id);
         if (error) throw error;
+        await logInfraAudit({
+          entity_type: "repository", entity_id: editing.id, entity_name: payload.name,
+          action: "update", motivo: motivo.trim(),
+          before_json: { ...editing, config: redact(editing.config) },
+          after_json: { ...payload, config: redact(payload.config) },
+        });
       } else {
-        const { error } = await supabase.from("data_repositories" as any).insert(payload);
+        const { data, error } = await supabase.from("data_repositories" as any).insert(payload).select("id").single();
         if (error) throw error;
+        await logInfraAudit({
+          entity_type: "repository", entity_id: (data as any).id, entity_name: payload.name,
+          action: "create", motivo: motivo.trim(),
+          after_json: { ...payload, config: redact(payload.config) },
+        });
       }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["data_repositories"] });
+      qc.invalidateQueries({ queryKey: ["infra_audit_log"] });
       toast({ title: editing ? "Repositório atualizado" : "Repositório cadastrado" });
       setOpen(false);
     },
@@ -273,36 +295,54 @@ export function DataRepositoriesConfig() {
   });
 
   const remove = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("data_repositories" as any).delete().eq("id", id);
+    mutationFn: async (r: Repo) => {
+      const { error } = await supabase.from("data_repositories" as any).delete().eq("id", r.id);
       if (error) throw error;
+      await logInfraAudit({
+        entity_type: "repository", entity_id: r.id, entity_name: r.name,
+        action: "delete", motivo: "Remoção via painel de administração",
+        before_json: { ...r, config: redact(r.config) },
+      });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["data_repositories"] });
+      qc.invalidateQueries({ queryKey: ["infra_audit_log"] });
       toast({ title: "Repositório removido" });
     },
   });
 
+  const toggleActive = async (r: Repo, v: boolean) => {
+    await supabase.from("data_repositories" as any).update({ active: v }).eq("id", r.id);
+    await logInfraAudit({
+      entity_type: "repository", entity_id: r.id, entity_name: r.name,
+      action: v ? "activate" : "deactivate",
+      motivo: v ? "Ativação via painel" : "Desativação via painel",
+    });
+    qc.invalidateQueries({ queryKey: ["data_repositories"] });
+    qc.invalidateQueries({ queryKey: ["infra_audit_log"] });
+  };
+
+  // Teste assíncrono: enfileira o job e abre o histórico (a UI não bloqueia).
   const testConn = async (r: Repo) => {
     setTestingId(r.id);
     try {
-      const { data, error } = await supabase.functions.invoke("connection-test", {
+      const { error } = await supabase.functions.invoke("connection-test", {
         body: { target: "repository", id: r.id },
       });
       if (error) throw error;
-      const status = data?.status || "warn";
-      toast({
-        title: `Teste: ${status.toUpperCase()}`,
-        description: data?.message || "Concluído",
-        variant: status === "fail" ? "destructive" : "default",
-      });
+      toast({ title: "Teste enfileirado", description: "Acompanhe o resultado no histórico." });
+      setJobsTarget(r);
+      setJobsOpen(true);
+      qc.invalidateQueries({ queryKey: ["connection_test_jobs", "repository", r.id] });
       qc.invalidateQueries({ queryKey: ["data_repositories"] });
     } catch (e: any) {
-      toast({ title: "Falha no teste", description: e.message, variant: "destructive" });
+      toast({ title: "Falha ao enfileirar teste", description: e.message, variant: "destructive" });
     } finally {
       setTestingId(null);
     }
   };
+
+
 
   const spec = CONFIG_SCHEMA[form.provider as Provider] || [];
   const totalActive = items.filter((i) => i.active).length;
