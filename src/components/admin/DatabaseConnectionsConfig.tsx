@@ -450,7 +450,6 @@ export function DatabaseConnectionsConfig() {
                   </div>
                 </div>
 
-                </div>
                 {r.tags?.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1">
                     {r.tags.map((t) => (
