@@ -396,16 +396,25 @@ export function DataRepositoriesConfig() {
                       }} className="scale-75" />
                       <div className="flex gap-1">
                         <Button variant="ghost" size="sm" className="h-7 w-7 p-0"
-                          onClick={() => testConn(r)} disabled={testingId === r.id} title="Testar conexão">
+                          onClick={() => testConn(r)} disabled={testingId === r.id} title="Testar conexão (assíncrono)">
                           {testingId === r.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Zap className="h-3.5 w-3.5 text-primary" />}
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" title="Histórico de testes"
+                          onClick={() => { setJobsTarget(r); setJobsOpen(true); }}>
+                          <History className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" title="Sincronizar"
+                          onClick={() => { setSyncTarget(r); setSyncOpen(true); }}>
+                          <FolderSync className="h-3.5 w-3.5" />
                         </Button>
                         <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => openEdit(r)}>
                           <Edit3 className="h-3.5 w-3.5" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => remove.mutate(r.id)}>
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => remove.mutate(r)}>
                           <Trash2 className="h-3.5 w-3.5 text-destructive" />
                         </Button>
                       </div>
+
                     </div>
                   </div>
                   {r.tags?.length > 0 && (
