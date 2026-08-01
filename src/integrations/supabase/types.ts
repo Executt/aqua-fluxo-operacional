@@ -283,6 +283,57 @@ export type Database = {
           },
         ]
       }
+      connection_test_jobs: {
+        Row: {
+          attempt: number
+          created_at: string
+          finished_at: string | null
+          id: string
+          latency_ms: number | null
+          message: string | null
+          requested_by: string | null
+          result_status: Database["public"]["Enums"]["conn_test_status"] | null
+          started_at: string | null
+          state: string
+          target: string
+          target_id: string
+          target_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          attempt?: number
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          latency_ms?: number | null
+          message?: string | null
+          requested_by?: string | null
+          result_status?: Database["public"]["Enums"]["conn_test_status"] | null
+          started_at?: string | null
+          state?: string
+          target: string
+          target_id: string
+          target_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          attempt?: number
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          latency_ms?: number | null
+          message?: string | null
+          requested_by?: string | null
+          result_status?: Database["public"]["Enums"]["conn_test_status"] | null
+          started_at?: string | null
+          state?: string
+          target?: string
+          target_id?: string
+          target_name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       data_repositories: {
         Row: {
           active: boolean
@@ -292,8 +343,12 @@ export type Database = {
           credentials_ref: string | null
           description: string | null
           doc_count: number
+          file_types: string[]
+          folder_mappings: Json
           id: string
           kind: Database["public"]["Enums"]["repo_kind"]
+          last_sync_at: string | null
+          last_sync_status: string | null
           last_test_at: string | null
           last_test_message: string | null
           last_test_status:
@@ -304,6 +359,7 @@ export type Database = {
           size_bytes: number
           tags: string[]
           updated_at: string
+          version: number
         }
         Insert: {
           active?: boolean
@@ -313,8 +369,12 @@ export type Database = {
           credentials_ref?: string | null
           description?: string | null
           doc_count?: number
+          file_types?: string[]
+          folder_mappings?: Json
           id?: string
           kind?: Database["public"]["Enums"]["repo_kind"]
+          last_sync_at?: string | null
+          last_sync_status?: string | null
           last_test_at?: string | null
           last_test_message?: string | null
           last_test_status?:
@@ -325,6 +385,7 @@ export type Database = {
           size_bytes?: number
           tags?: string[]
           updated_at?: string
+          version?: number
         }
         Update: {
           active?: boolean
@@ -334,8 +395,12 @@ export type Database = {
           credentials_ref?: string | null
           description?: string | null
           doc_count?: number
+          file_types?: string[]
+          folder_mappings?: Json
           id?: string
           kind?: Database["public"]["Enums"]["repo_kind"]
+          last_sync_at?: string | null
+          last_sync_status?: string | null
           last_test_at?: string | null
           last_test_message?: string | null
           last_test_status?:
@@ -346,18 +411,21 @@ export type Database = {
           size_bytes?: number
           tags?: string[]
           updated_at?: string
+          version?: number
         }
         Relationships: []
       }
       database_connections: {
         Row: {
           active: boolean
+          compat_notes: string | null
           config: Json
           created_at: string
           created_by: string | null
           credentials_ref: string | null
           description: string | null
           engine: Database["public"]["Enums"]["db_engine"]
+          engine_version: string | null
           id: string
           last_test_at: string | null
           last_test_message: string | null
@@ -368,15 +436,18 @@ export type Database = {
           read_only: boolean
           tags: string[]
           updated_at: string
+          version: number
         }
         Insert: {
           active?: boolean
+          compat_notes?: string | null
           config?: Json
           created_at?: string
           created_by?: string | null
           credentials_ref?: string | null
           description?: string | null
           engine: Database["public"]["Enums"]["db_engine"]
+          engine_version?: string | null
           id?: string
           last_test_at?: string | null
           last_test_message?: string | null
@@ -387,15 +458,18 @@ export type Database = {
           read_only?: boolean
           tags?: string[]
           updated_at?: string
+          version?: number
         }
         Update: {
           active?: boolean
+          compat_notes?: string | null
           config?: Json
           created_at?: string
           created_by?: string | null
           credentials_ref?: string | null
           description?: string | null
           engine?: Database["public"]["Enums"]["db_engine"]
+          engine_version?: string | null
           id?: string
           last_test_at?: string | null
           last_test_message?: string | null
@@ -406,6 +480,7 @@ export type Database = {
           read_only?: boolean
           tags?: string[]
           updated_at?: string
+          version?: number
         }
         Relationships: []
       }
@@ -869,6 +944,48 @@ export type Database = {
         }
         Relationships: []
       }
+      infra_audit_log: {
+        Row: {
+          action: string
+          after_json: Json | null
+          before_json: Json | null
+          changed_by: string | null
+          changed_by_email: string | null
+          created_at: string
+          entity_id: string
+          entity_name: string | null
+          entity_type: string
+          id: string
+          motivo: string | null
+        }
+        Insert: {
+          action: string
+          after_json?: Json | null
+          before_json?: Json | null
+          changed_by?: string | null
+          changed_by_email?: string | null
+          created_at?: string
+          entity_id: string
+          entity_name?: string | null
+          entity_type: string
+          id?: string
+          motivo?: string | null
+        }
+        Update: {
+          action?: string
+          after_json?: Json | null
+          before_json?: Json | null
+          changed_by?: string | null
+          changed_by_email?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_name?: string | null
+          entity_type?: string
+          id?: string
+          motivo?: string | null
+        }
+        Relationships: []
+      }
       infracoes: {
         Row: {
           codigo: string
@@ -1318,6 +1435,74 @@ export type Database = {
             columns: ["operador_id"]
             isOneToOne: false
             referencedRelation: "operadores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      repository_sync_jobs: {
+        Row: {
+          bytes_synced: number
+          created_at: string
+          file_types: string[]
+          files_found: number
+          files_skipped: number
+          files_synced: number
+          finished_at: string | null
+          id: string
+          message: string | null
+          mode: string
+          repository_id: string
+          requested_by: string | null
+          source_path: string | null
+          started_at: string | null
+          state: string
+          updated_at: string
+          warnings: Json
+        }
+        Insert: {
+          bytes_synced?: number
+          created_at?: string
+          file_types?: string[]
+          files_found?: number
+          files_skipped?: number
+          files_synced?: number
+          finished_at?: string | null
+          id?: string
+          message?: string | null
+          mode?: string
+          repository_id: string
+          requested_by?: string | null
+          source_path?: string | null
+          started_at?: string | null
+          state?: string
+          updated_at?: string
+          warnings?: Json
+        }
+        Update: {
+          bytes_synced?: number
+          created_at?: string
+          file_types?: string[]
+          files_found?: number
+          files_skipped?: number
+          files_synced?: number
+          finished_at?: string | null
+          id?: string
+          message?: string | null
+          mode?: string
+          repository_id?: string
+          requested_by?: string | null
+          source_path?: string | null
+          started_at?: string | null
+          state?: string
+          updated_at?: string
+          warnings?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "repository_sync_jobs_repository_id_fkey"
+            columns: ["repository_id"]
+            isOneToOne: false
+            referencedRelation: "data_repositories"
             referencedColumns: ["id"]
           },
         ]
