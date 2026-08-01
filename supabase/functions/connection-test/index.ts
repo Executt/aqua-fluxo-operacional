@@ -137,6 +137,47 @@ async function testDatabase(engine: string, cfg: Record<string, any>): Promise<R
   }
 }
 
+// Execução assíncrona: o job é criado (ou recebido) e processado em background,
+// devolvendo 202 imediatamente para não bloquear a UI. O histórico fica em connection_test_jobs.
+async function processJob(admin: any, jobId: string) {
+  const { data: job } = await admin.from("connection_test_jobs").select("*").eq("id", jobId).maybeSingle();
+  if (!job || job.state === "done" || job.state === "running") return;
+
+  await admin.from("connection_test_jobs")
+    .update({ state: "running", started_at: new Date().toISOString() })
+    .eq("id", jobId);
+
+  const table = job.target === "repository" ? "data_repositories" : "database_connections";
+  const { data: row } = await admin.from(table).select("*").eq("id", job.target_id).maybeSingle();
+
+  let result: Result;
+  if (!row) {
+    result = { status: "fail", message: "Registro não encontrado" };
+  } else {
+    const started = Date.now();
+    result = job.target === "repository"
+      ? await testRepository(row.provider, row.config || {})
+      : await testDatabase(row.engine, row.config || {});
+    result.latency_ms = result.latency_ms ?? Date.now() - started;
+  }
+
+  await admin.from("connection_test_jobs").update({
+    state: "done",
+    result_status: result.status,
+    message: result.message,
+    latency_ms: result.latency_ms ?? null,
+    finished_at: new Date().toISOString(),
+  }).eq("id", jobId);
+
+  if (row) {
+    await admin.from(table).update({
+      last_test_at: new Date().toISOString(),
+      last_test_status: result.status,
+      last_test_message: result.message,
+    }).eq("id", job.target_id);
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
@@ -158,25 +199,54 @@ Deno.serve(async (req) => {
     if (!allowed) return json({ error: "Forbidden" }, 403);
 
     const body = await req.json();
-    const { target, id } = body as { target: "repository" | "database"; id: string };
-    if (!id || !target) return json({ error: "target and id required" }, 400);
+    const { target, id, job_id, sync } = body as {
+      target?: "repository" | "database"; id?: string; job_id?: string; sync?: boolean;
+    };
 
-    const table = target === "repository" ? "data_repositories" : "database_connections";
-    const { data: row, error: rErr } = await admin.from(table).select("*").eq("id", id).maybeSingle();
-    if (rErr || !row) return json({ error: "Registro não encontrado" }, 404);
+    let jobId = job_id ?? null;
 
-    const result: Result = target === "repository"
-      ? await testRepository((row as any).provider, (row as any).config || {})
-      : await testDatabase((row as any).engine, (row as any).config || {});
+    if (!jobId) {
+      if (!id || !target) return json({ error: "target and id required" }, 400);
+      const table = target === "repository" ? "data_repositories" : "database_connections";
+      const { data: row } = await admin.from(table).select("id, name").eq("id", id).maybeSingle();
+      if (!row) return json({ error: "Registro não encontrado" }, 404);
 
-    await admin.from(table).update({
-      last_test_at: new Date().toISOString(),
-      last_test_status: result.status,
-      last_test_message: result.message,
-    }).eq("id", id);
+      const { count } = await admin
+        .from("connection_test_jobs")
+        .select("id", { count: "exact", head: true })
+        .eq("target", target).eq("target_id", id);
 
-    return json(result);
+      const { data: created, error: cErr } = await admin.from("connection_test_jobs").insert({
+        target, target_id: id, target_name: row.name,
+        attempt: (count ?? 0) + 1,
+        requested_by: userData.user.id,
+      }).select("id").single();
+      if (cErr) return json({ error: cErr.message }, 400);
+      jobId = created.id;
+    }
+
+    if (sync) {
+      await processJob(admin, jobId!);
+      const { data: done } = await admin.from("connection_test_jobs").select("*").eq("id", jobId).maybeSingle();
+      return json({ job_id: jobId, job: done });
+    }
+
+    // @ts-ignore EdgeRuntime existe na Supabase Edge Runtime
+    if (typeof EdgeRuntime !== "undefined" && EdgeRuntime.waitUntil) {
+      // @ts-ignore
+      EdgeRuntime.waitUntil(processJob(admin, jobId!).catch(async (e) => {
+        await admin.from("connection_test_jobs").update({
+          state: "error", result_status: "fail", message: (e as Error).message,
+          finished_at: new Date().toISOString(),
+        }).eq("id", jobId);
+      }));
+    } else {
+      processJob(admin, jobId!).catch(() => {});
+    }
+
+    return json({ job_id: jobId, state: "queued" }, 202);
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
   }
 });
+
