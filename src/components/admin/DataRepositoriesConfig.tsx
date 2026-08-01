@@ -13,8 +13,13 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import {
   FolderArchive, Plus, Trash2, Edit3, ExternalLink, FileText, Search, Zap, Image as ImageIcon, Map,
   CheckCircle2, AlertTriangle, XCircle, Loader2, Cloud, HardDrive,
+  History as HistoryIcon, FolderSync,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ConnectionJobsDialog } from "@/components/admin/ConnectionJobsDialog";
+import { RepositorySyncDialog } from "@/components/admin/RepositorySyncDialog";
+import { logInfraAudit, redact } from "@/lib/infra-audit";
+
 
 type Provider =
   | "aws_s3" | "azure_blob" | "gcp_gcs" | "oci_object"
