@@ -12,9 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Database, Plus, Trash2, Edit3, Search, Zap, Loader2,
-  CheckCircle2, AlertTriangle, XCircle, Lock, Unlock,
+  CheckCircle2, AlertTriangle, XCircle, Lock, Unlock, History as HistoryIcon,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ConnectionJobsDialog } from "@/components/admin/ConnectionJobsDialog";
+import { logInfraAudit, redact } from "@/lib/infra-audit";
+
 
 type Engine =
   | "postgres" | "mysql" | "mssql" | "mariadb" | "mongodb" | "oracle"
@@ -205,6 +208,9 @@ export function DatabaseConnectionsConfig() {
     engine: "postgres", active: true, read_only: true, tagsText: "", config: {},
   });
   const [testingId, setTestingId] = useState<string | null>(null);
+  const [motivo, setMotivo] = useState("");
+  const [jobsOpen, setJobsOpen] = useState(false);
+  const [jobsTarget, setJobsTarget] = useState<DBConn | null>(null);
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["database_connections"],
@@ -226,11 +232,13 @@ export function DatabaseConnectionsConfig() {
 
   const openNew = () => {
     setEditing(null);
+    setMotivo("");
     setForm({ engine: "postgres", active: true, read_only: true, tagsText: "", config: {} });
     setOpen(true);
   };
   const openEdit = (r: DBConn) => {
     setEditing(r);
+    setMotivo("");
     setForm({ ...r, tagsText: r.tags?.join(", ") ?? "", config: r.config || {} });
     setOpen(true);
   };
@@ -238,12 +246,13 @@ export function DatabaseConnectionsConfig() {
   const save = useMutation({
     mutationFn: async () => {
       if (!form.name) throw new Error("Nome é obrigatório");
+      if (motivo.trim().length < 5) throw new Error("Informe o motivo da alteração (mín. 5 caracteres) para a trilha de auditoria");
       const spec = CONFIG_SCHEMA[form.engine as Engine] || [];
       for (const f of spec) {
         if (f.required && !form.config?.[f.key]) throw new Error(`Campo obrigatório: ${f.label}`);
       }
       const tags = (form.tagsText || "").split(",").map((t) => t.trim()).filter(Boolean);
-      const payload = {
+      const payload: Record<string, unknown> = {
         name: form.name,
         description: form.description ?? "",
         engine: form.engine ?? "postgres",
@@ -252,17 +261,33 @@ export function DatabaseConnectionsConfig() {
         tags,
         read_only: form.read_only ?? true,
         active: form.active ?? true,
+        engine_version: (form as any).engine_version ?? null,
+        compat_notes: (form as any).compat_notes ?? null,
       };
       if (editing) {
-        const { error } = await supabase.from("database_connections" as any).update(payload).eq("id", editing.id);
+        const { error } = await supabase.from("database_connections" as any)
+          .update({ ...payload, version: (editing as any).version ? (editing as any).version + 1 : 2 })
+          .eq("id", editing.id);
         if (error) throw error;
+        await logInfraAudit({
+          entity_type: "database", entity_id: editing.id, entity_name: form.name,
+          action: "update", motivo: motivo.trim(),
+          before_json: { ...editing, config: redact(editing.config) },
+          after_json: { ...payload, config: redact(form.config) },
+        });
       } else {
-        const { error } = await supabase.from("database_connections" as any).insert(payload);
+        const { data, error } = await supabase.from("database_connections" as any).insert(payload).select("id").single();
         if (error) throw error;
+        await logInfraAudit({
+          entity_type: "database", entity_id: (data as any).id, entity_name: form.name,
+          action: "create", motivo: motivo.trim(),
+          after_json: { ...payload, config: redact(form.config) },
+        });
       }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["database_connections"] });
+      qc.invalidateQueries({ queryKey: ["infra_audit_log"] });
       toast({ title: editing ? "Conexão atualizada" : "Conexão cadastrada" });
       setOpen(false);
     },
@@ -270,34 +295,63 @@ export function DatabaseConnectionsConfig() {
   });
 
   const remove = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("database_connections" as any).delete().eq("id", id);
+    mutationFn: async (r: DBConn) => {
+      const { error } = await supabase.from("database_connections" as any).delete().eq("id", r.id);
       if (error) throw error;
+      await logInfraAudit({
+        entity_type: "database", entity_id: r.id, entity_name: r.name,
+        action: "delete", motivo: "Remoção via painel de administração",
+        before_json: { ...r, config: redact(r.config) },
+      });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["database_connections"] });
+      qc.invalidateQueries({ queryKey: ["infra_audit_log"] });
       toast({ title: "Conexão removida" });
     },
   });
 
+  // Validação obrigatória antes de ativar: teste bem-sucedido nos últimos 7 dias.
+  const toggleActive = async (r: DBConn, v: boolean) => {
+    if (v) {
+      const recente = r.last_test_at && Date.now() - new Date(r.last_test_at).getTime() < 7 * 864e5;
+      if (!recente || r.last_test_status === "fail") {
+        toast({
+          title: "Ativação bloqueada",
+          description: "Execute um teste de conexão com sucesso (últimos 7 dias) antes de ativar esta base.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    await supabase.from("database_connections" as any).update({ active: v }).eq("id", r.id);
+    await logInfraAudit({
+      entity_type: "database", entity_id: r.id, entity_name: r.name,
+      action: v ? "activate" : "deactivate",
+      motivo: v ? "Ativação após validação de conexão" : "Desativação via painel",
+    });
+    qc.invalidateQueries({ queryKey: ["database_connections"] });
+    qc.invalidateQueries({ queryKey: ["infra_audit_log"] });
+  };
+
+  // Teste assíncrono — enfileira e abre o histórico de tentativas.
   const testConn = async (r: DBConn) => {
     setTestingId(r.id);
     try {
-      const { data, error } = await supabase.functions.invoke("connection-test", {
+      const { error } = await supabase.functions.invoke("connection-test", {
         body: { target: "database", id: r.id },
       });
       if (error) throw error;
-      const status = data?.status || "warn";
-      toast({
-        title: `Teste: ${status.toUpperCase()}`,
-        description: data?.message || "Concluído",
-        variant: status === "fail" ? "destructive" : "default",
-      });
+      toast({ title: "Teste enfileirado", description: "Acompanhe o resultado no histórico." });
+      setJobsTarget(r);
+      setJobsOpen(true);
+      qc.invalidateQueries({ queryKey: ["connection_test_jobs", "database", r.id] });
       qc.invalidateQueries({ queryKey: ["database_connections"] });
     } catch (e: any) {
-      toast({ title: "Falha no teste", description: e.message, variant: "destructive" });
+      toast({ title: "Falha ao enfileirar teste", description: e.message, variant: "destructive" });
     } finally {
       setTestingId(null);
+
     }
   };
 
@@ -376,24 +430,26 @@ export function DatabaseConnectionsConfig() {
                     )}
                   </div>
                   <div className="flex flex-col gap-1 shrink-0">
-                    <Switch checked={r.active} onCheckedChange={async (v) => {
-                      await supabase.from("database_connections" as any).update({ active: v }).eq("id", r.id);
-                      qc.invalidateQueries({ queryKey: ["database_connections"] });
-                    }} className="scale-75" />
+                    <Switch checked={r.active} onCheckedChange={(v) => toggleActive(r, v)} className="scale-75" />
                     <div className="flex gap-1">
                       <Button variant="ghost" size="sm" className="h-7 w-7 p-0"
-                        onClick={() => testConn(r)} disabled={testingId === r.id} title="Testar conexão">
+                        onClick={() => testConn(r)} disabled={testingId === r.id} title="Testar conexão (assíncrono)">
                         {testingId === r.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Zap className="h-3.5 w-3.5 text-primary" />}
+                      </Button>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0" title="Histórico de testes"
+                        onClick={() => { setJobsTarget(r); setJobsOpen(true); }}>
+                        <HistoryIcon className="h-3.5 w-3.5" />
                       </Button>
                       <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => openEdit(r)}>
                         <Edit3 className="h-3.5 w-3.5" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => remove.mutate(r.id)}>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => remove.mutate(r)}>
                         <Trash2 className="h-3.5 w-3.5 text-destructive" />
                       </Button>
                     </div>
                   </div>
                 </div>
+
                 {r.tags?.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1">
                     {r.tags.map((t) => (
@@ -480,11 +536,33 @@ export function DatabaseConnectionsConfig() {
                 </p>
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-[11px]">Ref. de segredo</Label>
+                  <Input className="h-9 text-[12px] font-mono" placeholder="MEU_DB_PASSWORD"
+                    value={form.credentials_ref || ""}
+                    onChange={(e) => setForm({ ...form, credentials_ref: e.target.value })} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-[11px]">Versão do motor</Label>
+                  <Input className="h-9 text-[12px] font-mono" placeholder="16.2"
+                    value={(form as any).engine_version || ""}
+                    onChange={(e) => setForm({ ...form, engine_version: e.target.value } as any)} />
+                </div>
+              </div>
+
               <div className="space-y-1.5">
-                <Label className="text-[11px]">Ref. de segredo</Label>
-                <Input className="h-9 text-[12px] font-mono" placeholder="MEU_DB_PASSWORD"
-                  value={form.credentials_ref || ""}
-                  onChange={(e) => setForm({ ...form, credentials_ref: e.target.value })} />
+                <Label className="text-[11px]">Notas de compatibilidade</Label>
+                <Textarea rows={2} className="text-[12px]" placeholder="Ex.: driver nativo executado por worker dedicado"
+                  value={(form as any).compat_notes || ""}
+                  onChange={(e) => setForm({ ...form, compat_notes: e.target.value } as any)} />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-[11px]">Motivo da alteração <span className="text-destructive">*</span></Label>
+                <Input className="h-9 text-[12px]" placeholder="Ex.: migração para novo cluster PostgreSQL"
+                  value={motivo} onChange={(e) => setMotivo(e.target.value)} />
+                <p className="text-[10px] text-muted-foreground">Registado na trilha de auditoria com autor e data/hora.</p>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -506,6 +584,15 @@ export function DatabaseConnectionsConfig() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <ConnectionJobsDialog
+          open={jobsOpen}
+          onOpenChange={setJobsOpen}
+          target="database"
+          targetId={jobsTarget?.id ?? null}
+          targetName={jobsTarget?.name}
+        />
+
       </CardContent>
     </Card>
   );
