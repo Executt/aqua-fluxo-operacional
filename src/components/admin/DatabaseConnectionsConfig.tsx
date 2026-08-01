@@ -536,11 +536,33 @@ export function DatabaseConnectionsConfig() {
                 </p>
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-[11px]">Ref. de segredo</Label>
+                  <Input className="h-9 text-[12px] font-mono" placeholder="MEU_DB_PASSWORD"
+                    value={form.credentials_ref || ""}
+                    onChange={(e) => setForm({ ...form, credentials_ref: e.target.value })} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-[11px]">Versão do motor</Label>
+                  <Input className="h-9 text-[12px] font-mono" placeholder="16.2"
+                    value={(form as any).engine_version || ""}
+                    onChange={(e) => setForm({ ...form, engine_version: e.target.value } as any)} />
+                </div>
+              </div>
+
               <div className="space-y-1.5">
-                <Label className="text-[11px]">Ref. de segredo</Label>
-                <Input className="h-9 text-[12px] font-mono" placeholder="MEU_DB_PASSWORD"
-                  value={form.credentials_ref || ""}
-                  onChange={(e) => setForm({ ...form, credentials_ref: e.target.value })} />
+                <Label className="text-[11px]">Notas de compatibilidade</Label>
+                <Textarea rows={2} className="text-[12px]" placeholder="Ex.: driver nativo executado por worker dedicado"
+                  value={(form as any).compat_notes || ""}
+                  onChange={(e) => setForm({ ...form, compat_notes: e.target.value } as any)} />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-[11px]">Motivo da alteração <span className="text-destructive">*</span></Label>
+                <Input className="h-9 text-[12px]" placeholder="Ex.: migração para novo cluster PostgreSQL"
+                  value={motivo} onChange={(e) => setMotivo(e.target.value)} />
+                <p className="text-[10px] text-muted-foreground">Registado na trilha de auditoria com autor e data/hora.</p>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -562,6 +584,15 @@ export function DatabaseConnectionsConfig() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <ConnectionJobsDialog
+          open={jobsOpen}
+          onOpenChange={setJobsOpen}
+          target="database"
+          targetId={jobsTarget?.id ?? null}
+          targetName={jobsTarget?.name}
+        />
+
       </CardContent>
     </Card>
   );
