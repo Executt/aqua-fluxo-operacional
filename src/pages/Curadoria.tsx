@@ -648,6 +648,8 @@ export default function Curadoria() {
             </div>
           </CardContent>
         </Card>
+        </>
+        )}
       </motion.div>
 
       <Dialog open={!!rejectTarget} onOpenChange={(o) => !o && setRejectTarget(null)}>
