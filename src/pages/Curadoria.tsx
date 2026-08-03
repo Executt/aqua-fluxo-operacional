@@ -1,4 +1,7 @@
 import { useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { ValidacoesTab } from "@/components/curadoria/ValidacoesTab";
+import { BulkImportTab } from "@/components/curadoria/BulkImportTab";
 import { motion } from "framer-motion";
 import { z } from "zod";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
@@ -86,6 +89,11 @@ export default function Curadoria() {
   const { operadorId, isStaff } = useAuth();
   const { toast } = useToast();
   const qc = useQueryClient();
+  const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const tab: "submissoes" | "validacoes" | "bulk" =
+    tabParam === "validacoes" || tabParam === "bulk" ? tabParam : "submissoes";
+
 
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [page, setPage] = useState(0);
@@ -346,6 +354,11 @@ export default function Curadoria() {
           })}
         </div>
 
+        {tab === "validacoes" && <ValidacoesTab />}
+        {tab === "bulk" && <BulkImportTab />}
+
+        {tab === "submissoes" && (
+        <>
         {/* Formulário */}
         {!isStaff && (
           <Card className="elevation-1">
@@ -648,6 +661,8 @@ export default function Curadoria() {
             </div>
           </CardContent>
         </Card>
+        </>
+        )}
       </motion.div>
 
       <Dialog open={!!rejectTarget} onOpenChange={(o) => !o && setRejectTarget(null)}>

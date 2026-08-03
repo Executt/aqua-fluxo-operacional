@@ -67,6 +67,8 @@ const subNav: Record<string, { title: string; url: string }[]> = {
     { title: "SEI", url: "/admin?tab=sei" },
     { title: "SSO / Keycloak", url: "/admin?tab=sso" },
     { title: "Parâmetros", url: "/admin?tab=parametros" },
+    { title: "Refresh Star Schema", url: "/admin?tab=metabase" },
+    { title: "Auditoria infra", url: "/admin?tab=infra" },
     { title: "Auditoria", url: "/admin?tab=auditoria" },
   ],
 };
