@@ -118,6 +118,8 @@ const Administracao = () => {
           {tab === "sei" && <SEIConfig onSave={handleSave} onTest={handleTest} />}
           {tab === "sso" && <SSOConfig onSave={handleSave} onTest={handleTest} />}
           {tab === "parametros" && <ParametrosGerais onSave={handleSave} />}
+          {tab === "metabase" && <div className="lg:col-span-3"><MetabaseRefreshPanel /></div>}
+          {tab === "infra" && <InfraAuditTrail />}
           {tab === "auditoria" && <Auditoria />}
         </motion.div>
       </motion.div>
