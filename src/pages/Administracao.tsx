@@ -26,13 +26,17 @@ import { MCPConfig } from "@/components/admin/MCPConfig";
 import { KnowledgeBaseConfig } from "@/components/admin/KnowledgeBaseConfig";
 import { DmiPesosConfig } from "@/components/admin/DmiPesosConfig";
 import { ComplianceRegrasConfig } from "@/components/admin/ComplianceRegrasConfig";
+import { MetabaseRefreshPanel } from "@/components/dashboard/MetabaseRefreshPanel";
+import { InfraAuditTrail } from "@/components/admin/InfraAuditTrail";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
   show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
 
-type TabKey = "usuarios" | "smtp" | "sei" | "sso" | "parametros" | "auditoria" | "llm" | "mcp" | "kb" | "dmi" | "regras";
+type TabKey =
+  | "usuarios" | "smtp" | "sei" | "sso" | "parametros" | "auditoria"
+  | "llm" | "mcp" | "kb" | "dmi" | "regras" | "metabase" | "infra";
 
 const TAB_META: Record<TabKey, { label: string; icon: typeof UsersIcon; desc: string }> = {
   usuarios: { label: "Usuários & LDAP", icon: UsersIcon, desc: "Cadastro local e diretório LDAP/AD" },
@@ -41,6 +45,8 @@ const TAB_META: Record<TabKey, { label: string; icon: typeof UsersIcon; desc: st
   kb: { label: "Base de conhecimento", icon: BookOpen, desc: "Artigos e contexto para os agentes" },
   dmi: { label: "Pesos DMI", icon: Sliders, desc: "Calibração da Regra do Falso Afluente" },
   regras: { label: "Regras compliance", icon: Shield, desc: "Motor automático de não-conformidades" },
+  metabase: { label: "Refresh do Star Schema", icon: RefreshCw, desc: "Estado do pg_cron e das materialized views (Metabase)" },
+  infra: { label: "Auditoria de infraestrutura", icon: History, desc: "Repositórios e conexões — quem alterou, quando e porquê" },
   smtp: { label: "SMTP / E-mail", icon: Mail, desc: "Servidor de envio de notificações" },
   sei: { label: "Integração SEI", icon: FileSignature, desc: "Sistema Eletrônico de Informações" },
   sso: { label: "SSO / Keycloak", icon: KeyRound, desc: "Autenticação federada OIDC" },

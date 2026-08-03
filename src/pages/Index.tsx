@@ -63,10 +63,6 @@ const Index = () => {
           </div>
         </motion.div>
 
-        {/* Metabase refresh status */}
-        <motion.div variants={fadeUp}>
-          <MetabaseRefreshPanel />
-        </motion.div>
 
         {/* Alerts Table */}
         <motion.div variants={fadeUp}>
