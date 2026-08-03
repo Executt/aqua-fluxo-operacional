@@ -89,6 +89,11 @@ export default function Curadoria() {
   const { operadorId, isStaff } = useAuth();
   const { toast } = useToast();
   const qc = useQueryClient();
+  const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const tab: "submissoes" | "validacoes" | "bulk" =
+    tabParam === "validacoes" || tabParam === "bulk" ? tabParam : "submissoes";
+
 
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS);
   const [page, setPage] = useState(0);
