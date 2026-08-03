@@ -1,4 +1,7 @@
 import { useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { ValidacoesTab } from "@/components/curadoria/ValidacoesTab";
+import { BulkImportTab } from "@/components/curadoria/BulkImportTab";
 import { motion } from "framer-motion";
 import { z } from "zod";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
@@ -346,6 +349,11 @@ export default function Curadoria() {
           })}
         </div>
 
+        {tab === "validacoes" && <ValidacoesTab />}
+        {tab === "bulk" && <BulkImportTab />}
+
+        {tab === "submissoes" && (
+        <>
         {/* Formulário */}
         {!isStaff && (
           <Card className="elevation-1">
