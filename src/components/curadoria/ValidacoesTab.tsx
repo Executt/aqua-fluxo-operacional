@@ -10,13 +10,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle, CheckCircle2, FileSearch, RefreshCw, Search } from "lucide-react";
+import {
+  AlertTriangle, CheckCircle2, Download, FileSearch, FileText, RefreshCw, Search, X,
+} from "lucide-react";
+import { downloadCsv, downloadPdf, stamp } from "@/lib/curadoria-export";
+import { alertasHidricos, computeIndicadoresHidricos, fmt } from "@/lib/hidrico";
 
 const motivoSchema = z.string().trim()
   .min(20, "O motivo deve ter pelo menos 20 caracteres para garantir rastreabilidade")
@@ -32,12 +39,20 @@ interface Row {
   estado: Estado;
   payload: Record<string, unknown>;
   submitted_at: string | null;
+  created_at: string;
 }
 
-interface Ete { id: string; codigo: string; nome: string; municipio_nome: string; uf: string }
+interface Ete {
+  id: string; codigo: string; nome: string; municipio_nome: string; uf: string;
+  vazao_projeto_lps: number | null;
+  tipologias_tratamento: { nome: string } | null;
+}
 
 /** Regras determinísticas de compatibilidade (não bloqueiam, sinalizam). */
-export function checkIncompatibilidades(payload: Record<string, unknown>): string[] {
+export function checkIncompatibilidades(
+  payload: Record<string, unknown>,
+  opts: { vazaoProjetoLps?: number | null } = {},
+): string[] {
   const out: string[] = [];
   const n = (k: string) => (typeof payload?.[k] === "number" ? (payload[k] as number) : undefined);
   const dbo = n("eficiencia_dbo_pct");
@@ -50,13 +65,31 @@ export function checkIncompatibilidades(payload: Record<string, unknown>): strin
   if (od !== undefined && od < 2) out.push("OD abaixo de 2 mg/L");
   if (vazao !== undefined && vazao <= 0) out.push("Vazão média deve ser maior que zero");
   if (dbo === undefined && vazao === undefined) out.push("Sem parâmetros quantitativos informados");
-  return out;
+  out.push(...alertasHidricos(payload, opts));
+  return Array.from(new Set(out));
 }
+
+const origemDe = (payload: Record<string, unknown>): "lote" | "manual" | "api" => {
+  const o = payload?.["_origem"];
+  return o === "lote" || o === "api" ? o : "manual";
+};
+
+const PERIODOS = [
+  { v: "todos", label: "Todo o período" },
+  { v: "7", label: "Últimos 7 dias" },
+  { v: "30", label: "Últimos 30 dias" },
+  { v: "90", label: "Últimos 90 dias" },
+];
 
 export function ValidacoesTab() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const [busca, setBusca] = useState("");
+  const [fEstado, setFEstado] = useState<"todos" | "submetido" | "em_analise">("todos");
+  const [fResultado, setFResultado] = useState<"todos" | "compativel" | "incompativel">("todos");
+  const [fOrigem, setFOrigem] = useState<"todos" | "lote" | "manual" | "api">("todos");
+  const [fTipologia, setFTipologia] = useState("todos");
+  const [fPeriodo, setFPeriodo] = useState("todos");
   const [rejectTarget, setRejectTarget] = useState<Row | null>(null);
   const [motivo, setMotivo] = useState("");
   const [motivoError, setMotivoError] = useState<string | null>(null);
@@ -66,10 +99,10 @@ export function ValidacoesTab() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("etes_curadoria")
-        .select("id, codigo, nome, municipio_nome, uf")
+        .select("id, codigo, nome, municipio_nome, uf, vazao_projeto_lps, tipologias_tratamento(nome)")
         .order("nome");
       if (error) throw error;
-      return (data ?? []) as Ete[];
+      return (data ?? []) as unknown as Ete[];
     },
     staleTime: 5 * 60_000,
   });
@@ -105,14 +138,110 @@ export function ValidacoesTab() {
     onError: (e: Error) => toast({ title: "Falha", description: e.message, variant: "destructive" }),
   });
 
+  const tipologias = useMemo(
+    () => Array.from(new Set(etes.map((e) => e.tipologias_tratamento?.nome).filter(Boolean) as string[])).sort(),
+    [etes],
+  );
+
+  const enriched = useMemo(() => {
+    return rows.map((r) => {
+      const ete = etes.find((x) => x.id === r.ete_id);
+      const issues = checkIncompatibilidades(r.payload || {}, { vazaoProjetoLps: ete?.vazao_projeto_lps });
+      const ind = computeIndicadoresHidricos(r.payload || {}, { vazaoProjetoLps: ete?.vazao_projeto_lps });
+      return { r, ete, issues, ind, origem: origemDe(r.payload || {}) };
+    });
+  }, [rows, etes]);
+
   const filtered = useMemo(() => {
     const q = busca.trim().toLowerCase();
-    if (!q) return rows;
-    return rows.filter((r) => {
-      const e = etes.find((x) => x.id === r.ete_id);
-      return `${e?.codigo} ${e?.nome} ${e?.municipio_nome} ${e?.uf}`.toLowerCase().includes(q);
+    const limite = fPeriodo === "todos" ? null : Date.now() - Number(fPeriodo) * 86_400_000;
+    return enriched.filter(({ r, ete, issues, origem }) => {
+      if (q && !`${ete?.codigo} ${ete?.nome} ${ete?.municipio_nome} ${ete?.uf}`.toLowerCase().includes(q)) return false;
+      if (fEstado !== "todos" && r.estado !== fEstado) return false;
+      if (fResultado === "compativel" && issues.length > 0) return false;
+      if (fResultado === "incompativel" && issues.length === 0) return false;
+      if (fOrigem !== "todos" && origem !== fOrigem) return false;
+      if (fTipologia !== "todos" && ete?.tipologias_tratamento?.nome !== fTipologia) return false;
+      if (limite) {
+        const t = new Date(r.submitted_at ?? r.created_at).getTime();
+        if (!Number.isFinite(t) || t < limite) return false;
+      }
+      return true;
     });
-  }, [rows, etes, busca]);
+  }, [enriched, busca, fEstado, fResultado, fOrigem, fTipologia, fPeriodo]);
+
+  const resumo = useMemo(() => ({
+    total: filtered.length,
+    compativeis: filtered.filter((f) => f.issues.length === 0).length,
+    incompativeis: filtered.filter((f) => f.issues.length > 0).length,
+    conama430: filtered.filter((f) => f.ind.atendeConama430 === false).length,
+    sobrecarga: filtered.filter((f) => (f.ind.utilizacaoCapacidadePct ?? 0) > 100).length,
+    cargaRemanescente: filtered.reduce((s, f) => s + (f.ind.cargaRemanescenteKgDia ?? 0), 0),
+  }), [filtered]);
+
+  const filtrosAtivos =
+    busca || fEstado !== "todos" || fResultado !== "todos" || fOrigem !== "todos" ||
+    fTipologia !== "todos" || fPeriodo !== "todos";
+
+  const limparFiltros = () => {
+    setBusca(""); setFEstado("todos"); setFResultado("todos");
+    setFOrigem("todos"); setFTipologia("todos"); setFPeriodo("todos");
+  };
+
+  const HEADERS = [
+    "ETE", "Nome", "Município/UF", "Tipologia", "Origem", "Período", "Estado",
+    "Resultado", "Incompatibilidades", "Vazão (L/s)", "Ef. DBO (%)",
+    "DBO efluente est. (mg/L)", "Carga remanescente (kg DBO/dia)", "Uso da capacidade (%)", "CONAMA 430",
+  ];
+
+  const exportRows = () => filtered.map(({ r, ete, issues, ind, origem }) => [
+    ete?.codigo ?? r.ete_id.slice(0, 8),
+    ete?.nome ?? "",
+    ete ? `${ete.municipio_nome}/${ete.uf}` : "",
+    ete?.tipologias_tratamento?.nome ?? "",
+    origem,
+    `${String(r.mes_referencia).padStart(2, "0")}/${r.ano_referencia}`,
+    r.estado,
+    issues.length ? "Incompatível" : "Compatível",
+    issues.join(" | "),
+    fmt(typeof r.payload?.vazao_media_lps === "number" ? (r.payload.vazao_media_lps as number) : undefined),
+    fmt(typeof r.payload?.eficiencia_dbo_pct === "number" ? (r.payload.eficiencia_dbo_pct as number) : undefined),
+    fmt(ind.dboEfluenteEstimadoMgL, 0),
+    fmt(ind.cargaRemanescenteKgDia, 1),
+    fmt(ind.utilizacaoCapacidadePct, 0),
+    ind.atendeConama430 === undefined ? "—" : ind.atendeConama430 ? "Atende" : "Não atende",
+  ]);
+
+  const exportarCsv = () => {
+    if (!filtered.length) return toast({ title: "Nada a exportar", variant: "destructive" });
+    downloadCsv(`validacoes-curadoria-${stamp()}.csv`, HEADERS, exportRows());
+    toast({ title: "CSV gerado", description: `${filtered.length} registo(s) exportado(s).` });
+  };
+
+  const exportarPdf = () => {
+    if (!filtered.length) return toast({ title: "Nada a exportar", variant: "destructive" });
+    downloadPdf({
+      filename: `validacoes-curadoria-${stamp()}.pdf`,
+      title: "Relatório de Validações — Curadoria Nacional de Saneamento",
+      subtitle: filtrosAtivos ? "Recorte filtrado" : "Fila completa",
+      summary: [
+        { label: "Submissões", value: resumo.total },
+        { label: "Compatíveis", value: resumo.compativeis },
+        { label: "Incompatíveis", value: resumo.incompativeis },
+        { label: "Fora do CONAMA 430", value: resumo.conama430 },
+        { label: "Sobrecarga hidráulica", value: resumo.sobrecarga },
+        { label: "Carga remanescente (kg DBO/dia)", value: fmt(resumo.cargaRemanescente, 1) },
+      ],
+      notes: [
+        "DBO efluente estimada a partir de DBO afluente típica de 300 mg/L (Atlas Esgotos/ANA) quando não informada.",
+        "CONAMA 430/2011 art. 21: conformidade com DBO ≤ 120 mg/L ou remoção mínima de 60%.",
+        "Validação é sempre manual — este relatório não ativa nem submete registos.",
+      ],
+      headers: HEADERS,
+      rows: exportRows(),
+    });
+    toast({ title: "PDF gerado", description: `${filtered.length} registo(s) no relatório.` });
+  };
 
   async function confirmReject() {
     const parsed = motivoSchema.safeParse(motivo);
@@ -137,15 +266,75 @@ export function ValidacoesTab() {
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                <Input className="h-9 pl-8 w-56 text-[12px]" placeholder="Buscar ETE..."
-                  value={busca} onChange={(e) => setBusca(e.target.value)} />
-              </div>
+              <Button variant="outline" size="sm" onClick={exportarCsv}>
+                <Download className="h-3.5 w-3.5 mr-1.5" /> CSV
+              </Button>
+              <Button variant="outline" size="sm" onClick={exportarPdf}>
+                <FileText className="h-3.5 w-3.5 mr-1.5" /> PDF
+              </Button>
               <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
                 <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${isFetching ? "animate-spin" : ""}`} /> Atualizar
               </Button>
             </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 pt-3">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input className="h-9 pl-8 w-56 text-[12px]" placeholder="Buscar ETE, município, UF..."
+                value={busca} onChange={(e) => setBusca(e.target.value)} />
+            </div>
+            <Select value={fEstado} onValueChange={(v) => setFEstado(v as typeof fEstado)}>
+              <SelectTrigger className="h-9 w-[150px] text-[12px]"><SelectValue placeholder="Estado" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos os estados</SelectItem>
+                <SelectItem value="submetido">Submetido</SelectItem>
+                <SelectItem value="em_analise">Em análise</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={fResultado} onValueChange={(v) => setFResultado(v as typeof fResultado)}>
+              <SelectTrigger className="h-9 w-[160px] text-[12px]"><SelectValue placeholder="Resultado" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Compatível + incompatível</SelectItem>
+                <SelectItem value="compativel">Somente compatíveis</SelectItem>
+                <SelectItem value="incompativel">Somente incompatíveis</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={fOrigem} onValueChange={(v) => setFOrigem(v as typeof fOrigem)}>
+              <SelectTrigger className="h-9 w-[150px] text-[12px]"><SelectValue placeholder="Origem" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todas as origens</SelectItem>
+                <SelectItem value="manual">Formulário manual</SelectItem>
+                <SelectItem value="lote">Importação em lote</SelectItem>
+                <SelectItem value="api">API / integração</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={fTipologia} onValueChange={setFTipologia}>
+              <SelectTrigger className="h-9 w-[180px] text-[12px]"><SelectValue placeholder="Tipologia" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todas as tipologias</SelectItem>
+                {tipologias.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={fPeriodo} onValueChange={setFPeriodo}>
+              <SelectTrigger className="h-9 w-[150px] text-[12px]"><SelectValue placeholder="Período" /></SelectTrigger>
+              <SelectContent>
+                {PERIODOS.map((p) => <SelectItem key={p.v} value={p.v}>{p.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            {filtrosAtivos && (
+              <Button variant="ghost" size="sm" onClick={limparFiltros}>
+                <X className="h-3.5 w-3.5 mr-1" /> Limpar
+              </Button>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-2 pt-3">
+            <Badge variant="outline">{resumo.total} na fila</Badge>
+            <Badge className="bg-success/15 text-success">{resumo.compativeis} compatíveis</Badge>
+            <Badge className="bg-warning/15 text-warning">{resumo.incompativeis} com incompatibilidade</Badge>
+            <Badge className="bg-destructive/15 text-destructive">{resumo.conama430} fora do CONAMA 430</Badge>
+            <Badge variant="outline">{fmt(resumo.cargaRemanescente, 0)} kg DBO/dia remanescentes</Badge>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -156,76 +345,83 @@ export function ValidacoesTab() {
                 <TableHead>Período</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead>Validação técnica</TableHead>
+                <TableHead>Indicadores hídricos</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading && Array.from({ length: 4 }).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({ length: 5 }).map((_, j) => (
+                  {Array.from({ length: 6 }).map((_, j) => (
                     <TableCell key={j}><Skeleton className="h-4 w-24" /></TableCell>
                   ))}
                 </TableRow>
               ))}
-              {!isLoading && filtered.map((r) => {
-                const e = etes.find((x) => x.id === r.ete_id);
-                const issues = checkIncompatibilidades(r.payload || {});
-                return (
-                  <TableRow key={r.id}>
-                    <TableCell>
-                      <div className="text-[13px] font-medium">{e?.codigo ?? r.ete_id.slice(0, 8)}</div>
-                      <div className="text-[11px] text-muted-foreground">{e?.nome} · {e?.municipio_nome}/{e?.uf}</div>
-                    </TableCell>
-                    <TableCell className="text-[12px] tabular-nums">
-                      {String(r.mes_referencia).padStart(2, "0")}/{r.ano_referencia}
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={r.estado === "submetido" ? "bg-info/15 text-info" : "bg-warning/15 text-warning"}>
-                        {r.estado === "submetido" ? "Submetido" : "Em análise"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {issues.length === 0 ? (
-                        <span className="text-[11px] text-success inline-flex items-center gap-1">
-                          <CheckCircle2 className="h-3 w-3" /> Compatível
-                        </span>
-                      ) : (
-                        <ul className="text-[11px] text-warning space-y-0.5">
-                          {issues.map((i, k) => (
-                            <li key={k} className="inline-flex items-center gap-1">
-                              <AlertTriangle className="h-3 w-3" /> {i}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right space-x-1">
-                      {r.estado === "submetido" && (
-                        <Button size="sm" variant="outline" disabled={transition.isPending}
-                          onClick={() => transition.mutate({ resposta_id: r.id, novo_estado: "em_analise" })}>
-                          Analisar
+              {!isLoading && filtered.map(({ r, ete, issues, ind, origem }) => (
+                <TableRow key={r.id}>
+                  <TableCell>
+                    <div className="text-[13px] font-medium">{ete?.codigo ?? r.ete_id.slice(0, 8)}</div>
+                    <div className="text-[11px] text-muted-foreground">
+                      {ete?.nome} · {ete?.municipio_nome}/{ete?.uf}
+                    </div>
+                    <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                      {ete?.tipologias_tratamento?.nome ?? "sem tipologia"} · origem: {origem}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-[12px] tabular-nums">
+                    {String(r.mes_referencia).padStart(2, "0")}/{r.ano_referencia}
+                  </TableCell>
+                  <TableCell>
+                    <Badge className={r.estado === "submetido" ? "bg-info/15 text-info" : "bg-warning/15 text-warning"}>
+                      {r.estado === "submetido" ? "Submetido" : "Em análise"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {issues.length === 0 ? (
+                      <span className="text-[11px] text-success inline-flex items-center gap-1">
+                        <CheckCircle2 className="h-3 w-3" /> Compatível
+                      </span>
+                    ) : (
+                      <ul className="text-[11px] text-warning space-y-0.5">
+                        {issues.map((i, k) => (
+                          <li key={k} className="inline-flex items-center gap-1">
+                            <AlertTriangle className="h-3 w-3 shrink-0" /> {i}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-[11px] tabular-nums text-muted-foreground">
+                    <div>DBO efl. est.: {fmt(ind.dboEfluenteEstimadoMgL, 0)} mg/L</div>
+                    <div>Carga remanesc.: {fmt(ind.cargaRemanescenteKgDia, 1)} kg/dia</div>
+                    <div>Uso capacidade: {fmt(ind.utilizacaoCapacidadePct, 0)}%</div>
+                  </TableCell>
+                  <TableCell className="text-right space-x-1">
+                    {r.estado === "submetido" && (
+                      <Button size="sm" variant="outline" disabled={transition.isPending}
+                        onClick={() => transition.mutate({ resposta_id: r.id, novo_estado: "em_analise" })}>
+                        Analisar
+                      </Button>
+                    )}
+                    {r.estado === "em_analise" && (
+                      <>
+                        <Button size="sm" disabled={transition.isPending}
+                          onClick={() => transition.mutate({ resposta_id: r.id, novo_estado: "validado" })}>
+                          Validar
                         </Button>
-                      )}
-                      {r.estado === "em_analise" && (
-                        <>
-                          <Button size="sm" disabled={transition.isPending}
-                            onClick={() => transition.mutate({ resposta_id: r.id, novo_estado: "validado" })}>
-                            Validar
-                          </Button>
-                          <Button size="sm" variant="destructive"
-                            onClick={() => { setRejectTarget(r); setMotivo(""); setMotivoError(null); }}>
-                            Rejeitar
-                          </Button>
-                        </>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+                        <Button size="sm" variant="destructive"
+                          onClick={() => { setRejectTarget(r); setMotivo(""); setMotivoError(null); }}>
+                          Rejeitar
+                        </Button>
+                      </>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
               {!isLoading && filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-sm text-muted-foreground py-8">
-                    Nenhuma submissão aguardando validação.
+                  <TableCell colSpan={6} className="text-center text-sm text-muted-foreground py-8">
+                    {filtrosAtivos ? "Nenhuma submissão para os filtros aplicados." : "Nenhuma submissão aguardando validação."}
                   </TableCell>
                 </TableRow>
               )}
