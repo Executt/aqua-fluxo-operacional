@@ -334,6 +334,8 @@ export function BulkImportTab() {
       });
       if (reenfileirandoDe) updateBatch(reenfileirandoDe, { status: "reenfileirado" });
       setReenfileirandoDe(null);
+      setLoteParenteId(loteId);
+      setLoteId(crypto.randomUUID());
       toast({
         title: `${inserted} registo(s) importado(s)`,
         description: [
@@ -344,6 +346,7 @@ export function BulkImportTab() {
       qc.invalidateQueries({ queryKey: ["respostas"] });
       qc.invalidateQueries({ queryKey: ["respostas-kpis"] });
       qc.invalidateQueries({ queryKey: ["curadoria-fila-validacao"] });
+      qc.invalidateQueries({ queryKey: ["curadoria-lote-auditoria"] });
     },
     onError: (e: Error, modo) => {
       addBatch({
