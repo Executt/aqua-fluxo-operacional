@@ -107,6 +107,7 @@ export function BulkImportTab() {
   const [nomeArquivo, setNomeArquivo] = useState<string | undefined>();
   const [reenfileirandoDe, setReenfileirandoDe] = useState<string | null>(null);
   const [loteId, setLoteId] = useState<string>(() => crypto.randomUUID());
+  const [loteParenteId, setLoteParenteId] = useState<string | null>(null);
   const [tentativa, setTentativa] = useState(1);
   const { data: auditoriaRows = [] } = useLoteAuditoria();
 
@@ -171,7 +172,7 @@ export function BulkImportTab() {
     logLoteEventos(
       rows.slice(0, 400).map((r) => ({
         lote_id: loteId,
-        lote_pai_id: reenfileirandoDe,
+        lote_pai_id: loteParenteId,
         tentativa,
         evento,
         modo,
@@ -295,7 +296,7 @@ export function BulkImportTab() {
       logLoteEventos(
         all.slice(0, 400).map((r) => ({
           lote_id: loteId,
-          lote_pai_id: reenfileirandoDe,
+          lote_pai_id: loteParenteId,
           tentativa,
           evento: reenfileirandoDe ? ("reenfileiramento" as const) : ("importacao" as const),
           modo,
@@ -324,6 +325,7 @@ export function BulkImportTab() {
         modo, origem, nomeArquivo,
         total, importadas: inserted, retidas, invalidas,
         status: invalidas > 0 ? "parcial" : "concluido",
+        loteId,
         csvPendente,
         paiId: reenfileirandoDe ?? undefined,
       });
@@ -346,6 +348,7 @@ export function BulkImportTab() {
         total: parsed?.length ?? 0, importadas: 0, retidas: 0,
         invalidas: parsed?.filter((r) => r.errors.length > 0).length ?? 0,
         status: "falha", erro: e.message,
+        loteId,
         csvPendente: raw.trim() || undefined,
         paiId: reenfileirandoDe ?? undefined,
       });

@@ -18,6 +18,8 @@ export interface BulkBatch {
   csvPendente?: string;
   tentativas: number;
   paiId?: string;
+  /** id do lote na trilha de auditoria (curadoria_lote_auditoria.lote_id) */
+  loteId?: string;
 }
 
 const KEY = "curadoria.bulk.batches.v1";
