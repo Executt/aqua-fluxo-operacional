@@ -22,7 +22,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertTriangle, CheckCircle2, Download, FileSearch, FileText, RefreshCw, Search, X,
 } from "lucide-react";
-import { downloadCsv, downloadPdf, stamp } from "@/lib/curadoria-export";
+import { downloadCsv, downloadInstitutionalPdf, stamp } from "@/lib/curadoria-export";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLoteAuditoria } from "@/hooks/use-lote-auditoria";
+import { ValidacaoKpiPanel, tempoMedioCompatibilizacao } from "./ValidacaoKpiPanel";
 import { alertasHidricos, computeIndicadoresHidricos, fmt } from "@/lib/hidrico";
 
 const motivoSchema = z.string().trim()
@@ -179,6 +182,29 @@ export function ValidacoesTab() {
     cargaRemanescente: filtered.reduce((s, f) => s + (f.ind.cargaRemanescenteKgDia ?? 0), 0),
   }), [filtered]);
 
+  const kpiData = useMemo(() => {
+    const motivos = new Map<string, number>();
+    const modelos = new Map<string, { compativel: number; incompativel: number }>();
+    const origens = new Map<string, number>();
+    for (const f of filtered) {
+      for (const m of f.issues) motivos.set(m, (motivos.get(m) ?? 0) + 1);
+      const nome = f.ete?.tipologias_tratamento?.nome ?? "Sem tipologia";
+      const acc = modelos.get(nome) ?? { compativel: 0, incompativel: 0 };
+      if (f.issues.length) acc.incompativel++; else acc.compativel++;
+      modelos.set(nome, acc);
+      origens.set(f.origem, (origens.get(f.origem) ?? 0) + 1);
+    }
+    return {
+      total: resumo.total,
+      compativeis: resumo.compativeis,
+      incompativeis: resumo.incompativeis,
+      motivos: [...motivos.entries()].map(([motivo, qtd]) => ({ motivo, qtd })).sort((a, b) => b.qtd - a.qtd),
+      porModelo: [...modelos.entries()].map(([nome, v]) => ({ nome, ...v })),
+      porOrigem: [...origens.entries()].map(([nome, qtd]) => ({ nome, qtd })),
+      ...tempoMedioCompatibilizacao(auditoriaRows),
+    };
+  }, [filtered, resumo, auditoriaRows]);
+
   const filtrosAtivos =
     busca || fEstado !== "todos" || fResultado !== "todos" || fOrigem !== "todos" ||
     fTipologia !== "todos" || fPeriodo !== "todos";
@@ -218,16 +244,30 @@ export function ValidacoesTab() {
     toast({ title: "CSV gerado", description: `${filtered.length} registo(s) exportado(s).` });
   };
 
+  const [assinaturaOpen, setAssinaturaOpen] = useState(false);
+  const [signNome, setSignNome] = useState("");
+  const [signCargo, setSignCargo] = useState(localStorage.getItem("curadoria.assinatura.cargo") ?? "");
+
+  const abrirAssinatura = () => {
+    if (!filtered.length) return toast({ title: "Nada a exportar", variant: "destructive" });
+    setSignNome(signNome || user?.email?.split("@")[0] || "");
+    setAssinaturaOpen(true);
+  };
+
   const exportarPdf = () => {
     if (!filtered.length) return toast({ title: "Nada a exportar", variant: "destructive" });
-    downloadPdf({
+    localStorage.setItem("curadoria.assinatura.cargo", signCargo);
+
+    const incompativeis = filtered.filter((f) => f.issues.length > 0);
+    const protocolo = downloadInstitutionalPdf({
       filename: `validacoes-curadoria-${stamp()}.pdf`,
       title: "Relatório de Validações — Curadoria Nacional de Saneamento",
-      subtitle: filtrosAtivos ? "Recorte filtrado" : "Fila completa",
+      subtitle: filtrosAtivos ? "Recorte filtrado da fila de validação" : "Fila completa de validação",
       summary: [
         { label: "Submissões", value: resumo.total },
         { label: "Compatíveis", value: resumo.compativeis },
         { label: "Incompatíveis", value: resumo.incompativeis },
+        { label: "Taxa de compatibilidade", value: `${kpiData.total ? ((resumo.compativeis / resumo.total) * 100).toFixed(1) : "0.0"}%` },
         { label: "Fora do CONAMA 430", value: resumo.conama430 },
         { label: "Sobrecarga hidráulica", value: resumo.sobrecarga },
         { label: "Carga remanescente (kg DBO/dia)", value: fmt(resumo.cargaRemanescente, 1) },
@@ -237,10 +277,40 @@ export function ValidacoesTab() {
         "CONAMA 430/2011 art. 21: conformidade com DBO ≤ 120 mg/L ou remoção mínima de 60%.",
         "Validação é sempre manual — este relatório não ativa nem submete registos.",
       ],
-      headers: HEADERS,
-      rows: exportRows(),
+      secoes: [
+        {
+          titulo: "Fila de validação (detalhe por submissão)",
+          descricao: "Indicadores hídricos calculados por submissão e respetivas incompatibilidades.",
+          headers: HEADERS,
+          rows: exportRows(),
+        },
+        {
+          titulo: "Motivos de incompatibilidade",
+          descricao: "Ocorrências agregadas no recorte apresentado.",
+          headers: ["Motivo", "Ocorrências", "% das incompatibilidades"],
+          rows: kpiData.motivos.map((m) => [
+            m.motivo, m.qtd,
+            incompativeis.length ? `${((m.qtd / incompativeis.length) * 100).toFixed(1)}%` : "—",
+          ]),
+        },
+        {
+          titulo: "Distribuição por tipologia e origem",
+          headers: ["Agrupamento", "Compatíveis", "Incompatíveis"],
+          rows: [
+            ...kpiData.porModelo.map((m) => [m.nome, m.compativel, m.incompativel]),
+            ...kpiData.porOrigem.map((o) => [`Origem: ${o.nome}`, o.qtd, ""]),
+          ],
+        },
+      ],
+      assinatura: {
+        nome: signNome || user?.email || "Responsável não identificado",
+        cargo: signCargo || undefined,
+        email: user?.email ?? undefined,
+        papel: roles?.join(", "),
+      },
     });
-    toast({ title: "PDF gerado", description: `${filtered.length} registo(s) no relatório.` });
+    setAssinaturaOpen(false);
+    toast({ title: "PDF assinado gerado", description: `Protocolo ${protocolo} · ${filtered.length} registo(s).` });
   };
 
   async function confirmReject() {
@@ -269,7 +339,7 @@ export function ValidacoesTab() {
               <Button variant="outline" size="sm" onClick={exportarCsv}>
                 <Download className="h-3.5 w-3.5 mr-1.5" /> CSV
               </Button>
-              <Button variant="outline" size="sm" onClick={exportarPdf}>
+              <Button variant="outline" size="sm" onClick={abrirAssinatura}>
                 <FileText className="h-3.5 w-3.5 mr-1.5" /> PDF
               </Button>
               <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching}>
