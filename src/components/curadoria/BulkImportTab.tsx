@@ -24,6 +24,10 @@ import { checkIncompatibilidades } from "./ValidacoesTab";
 import { downloadCsv, downloadPdf, stamp } from "@/lib/curadoria-export";
 import { computeIndicadoresHidricos, fmt } from "@/lib/hidrico";
 import { useBulkBatches, type BulkBatch } from "@/hooks/use-bulk-batches";
+import { logLoteEventos } from "@/lib/lote-auditoria";
+import { useLoteAuditoria } from "@/hooks/use-lote-auditoria";
+import { ValidacaoKpiPanel, tempoMedioCompatibilizacao } from "./ValidacaoKpiPanel";
+import { LoteAuditoriaPanel } from "./LoteAuditoriaPanel";
 
 interface Ete { id: string; codigo: string; nome: string; uf: string; vazao_projeto_lps: number | null }
 
