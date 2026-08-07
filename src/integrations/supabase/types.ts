@@ -334,6 +334,93 @@ export type Database = {
         }
         Relationships: []
       }
+      curadoria_lote_auditoria: {
+        Row: {
+          actor_email: string | null
+          actor_id: string | null
+          ano_referencia: number | null
+          created_at: string
+          detalhe: string | null
+          duracao_ms: number | null
+          ete_codigo: string | null
+          ete_id: string | null
+          evento: string
+          id: string
+          lote_id: string
+          lote_pai_id: string | null
+          mes_referencia: number | null
+          modo: string | null
+          motivos: Json
+          nome_arquivo: string | null
+          operador_id: string | null
+          origem: string | null
+          resultado: string
+          tentativa: number
+          uf: string | null
+        }
+        Insert: {
+          actor_email?: string | null
+          actor_id?: string | null
+          ano_referencia?: number | null
+          created_at?: string
+          detalhe?: string | null
+          duracao_ms?: number | null
+          ete_codigo?: string | null
+          ete_id?: string | null
+          evento: string
+          id?: string
+          lote_id: string
+          lote_pai_id?: string | null
+          mes_referencia?: number | null
+          modo?: string | null
+          motivos?: Json
+          nome_arquivo?: string | null
+          operador_id?: string | null
+          origem?: string | null
+          resultado: string
+          tentativa?: number
+          uf?: string | null
+        }
+        Update: {
+          actor_email?: string | null
+          actor_id?: string | null
+          ano_referencia?: number | null
+          created_at?: string
+          detalhe?: string | null
+          duracao_ms?: number | null
+          ete_codigo?: string | null
+          ete_id?: string | null
+          evento?: string
+          id?: string
+          lote_id?: string
+          lote_pai_id?: string | null
+          mes_referencia?: number | null
+          modo?: string | null
+          motivos?: Json
+          nome_arquivo?: string | null
+          operador_id?: string | null
+          origem?: string | null
+          resultado?: string
+          tentativa?: number
+          uf?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curadoria_lote_auditoria_operador_id_fkey"
+            columns: ["operador_id"]
+            isOneToOne: false
+            referencedRelation: "dim_operador"
+            referencedColumns: ["operador_id"]
+          },
+          {
+            foreignKeyName: "curadoria_lote_auditoria_operador_id_fkey"
+            columns: ["operador_id"]
+            isOneToOne: false
+            referencedRelation: "operadores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       data_repositories: {
         Row: {
           active: boolean

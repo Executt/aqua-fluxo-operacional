@@ -24,6 +24,10 @@ import { checkIncompatibilidades } from "./ValidacoesTab";
 import { downloadCsv, downloadPdf, stamp } from "@/lib/curadoria-export";
 import { computeIndicadoresHidricos, fmt } from "@/lib/hidrico";
 import { useBulkBatches, type BulkBatch } from "@/hooks/use-bulk-batches";
+import { logLoteEventos } from "@/lib/lote-auditoria";
+import { useLoteAuditoria } from "@/hooks/use-lote-auditoria";
+import { ValidacaoKpiPanel, tempoMedioCompatibilizacao } from "./ValidacaoKpiPanel";
+import { LoteAuditoriaPanel } from "./LoteAuditoriaPanel";
 
 interface Ete { id: string; codigo: string; nome: string; uf: string; vazao_projeto_lps: number | null }
 
@@ -102,6 +106,10 @@ export function BulkImportTab() {
   const [origem, setOrigem] = useState<"colado" | "arquivo" | "reenfileiramento">("colado");
   const [nomeArquivo, setNomeArquivo] = useState<string | undefined>();
   const [reenfileirandoDe, setReenfileirandoDe] = useState<string | null>(null);
+  const [loteId, setLoteId] = useState<string>(() => crypto.randomUUID());
+  const [loteParenteId, setLoteParenteId] = useState<string | null>(null);
+  const [tentativa, setTentativa] = useState(1);
+  const { data: auditoriaRows = [] } = useLoteAuditoria();
 
   const [busca, setBusca] = useState("");
   const [fStatus, setFStatus] = useState<"todos" | "compativel" | "incompativel" | "invalida">("todos");
@@ -154,6 +162,38 @@ export function BulkImportTab() {
   const filtrosAtivos = busca || fStatus !== "todos" || fUf !== "todos" || fAno !== "todos" || fMes !== "todos";
   const limparFiltros = () => { setBusca(""); setFStatus("todos"); setFUf("todos"); setFAno("todos"); setFMes("todos"); };
 
+  /** Regista na trilha os eventos por linha de um lote. */
+  const registarEventos = (
+    rows: ParsedRow[],
+    evento: "validacao" | "importacao" | "reenfileiramento" | "falha",
+    modo: "submeter" | "rascunho" | null,
+    extra?: { detalhe?: string | null; resultadoOverride?: string },
+  ) => {
+    logLoteEventos(
+      rows.slice(0, 400).map((r) => ({
+        lote_id: loteId,
+        lote_pai_id: loteParenteId,
+        tentativa,
+        evento,
+        modo,
+        origem,
+        nome_arquivo: nomeArquivo ?? null,
+        operador_id: operadorId ?? null,
+        ete_id: r.ete_id ?? null,
+        ete_codigo: r.codigo || null,
+        uf: r.uf || null,
+        ano_referencia: Number.isFinite(r.ano_referencia) ? r.ano_referencia : null,
+        mes_referencia: Number.isFinite(r.mes_referencia) ? r.mes_referencia : null,
+        resultado:
+          extra?.resultadoOverride ??
+          (r.errors.length ? "invalida" : r.warnings.length ? "incompativel" : "compativel"),
+        motivos: [...r.errors, ...r.warnings],
+        detalhe: extra?.detalhe ?? null,
+        duracao_ms: null,
+      })),
+    );
+  };
+
   const validar = () => {
     const rows = parseCsv(raw, etes);
     if (rows.length === 0) {
@@ -161,6 +201,7 @@ export function BulkImportTab() {
       return;
     }
     setParsed(rows);
+    registarEventos(rows, "validacao", null);
   };
 
   const onFile = async (file: File) => {
@@ -169,6 +210,9 @@ export function BulkImportTab() {
     setOrigem("arquivo");
     setNomeArquivo(file.name);
     setReenfileirandoDe(null);
+    setLoteParenteId(null);
+    setLoteId(crypto.randomUUID());
+    setTentativa(1);
     setParsed(parseCsv(text, etes));
   };
 
@@ -228,7 +272,7 @@ export function BulkImportTab() {
       const all = parsed ?? [];
       const rows = all.filter((r) => r.errors.length === 0);
       if (rows.length === 0) throw new Error("Nenhuma linha válida para importar");
-      const loteId = crypto.randomUUID();
+      const t0 = performance.now();
 
       // Regra: linhas com incompatibilidade NUNCA são submetidas automaticamente.
       const respostas = rows.map((r) => ({
@@ -251,6 +295,29 @@ export function BulkImportTab() {
         ? [headerLine(raw), ...invalidas.map((r) => r.linha)].join("\n")
         : undefined;
 
+      // trilha: resultado final por linha
+      logLoteEventos(
+        all.slice(0, 400).map((r) => ({
+          lote_id: loteId,
+          lote_pai_id: loteParenteId,
+          tentativa,
+          evento: reenfileirandoDe ? ("reenfileiramento" as const) : ("importacao" as const),
+          modo,
+          origem,
+          nome_arquivo: nomeArquivo ?? null,
+          operador_id: operadorId ?? null,
+          ete_id: r.ete_id ?? null,
+          ete_codigo: r.codigo || null,
+          uf: r.uf || null,
+          ano_referencia: Number.isFinite(r.ano_referencia) ? r.ano_referencia : null,
+          mes_referencia: Number.isFinite(r.mes_referencia) ? r.mes_referencia : null,
+          resultado: r.errors.length ? "invalida" : r.warnings.length ? "rascunho" : "importada",
+          motivos: [...r.errors, ...r.warnings],
+          detalhe: null,
+          duracao_ms: Math.round(performance.now() - t0),
+        })),
+      );
+
       return {
         inserted: (data as { inserted?: number } | null)?.inserted ?? respostas.length,
         retidas, modo, total: all.length, invalidas: invalidas.length, csvPendente,
@@ -261,11 +328,14 @@ export function BulkImportTab() {
         modo, origem, nomeArquivo,
         total, importadas: inserted, retidas, invalidas,
         status: invalidas > 0 ? "parcial" : "concluido",
+        loteId,
         csvPendente,
         paiId: reenfileirandoDe ?? undefined,
       });
       if (reenfileirandoDe) updateBatch(reenfileirandoDe, { status: "reenfileirado" });
       setReenfileirandoDe(null);
+      setLoteParenteId(loteId);
+      setLoteId(crypto.randomUUID());
       toast({
         title: `${inserted} registo(s) importado(s)`,
         description: [
@@ -276,6 +346,7 @@ export function BulkImportTab() {
       qc.invalidateQueries({ queryKey: ["respostas"] });
       qc.invalidateQueries({ queryKey: ["respostas-kpis"] });
       qc.invalidateQueries({ queryKey: ["curadoria-fila-validacao"] });
+      qc.invalidateQueries({ queryKey: ["curadoria-lote-auditoria"] });
     },
     onError: (e: Error, modo) => {
       addBatch({
@@ -283,9 +354,17 @@ export function BulkImportTab() {
         total: parsed?.length ?? 0, importadas: 0, retidas: 0,
         invalidas: parsed?.filter((r) => r.errors.length > 0).length ?? 0,
         status: "falha", erro: e.message,
+        loteId,
         csvPendente: raw.trim() || undefined,
         paiId: reenfileirandoDe ?? undefined,
       });
+      logLoteEventos([{
+        lote_id: loteId, lote_pai_id: loteParenteId, tentativa, evento: "falha", modo,
+        origem, nome_arquivo: nomeArquivo ?? null, operador_id: operadorId ?? null,
+        ete_id: null, ete_codigo: null, uf: null, ano_referencia: null, mes_referencia: null,
+        resultado: "falha", motivos: [e.message], detalhe: e.message, duracao_ms: null,
+      }]);
+      qc.invalidateQueries({ queryKey: ["curadoria-lote-auditoria"] });
       toast({ title: "Falha na importação", description: e.message, variant: "destructive" });
     },
   });
@@ -298,6 +377,9 @@ export function BulkImportTab() {
     setOrigem("reenfileiramento");
     setNomeArquivo(b.nomeArquivo);
     setReenfileirandoDe(b.id);
+    setLoteParenteId(b.loteId ?? null);
+    setLoteId(crypto.randomUUID());
+    setTentativa((b.tentativas ?? 1) + 1);
     limparFiltros();
     const validas = rows.filter((r) => r.errors.length === 0).length;
     if (auto && validas > 0) {
@@ -319,6 +401,33 @@ export function BulkImportTab() {
     falha: "bg-destructive/15 text-destructive",
     reenfileirado: "bg-info/15 text-info",
   })[s];
+
+  const kpiData = useMemo(() => {
+    const linhas = parsed ?? [];
+    const motivos = new Map<string, number>();
+    const modelos = new Map<string, { compativel: number; incompativel: number }>();
+    for (const r of linhas) {
+      for (const m of [...r.errors, ...r.warnings]) motivos.set(m, (motivos.get(m) ?? 0) + 1);
+      const nome = r.uf || "—";
+      const acc = modelos.get(nome) ?? { compativel: 0, incompativel: 0 };
+      if (r.errors.length || r.warnings.length) acc.incompativel++; else acc.compativel++;
+      modelos.set(nome, acc);
+    }
+    const origens = new Map<string, number>();
+    for (const b of batches) origens.set(b.origem, (origens.get(b.origem) ?? 0) + b.total);
+    if (linhas.length) origens.set(origem, (origens.get(origem) ?? 0) + linhas.length);
+    const compativeis = linhas.filter((r) => !r.errors.length && !r.warnings.length).length;
+    return {
+      total: linhas.length,
+      compativeis,
+      incompativeis: linhas.length - compativeis,
+      motivos: [...motivos.entries()].map(([motivo, qtd]) => ({ motivo, qtd })).sort((a, b) => b.qtd - a.qtd),
+      porModelo: [...modelos.entries()].map(([nome, v]) => ({ nome, ...v })).sort((a, b) =>
+        (b.compativel + b.incompativel) - (a.compativel + a.incompativel)).slice(0, 10),
+      porOrigem: [...origens.entries()].map(([nome, qtd]) => ({ nome, qtd })),
+      ...tempoMedioCompatibilizacao(auditoriaRows),
+    };
+  }, [parsed, batches, origem, auditoriaRows]);
 
   return (
     <div className="space-y-6">
@@ -342,7 +451,7 @@ export function BulkImportTab() {
               <Upload className="h-3.5 w-3.5 mr-1.5" /> Carregar ficheiro CSV
             </Button>
             <Button variant="ghost" size="sm"
-              onClick={() => { setRaw(TEMPLATE); setParsed(null); setOrigem("colado"); setNomeArquivo(undefined); setReenfileirandoDe(null); }}>
+              onClick={() => { setRaw(TEMPLATE); setParsed(null); setOrigem("colado"); setNomeArquivo(undefined); setReenfileirandoDe(null); setLoteParenteId(null); setLoteId(crypto.randomUUID()); setTentativa(1); }}>
               Usar modelo de exemplo
             </Button>
             {reenfileirandoDe && (
@@ -591,6 +700,10 @@ export function BulkImportTab() {
           </Table>
         </CardContent>
       </Card>
+
+      <ValidacaoKpiPanel data={kpiData} titulo="Importação em lote" />
+
+      <LoteAuditoriaPanel />
     </div>
   );
 }
