@@ -1,17 +1,25 @@
 # 📚 Documentação SIGSAN-FED
 
-| # | Documento |
-|---|---|
-| 01 | [Padronização Visual](./01-padronizacao-visual.md) |
-| 02 | [Arquitetura da Aplicação](./02-arquitetura.md) |
-| 03 | [Database Schema](./03-database-schema.md) |
-| 04 | [Rotas de API](./04-rotas-api.md) |
-| 05 | [Políticas RLS](./05-rls-policies.md) |
-| 06 | [Pontos de Função](./06-pontos-de-funcao.md) |
-| 07 | [Inventário de Funções](./07-inventario-funcoes.md) |
-| 08 | [Regras de Negócio](./08-regras-de-negocio.md) |
-| 09 | [Segurança](./09-seguranca.md) |
-| 10 | [Módulo Curadoria Nacional](./10-modulo-curadoria.md) |
+| # | Documento | Descrição |
+|---|---|---|
+| 01 | [Padronização Visual](./01-padronizacao-visual.md) | Cores, tipografia, espaçamento, ícones |
+| 02 | [Arquitetura](./02-arquitetura.md) | Stack, diretórios, rotas |
+| 03 | [Schema do Banco](./03-database-schema.md) | Tabelas, colunas, relacionamentos |
+| 04 | [Rotas / API (legado)](./04-rotas-api.md) | Documento anterior de endpoints |
+| 05 | [Políticas de Segurança](./05-rls-policies.md) | RLS, autenticação, autorização |
+| 06 | [Pontos de Função](./06-pontos-de-funcao.md) | Contagem APF |
+| 07 | [Inventário de Funções](./07-inventario-funcoes.md) | Lista de funcionalidades |
+| 08 | [Regras de Negócio](./08-regras-de-negocio.md) | Regras e validações |
+| 09 | [Segurança](./09-seguranca.md) | Práticas, hardening, ameaças |
+| 10 | [Módulo Curadoria Nacional](./10-modulo-curadoria.md) | Submissões, validações, lotes |
+| 11 | [Anti-confounding (DMI)](./11-anti-confounding-dmi.md) | Regra do Falso Afluente |
+| 12 | [Banco de Dados](./12-banco-de-dados.md) | Visão consolidada: domínios, funções, GRANTs |
+| 13 | [Diagrama ER](./13-diagrama-er.md) | Diagrama Mermaid |
+| 14 | [Rotas](./14-rotas.md) | Rotas do front, RBAC e query params |
+| 15 | [APIs e Integrações](./15-apis-integracoes.md) | Edge functions, PostgREST, realtime, segredos |
+| 16 | [Frameworks de Conformidade](./16-frameworks-conformidade.md) | Skills GRC importadas e como aplicá-las |
+| 17 | [LDAP](./17-ldap.md) | Configuração e mapeamento de atributos |
+
 
 Voltar ao [README principal](../README.md).
 
