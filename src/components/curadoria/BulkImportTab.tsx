@@ -700,6 +700,10 @@ export function BulkImportTab() {
           </Table>
         </CardContent>
       </Card>
+
+      <ValidacaoKpiPanel data={kpiData} titulo="Importação em lote" />
+
+      <LoteAuditoriaPanel />
     </div>
   );
 }
