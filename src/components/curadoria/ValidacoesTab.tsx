@@ -87,6 +87,8 @@ const PERIODOS = [
 export function ValidacoesTab() {
   const { toast } = useToast();
   const qc = useQueryClient();
+  const { user, roles } = useAuth();
+  const { data: auditoriaRows = [] } = useLoteAuditoria();
   const [busca, setBusca] = useState("");
   const [fEstado, setFEstado] = useState<"todos" | "submetido" | "em_analise">("todos");
   const [fResultado, setFResultado] = useState<"todos" | "compativel" | "incompativel">("todos");
@@ -526,6 +528,36 @@ export function ValidacoesTab() {
             <Button variant="destructive" onClick={confirmReject} disabled={transition.isPending}>
               Confirmar rejeição
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={assinaturaOpen} onOpenChange={setAssinaturaOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Assinatura eletrónica do relatório</DialogTitle>
+            <DialogDescription>
+              O relatório institucional é emitido com protocolo, sumário, numeração de páginas e assinatura
+              eletrónica simples (MP 2.200-2/2001) do responsável identificado abaixo.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="sign-nome">Nome do responsável</Label>
+              <Input id="sign-nome" value={signNome} onChange={(e) => setSignNome(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="sign-cargo">Cargo / função</Label>
+              <Input id="sign-cargo" value={signCargo} placeholder="Ex.: Analista de Curadoria — ANA"
+                onChange={(e) => setSignCargo(e.target.value)} />
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              E-mail autenticado: {user?.email ?? "—"} · Papéis: {roles?.join(", ") || "—"}
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAssinaturaOpen(false)}>Cancelar</Button>
+            <Button onClick={exportarPdf} disabled={signNome.trim().length < 3}>Assinar e gerar PDF</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
