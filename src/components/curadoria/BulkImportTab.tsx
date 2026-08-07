@@ -291,6 +291,29 @@ export function BulkImportTab() {
         ? [headerLine(raw), ...invalidas.map((r) => r.linha)].join("\n")
         : undefined;
 
+      // trilha: resultado final por linha
+      logLoteEventos(
+        all.slice(0, 400).map((r) => ({
+          lote_id: loteId,
+          lote_pai_id: reenfileirandoDe,
+          tentativa,
+          evento: reenfileirandoDe ? ("reenfileiramento" as const) : ("importacao" as const),
+          modo,
+          origem,
+          nome_arquivo: nomeArquivo ?? null,
+          operador_id: operadorId ?? null,
+          ete_id: r.ete_id ?? null,
+          ete_codigo: r.codigo || null,
+          uf: r.uf || null,
+          ano_referencia: Number.isFinite(r.ano_referencia) ? r.ano_referencia : null,
+          mes_referencia: Number.isFinite(r.mes_referencia) ? r.mes_referencia : null,
+          resultado: r.errors.length ? "invalida" : r.warnings.length ? "rascunho" : "importada",
+          motivos: [...r.errors, ...r.warnings],
+          detalhe: null,
+          duracao_ms: Math.round(performance.now() - t0),
+        })),
+      );
+
       return {
         inserted: (data as { inserted?: number } | null)?.inserted ?? respostas.length,
         retidas, modo, total: all.length, invalidas: invalidas.length, csvPendente,
