@@ -268,7 +268,7 @@ export function BulkImportTab() {
       const all = parsed ?? [];
       const rows = all.filter((r) => r.errors.length === 0);
       if (rows.length === 0) throw new Error("Nenhuma linha válida para importar");
-      const loteId = crypto.randomUUID();
+      const t0 = performance.now();
 
       // Regra: linhas com incompatibilidade NUNCA são submetidas automaticamente.
       const respostas = rows.map((r) => ({
