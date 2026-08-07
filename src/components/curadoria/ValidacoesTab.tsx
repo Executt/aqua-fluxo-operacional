@@ -502,6 +502,12 @@ export function ValidacoesTab() {
         </CardContent>
       </Card>
 
+      <div className="mt-6">
+        <ValidacaoKpiPanel data={kpiData} titulo="Validações" />
+      </div>
+
+
+
       <Dialog open={!!rejectTarget} onOpenChange={(o) => !o && setRejectTarget(null)}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
