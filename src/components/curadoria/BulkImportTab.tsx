@@ -358,6 +358,13 @@ export function BulkImportTab() {
         csvPendente: raw.trim() || undefined,
         paiId: reenfileirandoDe ?? undefined,
       });
+      logLoteEventos([{
+        lote_id: loteId, lote_pai_id: loteParenteId, tentativa, evento: "falha", modo,
+        origem, nome_arquivo: nomeArquivo ?? null, operador_id: operadorId ?? null,
+        ete_id: null, ete_codigo: null, uf: null, ano_referencia: null, mes_referencia: null,
+        resultado: "falha", motivos: [e.message], detalhe: e.message, duracao_ms: null,
+      }]);
+      qc.invalidateQueries({ queryKey: ["curadoria-lote-auditoria"] });
       toast({ title: "Falha na importação", description: e.message, variant: "destructive" });
     },
   });
@@ -394,6 +401,33 @@ export function BulkImportTab() {
     falha: "bg-destructive/15 text-destructive",
     reenfileirado: "bg-info/15 text-info",
   })[s];
+
+  const kpiData = useMemo(() => {
+    const linhas = parsed ?? [];
+    const motivos = new Map<string, number>();
+    const modelos = new Map<string, { compativel: number; incompativel: number }>();
+    for (const r of linhas) {
+      for (const m of [...r.errors, ...r.warnings]) motivos.set(m, (motivos.get(m) ?? 0) + 1);
+      const nome = r.uf || "—";
+      const acc = modelos.get(nome) ?? { compativel: 0, incompativel: 0 };
+      if (r.errors.length || r.warnings.length) acc.incompativel++; else acc.compativel++;
+      modelos.set(nome, acc);
+    }
+    const origens = new Map<string, number>();
+    for (const b of batches) origens.set(b.origem, (origens.get(b.origem) ?? 0) + b.total);
+    if (linhas.length) origens.set(origem, (origens.get(origem) ?? 0) + linhas.length);
+    const compativeis = linhas.filter((r) => !r.errors.length && !r.warnings.length).length;
+    return {
+      total: linhas.length,
+      compativeis,
+      incompativeis: linhas.length - compativeis,
+      motivos: [...motivos.entries()].map(([motivo, qtd]) => ({ motivo, qtd })).sort((a, b) => b.qtd - a.qtd),
+      porModelo: [...modelos.entries()].map(([nome, v]) => ({ nome, ...v })).sort((a, b) =>
+        (b.compativel + b.incompativel) - (a.compativel + a.incompativel)).slice(0, 10),
+      porOrigem: [...origens.entries()].map(([nome, qtd]) => ({ nome, qtd })),
+      ...tempoMedioCompatibilizacao(auditoriaRows),
+    };
+  }, [parsed, batches, origem, auditoriaRows]);
 
   return (
     <div className="space-y-6">
