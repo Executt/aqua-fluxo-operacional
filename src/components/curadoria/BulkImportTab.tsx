@@ -161,6 +161,38 @@ export function BulkImportTab() {
   const filtrosAtivos = busca || fStatus !== "todos" || fUf !== "todos" || fAno !== "todos" || fMes !== "todos";
   const limparFiltros = () => { setBusca(""); setFStatus("todos"); setFUf("todos"); setFAno("todos"); setFMes("todos"); };
 
+  /** Regista na trilha os eventos por linha de um lote. */
+  const registarEventos = (
+    rows: ParsedRow[],
+    evento: "validacao" | "importacao" | "reenfileiramento" | "falha",
+    modo: "submeter" | "rascunho" | null,
+    extra?: { detalhe?: string | null; resultadoOverride?: string },
+  ) => {
+    logLoteEventos(
+      rows.slice(0, 400).map((r) => ({
+        lote_id: loteId,
+        lote_pai_id: reenfileirandoDe,
+        tentativa,
+        evento,
+        modo,
+        origem,
+        nome_arquivo: nomeArquivo ?? null,
+        operador_id: operadorId ?? null,
+        ete_id: r.ete_id ?? null,
+        ete_codigo: r.codigo || null,
+        uf: r.uf || null,
+        ano_referencia: Number.isFinite(r.ano_referencia) ? r.ano_referencia : null,
+        mes_referencia: Number.isFinite(r.mes_referencia) ? r.mes_referencia : null,
+        resultado:
+          extra?.resultadoOverride ??
+          (r.errors.length ? "invalida" : r.warnings.length ? "incompativel" : "compativel"),
+        motivos: [...r.errors, ...r.warnings],
+        detalhe: extra?.detalhe ?? null,
+        duracao_ms: null,
+      })),
+    );
+  };
+
   const validar = () => {
     const rows = parseCsv(raw, etes);
     if (rows.length === 0) {
@@ -168,6 +200,7 @@ export function BulkImportTab() {
       return;
     }
     setParsed(rows);
+    registarEventos(rows, "validacao", null);
   };
 
   const onFile = async (file: File) => {
