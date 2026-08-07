@@ -210,6 +210,9 @@ export function BulkImportTab() {
     setOrigem("arquivo");
     setNomeArquivo(file.name);
     setReenfileirandoDe(null);
+    setLoteParenteId(null);
+    setLoteId(crypto.randomUUID());
+    setTentativa(1);
     setParsed(parseCsv(text, etes));
   };
 
@@ -364,6 +367,9 @@ export function BulkImportTab() {
     setOrigem("reenfileiramento");
     setNomeArquivo(b.nomeArquivo);
     setReenfileirandoDe(b.id);
+    setLoteParenteId(b.loteId ?? null);
+    setLoteId(crypto.randomUUID());
+    setTentativa((b.tentativas ?? 1) + 1);
     limparFiltros();
     const validas = rows.filter((r) => r.errors.length === 0).length;
     if (auto && validas > 0) {
@@ -408,7 +414,7 @@ export function BulkImportTab() {
               <Upload className="h-3.5 w-3.5 mr-1.5" /> Carregar ficheiro CSV
             </Button>
             <Button variant="ghost" size="sm"
-              onClick={() => { setRaw(TEMPLATE); setParsed(null); setOrigem("colado"); setNomeArquivo(undefined); setReenfileirandoDe(null); }}>
+              onClick={() => { setRaw(TEMPLATE); setParsed(null); setOrigem("colado"); setNomeArquivo(undefined); setReenfileirandoDe(null); setLoteParenteId(null); setLoteId(crypto.randomUUID()); setTentativa(1); }}>
               Usar modelo de exemplo
             </Button>
             {reenfileirandoDe && (
