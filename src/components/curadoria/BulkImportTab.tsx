@@ -106,6 +106,9 @@ export function BulkImportTab() {
   const [origem, setOrigem] = useState<"colado" | "arquivo" | "reenfileiramento">("colado");
   const [nomeArquivo, setNomeArquivo] = useState<string | undefined>();
   const [reenfileirandoDe, setReenfileirandoDe] = useState<string | null>(null);
+  const [loteId, setLoteId] = useState<string>(() => crypto.randomUUID());
+  const [tentativa, setTentativa] = useState(1);
+  const { data: auditoriaRows = [] } = useLoteAuditoria();
 
   const [busca, setBusca] = useState("");
   const [fStatus, setFStatus] = useState<"todos" | "compativel" | "incompativel" | "invalida">("todos");
