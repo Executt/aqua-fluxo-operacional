@@ -20,13 +20,17 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  AlertTriangle, CheckCircle2, Download, FileSearch, FileText, RefreshCw, Search, X,
+  AlertTriangle, CheckCircle2, Download, FileSearch, FileSpreadsheet, FileText, RefreshCw, Search, X,
 } from "lucide-react";
 import { downloadCsv, downloadInstitutionalPdf, stamp } from "@/lib/curadoria-export";
+import { downloadXlsx } from "@/lib/xlsx-export";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLoteAuditoria } from "@/hooks/use-lote-auditoria";
+import { useCompatNotifications } from "@/hooks/use-compat-notifications";
+import { logLoteEventos } from "@/lib/lote-auditoria";
 import { ValidacaoKpiPanel, tempoMedioCompatibilizacao } from "./ValidacaoKpiPanel";
 import { alertasHidricos, computeIndicadoresHidricos, fmt } from "@/lib/hidrico";
+
 
 const motivoSchema = z.string().trim()
   .min(20, "O motivo deve ter pelo menos 20 caracteres para garantir rastreabilidade")
@@ -89,7 +93,9 @@ export function ValidacoesTab() {
   const qc = useQueryClient();
   const { user, roles } = useAuth();
   const { data: auditoriaRows = [] } = useLoteAuditoria();
+  useCompatNotifications(auditoriaRows);
   const [busca, setBusca] = useState("");
+
   const [fEstado, setFEstado] = useState<"todos" | "submetido" | "em_analise">("todos");
   const [fResultado, setFResultado] = useState<"todos" | "compativel" | "incompativel">("todos");
   const [fOrigem, setFOrigem] = useState<"todos" | "lote" | "manual" | "api">("todos");
@@ -246,6 +252,46 @@ export function ValidacoesTab() {
     toast({ title: "CSV gerado", description: `${filtered.length} registo(s) exportado(s).` });
   };
 
+  const estatisticasRows = () => [
+    ["Submissões (recorte filtrado)", resumo.total],
+    ["Compatíveis", resumo.compativeis],
+    ["Incompatíveis", resumo.incompativeis],
+    ["Taxa de compatibilidade (%)", resumo.total ? Number(((resumo.compativeis / resumo.total) * 100).toFixed(1)) : 0],
+    ["Fora do CONAMA 430", resumo.conama430],
+    ["Sobrecarga hidráulica", resumo.sobrecarga],
+    ["Carga remanescente (kg DBO/dia)", Number(resumo.cargaRemanescente.toFixed(1))],
+    ["Tempo médio até compatibilizar (h)", kpiData.tempoMedioHoras === null ? "—" : Number(kpiData.tempoMedioHoras.toFixed(1))],
+    ["Casos reenfileirados e compatibilizados", kpiData.amostraTempo],
+    ["Filtros aplicados", filtrosAtivos ? "sim" : "não"],
+    ["Estado", fEstado], ["Resultado", fResultado], ["Origem", fOrigem],
+    ["Tipologia", fTipologia], ["Período", fPeriodo], ["Busca", busca || "—"],
+  ];
+
+  const exportarXlsx = () => {
+    if (!filtered.length) return toast({ title: "Nada a exportar", variant: "destructive" });
+    downloadXlsx(`validacoes-curadoria-${stamp()}.xlsx`, [
+      { nome: "Estatísticas", headers: ["Indicador", "Valor"], rows: estatisticasRows() },
+      { nome: "Submissões", headers: HEADERS, rows: exportRows() },
+      {
+        nome: "Motivos",
+        headers: ["Motivo", "Ocorrências"],
+        rows: kpiData.motivos.map((m) => [m.motivo, m.qtd]),
+      },
+      {
+        nome: "Por tipologia",
+        headers: ["Tipologia", "Compatíveis", "Incompatíveis"],
+        rows: kpiData.porModelo.map((m) => [m.nome, m.compativel, m.incompativel]),
+      },
+      {
+        nome: "Por origem",
+        headers: ["Origem", "Registos"],
+        rows: kpiData.porOrigem.map((o) => [o.nome, o.qtd]),
+      },
+    ]);
+    toast({ title: "XLSX gerado", description: `${filtered.length} registo(s) e estatísticas exportados.` });
+  };
+
+
   const [assinaturaOpen, setAssinaturaOpen] = useState(false);
   const [signNome, setSignNome] = useState("");
   const [signCargo, setSignCargo] = useState(localStorage.getItem("curadoria.assinatura.cargo") ?? "");
@@ -256,12 +302,14 @@ export function ValidacoesTab() {
     setAssinaturaOpen(true);
   };
 
-  const exportarPdf = () => {
+  const exportarPdf = async () => {
     if (!filtered.length) return toast({ title: "Nada a exportar", variant: "destructive" });
     localStorage.setItem("curadoria.assinatura.cargo", signCargo);
 
     const incompativeis = filtered.filter((f) => f.issues.length > 0);
-    const protocolo = downloadInstitutionalPdf({
+    const escopo = filtrosAtivos ? "Recorte filtrado da fila de validação" : "Fila completa de validação";
+    const { protocolo, checksum, verificacaoUrl } = downloadInstitutionalPdf({
+
       filename: `validacoes-curadoria-${stamp()}.pdf`,
       title: "Relatório de Validações — Curadoria Nacional de Saneamento",
       subtitle: filtrosAtivos ? "Recorte filtrado da fila de validação" : "Fila completa de validação",
@@ -312,8 +360,43 @@ export function ValidacoesTab() {
       },
     });
     setAssinaturaOpen(false);
-    toast({ title: "PDF assinado gerado", description: `Protocolo ${protocolo} · ${filtered.length} registo(s).` });
+
+    // Registo oficial consultável + evento na trilha de auditoria (verificação pública)
+    const assinanteNome = signNome || user?.email || "Responsável não identificado";
+    try {
+      await supabase.from("curadoria_documentos" as never).insert({
+        protocolo, checksum,
+        titulo: "Relatório de Validações — Curadoria Nacional de Saneamento",
+        escopo,
+        total_registos: resumo.total,
+        compativeis: resumo.compativeis,
+        incompativeis: resumo.incompativeis,
+        assinante_nome: assinanteNome,
+        assinante_cargo: signCargo || null,
+        assinante_email: user?.email ?? null,
+        assinante_papeis: roles ?? [],
+        emitido_por: user?.id ?? null,
+      } as never);
+      await logLoteEventos([{
+        lote_id: crypto.randomUUID(), lote_pai_id: null, tentativa: 1,
+        evento: "validacao", modo: null, origem: null, nome_arquivo: null,
+        operador_id: null, ete_id: null, ete_codigo: null, uf: null,
+        ano_referencia: null, mes_referencia: null,
+        resultado: "documento_emitido",
+        motivos: [`Relatório de validações assinado por ${assinanteNome}`],
+        detalhe: `Protocolo ${protocolo} · checksum ${checksum} · ${verificacaoUrl}`,
+        duracao_ms: null,
+      }]);
+    } catch {
+      /* registo é best-effort — o PDF já foi emitido */
+    }
+
+    toast({
+      title: "PDF assinado gerado",
+      description: `Protocolo ${protocolo} · checksum ${checksum} · verificável em /verificar-documento`,
+    });
   };
+
 
   async function confirmReject() {
     const parsed = motivoSchema.safeParse(motivo);
@@ -341,6 +424,10 @@ export function ValidacoesTab() {
               <Button variant="outline" size="sm" onClick={exportarCsv}>
                 <Download className="h-3.5 w-3.5 mr-1.5" /> CSV
               </Button>
+              <Button variant="outline" size="sm" onClick={exportarXlsx}>
+                <FileSpreadsheet className="h-3.5 w-3.5 mr-1.5" /> XLSX
+              </Button>
+
               <Button variant="outline" size="sm" onClick={abrirAssinatura}>
                 <FileText className="h-3.5 w-3.5 mr-1.5" /> PDF
               </Button>
@@ -503,7 +590,7 @@ export function ValidacoesTab() {
       </Card>
 
       <div className="mt-6">
-        <ValidacaoKpiPanel data={kpiData} titulo="Validações" />
+        <ValidacaoKpiPanel data={kpiData} titulo="Validações" auditoria={auditoriaRows} aoVivo />
       </div>
 
 

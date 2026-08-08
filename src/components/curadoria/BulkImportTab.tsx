@@ -17,17 +17,20 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  AlertTriangle, CheckCircle2, Download, FileText, FileUp, History, RotateCcw, Search,
+  AlertTriangle, CheckCircle2, Download, FileSpreadsheet, FileText, FileUp, History, RotateCcw, Search,
   Trash2, Upload, X, XCircle,
 } from "lucide-react";
 import { checkIncompatibilidades } from "./ValidacoesTab";
 import { downloadCsv, downloadPdf, stamp } from "@/lib/curadoria-export";
+import { downloadXlsx } from "@/lib/xlsx-export";
 import { computeIndicadoresHidricos, fmt } from "@/lib/hidrico";
 import { useBulkBatches, type BulkBatch } from "@/hooks/use-bulk-batches";
 import { logLoteEventos } from "@/lib/lote-auditoria";
 import { useLoteAuditoria } from "@/hooks/use-lote-auditoria";
+import { useCompatNotifications } from "@/hooks/use-compat-notifications";
 import { ValidacaoKpiPanel, tempoMedioCompatibilizacao } from "./ValidacaoKpiPanel";
 import { LoteAuditoriaPanel } from "./LoteAuditoriaPanel";
+
 
 interface Ete { id: string; codigo: string; nome: string; uf: string; vazao_projeto_lps: number | null }
 
@@ -110,6 +113,8 @@ export function BulkImportTab() {
   const [loteParenteId, setLoteParenteId] = useState<string | null>(null);
   const [tentativa, setTentativa] = useState(1);
   const { data: auditoriaRows = [] } = useLoteAuditoria();
+  useCompatNotifications(auditoriaRows);
+
 
   const [busca, setBusca] = useState("");
   const [fStatus, setFStatus] = useState<"todos" | "compativel" | "incompativel" | "invalida">("todos");
@@ -241,6 +246,56 @@ export function BulkImportTab() {
     downloadCsv(`pre-validacao-lote-${stamp()}.csv`, HEADERS, exportRows(filtradas));
     toast({ title: "CSV gerado", description: `${filtradas.length} linha(s) exportada(s).` });
   };
+
+  const exportarXlsx = () => {
+    if (!filtradas.length) return toast({ title: "Nada a exportar", variant: "destructive" });
+    downloadXlsx(`pre-validacao-lote-${stamp()}.xlsx`, [
+      {
+        nome: "Estatísticas",
+        headers: ["Indicador", "Valor"],
+        rows: [
+          ["Linhas do lote", stats.total],
+          ["Linhas no recorte filtrado", filtradas.length],
+          ["Compatíveis", stats.ok],
+          ["Incompatíveis (rascunho)", stats.incompativeis],
+          ["Inválidas", stats.invalidas],
+          ["Fora do CONAMA 430", stats.foraConama],
+          ["Carga remanescente (kg DBO/dia)", Number(stats.cargaRemanescente.toFixed(1))],
+          ["Tempo médio até compatibilizar (h)", kpiData.tempoMedioHoras === null ? "—" : Number(kpiData.tempoMedioHoras.toFixed(1))],
+          ["Casos reenfileirados e compatibilizados", kpiData.amostraTempo],
+          ["Origem", origem], ["Ficheiro", nomeArquivo ?? "—"],
+          ["Lote", loteId], ["Tentativa", tentativa],
+          ["Status", fStatus], ["UF", fUf], ["Ano", fAno], ["Mês", fMes], ["Busca", busca || "—"],
+        ],
+      },
+      { nome: "Linhas filtradas", headers: HEADERS, rows: exportRows(filtradas) },
+      {
+        nome: "Motivos",
+        headers: ["Motivo", "Ocorrências"],
+        rows: kpiData.motivos.map((m) => [m.motivo, m.qtd]),
+      },
+      {
+        nome: "Por UF",
+        headers: ["UF", "Compatíveis", "Incompatíveis"],
+        rows: kpiData.porModelo.map((m) => [m.nome, m.compativel, m.incompativel]),
+      },
+      {
+        nome: "Por origem",
+        headers: ["Origem", "Linhas"],
+        rows: kpiData.porOrigem.map((o) => [o.nome, o.qtd]),
+      },
+      {
+        nome: "Histórico de lotes",
+        headers: ["Criado em", "Modo", "Origem", "Ficheiro", "Total", "Importadas", "Rascunho", "Inválidas", "Status", "Tentativa", "Lote"],
+        rows: batches.map((b) => [
+          new Date(b.criadoEm).toLocaleString("pt-BR"), b.modo, b.origem, b.nomeArquivo ?? "—",
+          b.total, b.importadas, b.retidas, b.invalidas, b.status, b.tentativas, b.loteId ?? "—",
+        ]),
+      },
+    ]);
+    toast({ title: "XLSX gerado", description: `${filtradas.length} linha(s) e estatísticas exportadas.` });
+  };
+
 
   const exportarPdf = () => {
     if (!filtradas.length) return toast({ title: "Nada a exportar", variant: "destructive" });
@@ -501,6 +556,10 @@ export function BulkImportTab() {
                 <Button variant="outline" size="sm" onClick={exportarCsv}>
                   <Download className="h-3.5 w-3.5 mr-1.5" /> CSV
                 </Button>
+                <Button variant="outline" size="sm" onClick={exportarXlsx}>
+                  <FileSpreadsheet className="h-3.5 w-3.5 mr-1.5" /> XLSX
+                </Button>
+
                 <Button variant="outline" size="sm" onClick={exportarPdf}>
                   <FileText className="h-3.5 w-3.5 mr-1.5" /> PDF
                 </Button>
@@ -701,7 +760,7 @@ export function BulkImportTab() {
         </CardContent>
       </Card>
 
-      <ValidacaoKpiPanel data={kpiData} titulo="Importação em lote" />
+      <ValidacaoKpiPanel data={kpiData} titulo="Importação em lote" auditoria={auditoriaRows} aoVivo />
 
       <LoteAuditoriaPanel />
     </div>

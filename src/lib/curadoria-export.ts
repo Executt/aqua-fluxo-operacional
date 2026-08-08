@@ -131,6 +131,13 @@ export function docHash(input: string): string {
   return h.toString(16).toUpperCase().padStart(8, "0");
 }
 
+export interface ResultadoPdfInstitucional {
+  protocolo: string;
+  checksum: string;
+  verificacaoUrl: string;
+  emitidoEm: string;
+}
+
 export function downloadInstitutionalPdf(opts: {
   filename: string;
   title: string;
@@ -140,12 +147,25 @@ export function downloadInstitutionalPdf(opts: {
   notes?: string[];
   secoes: SecaoRelatorio[];
   assinatura?: AssinaturaEletronica;
-}) {
+}): ResultadoPdfInstitucional {
   const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
   const emitido = new Date();
   const protocolo =
     opts.protocolo ?? `SIGSAN-${emitido.toISOString().slice(0, 10).replace(/-/g, "")}-${docHash(opts.title + emitido.toISOString())}`;
+
+  // Checksum do conteúdo: cobre sumário, indicadores e todas as linhas das seções.
+  const conteudo = JSON.stringify([
+    opts.title,
+    opts.summary ?? [],
+    opts.secoes.map((s) => [s.titulo, s.headers, s.rows]),
+  ]);
+  const checksum = `${docHash(conteudo)}-${docHash(conteudo.split("").reverse().join(""))}`;
+  const verificacaoUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/verificar-documento?p=${encodeURIComponent(protocolo)}&c=${encodeURIComponent(checksum)}`
+      : `/verificar-documento?p=${protocolo}&c=${checksum}`;
+
 
   const header = () => {
     doc.setFillColor(...AZUL);
@@ -244,10 +264,10 @@ export function downloadInstitutionalPdf(opts: {
     }
   });
 
-  // Assinatura eletrónica
+  // Assinatura eletrónica + verificação pública
   if (opts.assinatura) {
     const H = doc.internal.pageSize.getHeight();
-    if (y > H - 150) {
+    if (y > H - 190) {
       doc.addPage();
       header();
       y = 86;
@@ -256,7 +276,7 @@ export function downloadInstitutionalPdf(opts: {
     const hash = a.hash ?? docHash(`${protocolo}|${a.nome}|${a.email ?? ""}`);
     doc.setDrawColor(...AZUL);
     doc.setLineWidth(0.8);
-    doc.rect(40, y, W - 80, 96);
+    doc.rect(40, y, W - 80, 132);
     doc.setFontSize(9);
     doc.text("Assinatura eletrónica do responsável", 52, y + 20);
     doc.setFontSize(8);
@@ -268,12 +288,16 @@ export function downloadInstitutionalPdf(opts: {
         `E-mail: ${a.email ?? "—"}`,
         `Assinado em: ${emitido.toLocaleString("pt-BR")}`,
         `Código de autenticação: ${hash} · Protocolo: ${protocolo}`,
+        `Checksum do conteúdo (SIGSAN-FNV): ${checksum}`,
         "Documento assinado eletronicamente conforme MP 2.200-2/2001 (ICP-Brasil, assinatura simples).",
+        "Verificação pública (protocolo + checksum, registo consultável na trilha de auditoria):",
       ].join("\n"),
       52,
       y + 36,
       { lineHeightFactor: 1.4 },
     );
+    doc.setTextColor(...AZUL);
+    doc.textWithLink(verificacaoUrl, 52, y + 122, { url: verificacaoUrl });
     doc.setTextColor(0);
   }
 
@@ -284,11 +308,12 @@ export function downloadInstitutionalPdf(opts: {
     doc.setFontSize(7);
     doc.setTextColor(140);
     doc.text(`Página ${p} de ${total}`, W - 40, doc.internal.pageSize.getHeight() - 20, { align: "right" });
-    doc.text(`${ORG} · Protocolo ${protocolo}`, 40, doc.internal.pageSize.getHeight() - 20);
+    doc.text(`${ORG} · Protocolo ${protocolo} · Checksum ${checksum}`, 40, doc.internal.pageSize.getHeight() - 20);
     doc.setTextColor(0);
   }
 
   doc.save(opts.filename);
-  return protocolo;
+  return { protocolo, checksum, verificacaoUrl, emitidoEm: emitido.toISOString() };
+
 }
 
