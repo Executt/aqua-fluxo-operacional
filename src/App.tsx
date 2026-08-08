@@ -14,6 +14,8 @@ import CompliancePage from "./pages/Compliance.tsx";
 import Curadoria from "./pages/Curadoria.tsx";
 import CuradoriaAuditoria from "./pages/CuradoriaAuditoria.tsx";
 import Auth from "./pages/Auth.tsx";
+import VerificarDocumento from "./pages/VerificarDocumento.tsx";
+
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -27,6 +29,8 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/verificar-documento" element={<VerificarDocumento />} />
+
             <Route path="/" element={<Index />} />
             <Route path="/cortex" element={<CortexSan />} />
             <Route path="/entidades" element={<Entidades />} />
