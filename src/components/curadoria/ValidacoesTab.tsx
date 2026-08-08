@@ -360,8 +360,43 @@ export function ValidacoesTab() {
       },
     });
     setAssinaturaOpen(false);
-    toast({ title: "PDF assinado gerado", description: `Protocolo ${protocolo} · ${filtered.length} registo(s).` });
+
+    // Registo oficial consultável + evento na trilha de auditoria (verificação pública)
+    const assinanteNome = signNome || user?.email || "Responsável não identificado";
+    try {
+      await supabase.from("curadoria_documentos" as never).insert({
+        protocolo, checksum,
+        titulo: "Relatório de Validações — Curadoria Nacional de Saneamento",
+        escopo,
+        total_registos: resumo.total,
+        compativeis: resumo.compativeis,
+        incompativeis: resumo.incompativeis,
+        assinante_nome: assinanteNome,
+        assinante_cargo: signCargo || null,
+        assinante_email: user?.email ?? null,
+        assinante_papeis: roles ?? [],
+        emitido_por: user?.id ?? null,
+      } as never);
+      await logLoteEventos([{
+        lote_id: crypto.randomUUID(), lote_pai_id: null, tentativa: 1,
+        evento: "validacao", modo: null, origem: null, nome_arquivo: null,
+        operador_id: null, ete_id: null, ete_codigo: null, uf: null,
+        ano_referencia: null, mes_referencia: null,
+        resultado: "documento_emitido",
+        motivos: [`Relatório de validações assinado por ${assinanteNome}`],
+        detalhe: `Protocolo ${protocolo} · checksum ${checksum} · ${verificacaoUrl}`,
+        duracao_ms: null,
+      }]);
+    } catch {
+      /* registo é best-effort — o PDF já foi emitido */
+    }
+
+    toast({
+      title: "PDF assinado gerado",
+      description: `Protocolo ${protocolo} · checksum ${checksum} · verificável em /verificar-documento`,
+    });
   };
+
 
   async function confirmReject() {
     const parsed = motivoSchema.safeParse(motivo);
