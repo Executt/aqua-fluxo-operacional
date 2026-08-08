@@ -17,17 +17,20 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import {
-  AlertTriangle, CheckCircle2, Download, FileText, FileUp, History, RotateCcw, Search,
+  AlertTriangle, CheckCircle2, Download, FileSpreadsheet, FileText, FileUp, History, RotateCcw, Search,
   Trash2, Upload, X, XCircle,
 } from "lucide-react";
 import { checkIncompatibilidades } from "./ValidacoesTab";
 import { downloadCsv, downloadPdf, stamp } from "@/lib/curadoria-export";
+import { downloadXlsx } from "@/lib/xlsx-export";
 import { computeIndicadoresHidricos, fmt } from "@/lib/hidrico";
 import { useBulkBatches, type BulkBatch } from "@/hooks/use-bulk-batches";
 import { logLoteEventos } from "@/lib/lote-auditoria";
 import { useLoteAuditoria } from "@/hooks/use-lote-auditoria";
+import { useCompatNotifications } from "@/hooks/use-compat-notifications";
 import { ValidacaoKpiPanel, tempoMedioCompatibilizacao } from "./ValidacaoKpiPanel";
 import { LoteAuditoriaPanel } from "./LoteAuditoriaPanel";
+
 
 interface Ete { id: string; codigo: string; nome: string; uf: string; vazao_projeto_lps: number | null }
 
@@ -110,6 +113,8 @@ export function BulkImportTab() {
   const [loteParenteId, setLoteParenteId] = useState<string | null>(null);
   const [tentativa, setTentativa] = useState(1);
   const { data: auditoriaRows = [] } = useLoteAuditoria();
+  useCompatNotifications(auditoriaRows);
+
 
   const [busca, setBusca] = useState("");
   const [fStatus, setFStatus] = useState<"todos" | "compativel" | "incompativel" | "invalida">("todos");
