@@ -247,6 +247,56 @@ export function BulkImportTab() {
     toast({ title: "CSV gerado", description: `${filtradas.length} linha(s) exportada(s).` });
   };
 
+  const exportarXlsx = () => {
+    if (!filtradas.length) return toast({ title: "Nada a exportar", variant: "destructive" });
+    downloadXlsx(`pre-validacao-lote-${stamp()}.xlsx`, [
+      {
+        nome: "Estatísticas",
+        headers: ["Indicador", "Valor"],
+        rows: [
+          ["Linhas do lote", stats.total],
+          ["Linhas no recorte filtrado", filtradas.length],
+          ["Compatíveis", stats.ok],
+          ["Incompatíveis (rascunho)", stats.incompativeis],
+          ["Inválidas", stats.invalidas],
+          ["Fora do CONAMA 430", stats.foraConama],
+          ["Carga remanescente (kg DBO/dia)", Number(stats.cargaRemanescente.toFixed(1))],
+          ["Tempo médio até compatibilizar (h)", kpiData.tempoMedioHoras === null ? "—" : Number(kpiData.tempoMedioHoras.toFixed(1))],
+          ["Casos reenfileirados e compatibilizados", kpiData.amostraTempo],
+          ["Origem", origem], ["Ficheiro", nomeArquivo ?? "—"],
+          ["Lote", loteId], ["Tentativa", tentativa],
+          ["Status", fStatus], ["UF", fUf], ["Ano", fAno], ["Mês", fMes], ["Busca", busca || "—"],
+        ],
+      },
+      { nome: "Linhas filtradas", headers: HEADERS, rows: exportRows(filtradas) },
+      {
+        nome: "Motivos",
+        headers: ["Motivo", "Ocorrências"],
+        rows: kpiData.motivos.map((m) => [m.motivo, m.qtd]),
+      },
+      {
+        nome: "Por UF",
+        headers: ["UF", "Compatíveis", "Incompatíveis"],
+        rows: kpiData.porModelo.map((m) => [m.nome, m.compativel, m.incompativel]),
+      },
+      {
+        nome: "Por origem",
+        headers: ["Origem", "Linhas"],
+        rows: kpiData.porOrigem.map((o) => [o.nome, o.qtd]),
+      },
+      {
+        nome: "Histórico de lotes",
+        headers: ["Criado em", "Modo", "Origem", "Ficheiro", "Total", "Importadas", "Rascunho", "Inválidas", "Status", "Tentativa", "Lote"],
+        rows: batches.map((b) => [
+          new Date(b.criadoEm).toLocaleString("pt-BR"), b.modo, b.origem, b.nomeArquivo ?? "—",
+          b.total, b.importadas, b.retidas, b.invalidas, b.status, b.tentativas, b.loteId ?? "—",
+        ]),
+      },
+    ]);
+    toast({ title: "XLSX gerado", description: `${filtradas.length} linha(s) e estatísticas exportadas.` });
+  };
+
+
   const exportarPdf = () => {
     if (!filtradas.length) return toast({ title: "Nada a exportar", variant: "destructive" });
     downloadPdf({
