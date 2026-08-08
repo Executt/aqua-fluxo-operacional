@@ -20,13 +20,17 @@ import {
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  AlertTriangle, CheckCircle2, Download, FileSearch, FileText, RefreshCw, Search, X,
+  AlertTriangle, CheckCircle2, Download, FileSearch, FileSpreadsheet, FileText, RefreshCw, Search, X,
 } from "lucide-react";
 import { downloadCsv, downloadInstitutionalPdf, stamp } from "@/lib/curadoria-export";
+import { downloadXlsx } from "@/lib/xlsx-export";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLoteAuditoria } from "@/hooks/use-lote-auditoria";
+import { useCompatNotifications } from "@/hooks/use-compat-notifications";
+import { logLoteEventos } from "@/lib/lote-auditoria";
 import { ValidacaoKpiPanel, tempoMedioCompatibilizacao } from "./ValidacaoKpiPanel";
 import { alertasHidricos, computeIndicadoresHidricos, fmt } from "@/lib/hidrico";
+
 
 const motivoSchema = z.string().trim()
   .min(20, "O motivo deve ter pelo menos 20 caracteres para garantir rastreabilidade")
