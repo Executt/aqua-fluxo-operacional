@@ -424,6 +424,10 @@ export function ValidacoesTab() {
               <Button variant="outline" size="sm" onClick={exportarCsv}>
                 <Download className="h-3.5 w-3.5 mr-1.5" /> CSV
               </Button>
+              <Button variant="outline" size="sm" onClick={exportarXlsx}>
+                <FileSpreadsheet className="h-3.5 w-3.5 mr-1.5" /> XLSX
+              </Button>
+
               <Button variant="outline" size="sm" onClick={abrirAssinatura}>
                 <FileText className="h-3.5 w-3.5 mr-1.5" /> PDF
               </Button>
@@ -586,7 +590,7 @@ export function ValidacoesTab() {
       </Card>
 
       <div className="mt-6">
-        <ValidacaoKpiPanel data={kpiData} titulo="Validações" />
+        <ValidacaoKpiPanel data={kpiData} titulo="Validações" auditoria={auditoriaRows} aoVivo />
       </div>
 
 
