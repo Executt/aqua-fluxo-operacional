@@ -93,7 +93,7 @@ export function ValidacoesTab() {
   const qc = useQueryClient();
   const { user, roles } = useAuth();
   const { data: auditoriaRows = [] } = useLoteAuditoria();
-  const [busca, setBusca] = useState("");
+  useCompatNotifications(auditoriaRows);
   const [fEstado, setFEstado] = useState<"todos" | "submetido" | "em_analise">("todos");
   const [fResultado, setFResultado] = useState<"todos" | "compativel" | "incompativel">("todos");
   const [fOrigem, setFOrigem] = useState<"todos" | "lote" | "manual" | "api">("todos");
