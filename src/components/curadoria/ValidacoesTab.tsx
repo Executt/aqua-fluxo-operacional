@@ -94,6 +94,8 @@ export function ValidacoesTab() {
   const { user, roles } = useAuth();
   const { data: auditoriaRows = [] } = useLoteAuditoria();
   useCompatNotifications(auditoriaRows);
+  const [busca, setBusca] = useState("");
+
   const [fEstado, setFEstado] = useState<"todos" | "submetido" | "em_analise">("todos");
   const [fResultado, setFResultado] = useState<"todos" | "compativel" | "incompativel">("todos");
   const [fOrigem, setFOrigem] = useState<"todos" | "lote" | "manual" | "api">("todos");
