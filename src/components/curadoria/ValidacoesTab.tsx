@@ -302,12 +302,14 @@ export function ValidacoesTab() {
     setAssinaturaOpen(true);
   };
 
-  const exportarPdf = () => {
+  const exportarPdf = async () => {
     if (!filtered.length) return toast({ title: "Nada a exportar", variant: "destructive" });
     localStorage.setItem("curadoria.assinatura.cargo", signCargo);
 
     const incompativeis = filtered.filter((f) => f.issues.length > 0);
-    const protocolo = downloadInstitutionalPdf({
+    const escopo = filtrosAtivos ? "Recorte filtrado da fila de validação" : "Fila completa de validação";
+    const { protocolo, checksum, verificacaoUrl } = downloadInstitutionalPdf({
+
       filename: `validacoes-curadoria-${stamp()}.pdf`,
       title: "Relatório de Validações — Curadoria Nacional de Saneamento",
       subtitle: filtrosAtivos ? "Recorte filtrado da fila de validação" : "Fila completa de validação",
