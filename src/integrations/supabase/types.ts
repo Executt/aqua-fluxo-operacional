@@ -334,6 +334,57 @@ export type Database = {
         }
         Relationships: []
       }
+      curadoria_documentos: {
+        Row: {
+          assinante_cargo: string | null
+          assinante_email: string | null
+          assinante_nome: string
+          assinante_papeis: string[]
+          checksum: string
+          compativeis: number
+          emitido_em: string
+          emitido_por: string | null
+          escopo: string | null
+          id: string
+          incompativeis: number
+          protocolo: string
+          titulo: string
+          total_registos: number
+        }
+        Insert: {
+          assinante_cargo?: string | null
+          assinante_email?: string | null
+          assinante_nome: string
+          assinante_papeis?: string[]
+          checksum: string
+          compativeis?: number
+          emitido_em?: string
+          emitido_por?: string | null
+          escopo?: string | null
+          id?: string
+          incompativeis?: number
+          protocolo: string
+          titulo: string
+          total_registos?: number
+        }
+        Update: {
+          assinante_cargo?: string | null
+          assinante_email?: string | null
+          assinante_nome?: string
+          assinante_papeis?: string[]
+          checksum?: string
+          compativeis?: number
+          emitido_em?: string
+          emitido_por?: string | null
+          escopo?: string | null
+          id?: string
+          incompativeis?: number
+          protocolo?: string
+          titulo?: string
+          total_registos?: number
+        }
+        Relationships: []
+      }
       curadoria_lote_auditoria: {
         Row: {
           actor_email: string | null
