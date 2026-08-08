@@ -556,6 +556,10 @@ export function BulkImportTab() {
                 <Button variant="outline" size="sm" onClick={exportarCsv}>
                   <Download className="h-3.5 w-3.5 mr-1.5" /> CSV
                 </Button>
+                <Button variant="outline" size="sm" onClick={exportarXlsx}>
+                  <FileSpreadsheet className="h-3.5 w-3.5 mr-1.5" /> XLSX
+                </Button>
+
                 <Button variant="outline" size="sm" onClick={exportarPdf}>
                   <FileText className="h-3.5 w-3.5 mr-1.5" /> PDF
                 </Button>
@@ -756,7 +760,7 @@ export function BulkImportTab() {
         </CardContent>
       </Card>
 
-      <ValidacaoKpiPanel data={kpiData} titulo="Importação em lote" />
+      <ValidacaoKpiPanel data={kpiData} titulo="Importação em lote" auditoria={auditoriaRows} aoVivo />
 
       <LoteAuditoriaPanel />
     </div>
