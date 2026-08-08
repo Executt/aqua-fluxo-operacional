@@ -252,6 +252,46 @@ export function ValidacoesTab() {
     toast({ title: "CSV gerado", description: `${filtered.length} registo(s) exportado(s).` });
   };
 
+  const estatisticasRows = () => [
+    ["Submissões (recorte filtrado)", resumo.total],
+    ["Compatíveis", resumo.compativeis],
+    ["Incompatíveis", resumo.incompativeis],
+    ["Taxa de compatibilidade (%)", resumo.total ? Number(((resumo.compativeis / resumo.total) * 100).toFixed(1)) : 0],
+    ["Fora do CONAMA 430", resumo.conama430],
+    ["Sobrecarga hidráulica", resumo.sobrecarga],
+    ["Carga remanescente (kg DBO/dia)", Number(resumo.cargaRemanescente.toFixed(1))],
+    ["Tempo médio até compatibilizar (h)", kpiData.tempoMedioHoras === null ? "—" : Number(kpiData.tempoMedioHoras.toFixed(1))],
+    ["Casos reenfileirados e compatibilizados", kpiData.amostraTempo],
+    ["Filtros aplicados", filtrosAtivos ? "sim" : "não"],
+    ["Estado", fEstado], ["Resultado", fResultado], ["Origem", fOrigem],
+    ["Tipologia", fTipologia], ["Período", fPeriodo], ["Busca", busca || "—"],
+  ];
+
+  const exportarXlsx = () => {
+    if (!filtered.length) return toast({ title: "Nada a exportar", variant: "destructive" });
+    downloadXlsx(`validacoes-curadoria-${stamp()}.xlsx`, [
+      { nome: "Estatísticas", headers: ["Indicador", "Valor"], rows: estatisticasRows() },
+      { nome: "Submissões", headers: HEADERS, rows: exportRows() },
+      {
+        nome: "Motivos",
+        headers: ["Motivo", "Ocorrências"],
+        rows: kpiData.motivos.map((m) => [m.motivo, m.qtd]),
+      },
+      {
+        nome: "Por tipologia",
+        headers: ["Tipologia", "Compatíveis", "Incompatíveis"],
+        rows: kpiData.porModelo.map((m) => [m.nome, m.compativel, m.incompativel]),
+      },
+      {
+        nome: "Por origem",
+        headers: ["Origem", "Registos"],
+        rows: kpiData.porOrigem.map((o) => [o.nome, o.qtd]),
+      },
+    ]);
+    toast({ title: "XLSX gerado", description: `${filtered.length} registo(s) e estatísticas exportados.` });
+  };
+
+
   const [assinaturaOpen, setAssinaturaOpen] = useState(false);
   const [signNome, setSignNome] = useState("");
   const [signCargo, setSignCargo] = useState(localStorage.getItem("curadoria.assinatura.cargo") ?? "");
