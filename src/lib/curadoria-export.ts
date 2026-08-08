@@ -131,6 +131,13 @@ export function docHash(input: string): string {
   return h.toString(16).toUpperCase().padStart(8, "0");
 }
 
+export interface ResultadoPdfInstitucional {
+  protocolo: string;
+  checksum: string;
+  verificacaoUrl: string;
+  emitidoEm: string;
+}
+
 export function downloadInstitutionalPdf(opts: {
   filename: string;
   title: string;
@@ -140,12 +147,25 @@ export function downloadInstitutionalPdf(opts: {
   notes?: string[];
   secoes: SecaoRelatorio[];
   assinatura?: AssinaturaEletronica;
-}) {
+}): ResultadoPdfInstitucional {
   const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
   const W = doc.internal.pageSize.getWidth();
   const emitido = new Date();
   const protocolo =
     opts.protocolo ?? `SIGSAN-${emitido.toISOString().slice(0, 10).replace(/-/g, "")}-${docHash(opts.title + emitido.toISOString())}`;
+
+  // Checksum do conteúdo: cobre sumário, indicadores e todas as linhas das seções.
+  const conteudo = JSON.stringify([
+    opts.title,
+    opts.summary ?? [],
+    opts.secoes.map((s) => [s.titulo, s.headers, s.rows]),
+  ]);
+  const checksum = `${docHash(conteudo)}-${docHash(conteudo.split("").reverse().join(""))}`;
+  const verificacaoUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/verificar-documento?p=${encodeURIComponent(protocolo)}&c=${encodeURIComponent(checksum)}`
+      : `/verificar-documento?p=${protocolo}&c=${checksum}`;
+
 
   const header = () => {
     doc.setFillColor(...AZUL);
