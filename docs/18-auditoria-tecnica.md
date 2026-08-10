@@ -96,8 +96,8 @@ Exposição de dados regulatórios a não autenticados (A-01/A-02) com implicaç
 
 ## F. Plano incremental proposto
 
-1. **Ciclo 1 (P0):** allowlist MCP + anti-SSRF, `verify_jwt`, CORS por origem, rate limit, fecho do acesso `anon`, `ProtectedRoute` nas rotas operacionais.
-2. **Ciclo 2 (P1):** helpers partilhados (`_shared/http.ts` com CORS, correlation ID, rate limit, erro padronizado), índices/FKs, suíte de testes de RLS e regras hídricas, pipeline de CI.
+1. **Ciclo 1 (P0) — ✅ IMPLEMENTADO (2026-08-10):** anti-SSRF em `cortex-chat` (só `https`, bloqueio de IPs privados/metadata, allowlist via `mcp_servers` ativos, timeout 30 s, sem redirects), `verify_jwt = true` + validação `getClaims` em código, rate limit 20 req/min por utilizador, CORS por allowlist de origem (`corsFor`), fecho do acesso `anon` às 6 tabelas operacionais (políticas agora `TO authenticated` + `REVOKE` de `anon`), `ProtectedRoute` em `/`, `/iot`, `/compliance`, `/entidades`, `/cortex`, e índices `infracoes(entidade_id,status,prazo)`, `sensores(ete_id)`, `etes(entidade_id)`.
+2. **Ciclo 2 (P1):** helpers partilhados (`_shared/http.ts` com CORS, correlation ID, rate limit, erro padronizado), FKs reais, suíte de testes de RLS e regras hídricas, pipeline de CI.
 3. **Ciclo 3 (P2):** motor de ocorrências/SLA, retenção automatizada, React Query em toda a app.
 4. **Ciclo 4 (P3/P4):** hardening e rotulagem da IA, histórico real do Cortex, Design System consolidado e acessibilidade.
 

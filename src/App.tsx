@@ -31,9 +31,30 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/verificar-documento" element={<VerificarDocumento />} />
 
-            <Route path="/" element={<Index />} />
-            <Route path="/cortex" element={<CortexSan />} />
-            <Route path="/entidades" element={<Entidades />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Index />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/cortex"
+              element={
+                <ProtectedRoute>
+                  <CortexSan />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/entidades"
+              element={
+                <ProtectedRoute>
+                  <Entidades />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/admin"
               element={
@@ -42,8 +63,22 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
-            <Route path="/iot" element={<IoTMonitor />} />
-            <Route path="/compliance" element={<CompliancePage />} />
+            <Route
+              path="/iot"
+              element={
+                <ProtectedRoute>
+                  <IoTMonitor />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/compliance"
+              element={
+                <ProtectedRoute>
+                  <CompliancePage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/curadoria"
               element={
