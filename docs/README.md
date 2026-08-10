@@ -19,6 +19,7 @@
 | 15 | [APIs e Integrações](./15-apis-integracoes.md) | Edge functions, PostgREST, realtime, segredos |
 | 16 | [Frameworks de Conformidade](./16-frameworks-conformidade.md) | Skills GRC importadas e como aplicá-las |
 | 17 | [LDAP](./17-ldap.md) | Configuração e mapeamento de atributos |
+| 18 | [Auditoria Técnica](./18-auditoria-tecnica.md) | Diagnóstico, mapa do sistema, achados e matriz de prioridades |
 
 
 Voltar ao [README principal](../README.md).
