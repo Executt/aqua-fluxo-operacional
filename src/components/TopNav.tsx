@@ -12,6 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { NotificationBell } from "@/components/NotificationBell";
+import { ROLE_LABEL, canAccessRoute } from "@/lib/rbac";
 
 const modules = [
   { title: "Visão Global", url: "/", icon: Globe },
@@ -92,7 +93,7 @@ export function TopNav() {
   const displayName = meta.nome || user?.email?.split("@")[0] || "Convidado";
   const initials = displayName.slice(0, 2).toUpperCase();
   const roleLabel = roles[0]
-    ? roles[0].charAt(0).toUpperCase() + roles[0].slice(1)
+    ? roles.map((r) => ROLE_LABEL[r] ?? r).join(" · ")
     : user ? "Sem perfil" : "Não autenticado";
 
   return (
@@ -112,7 +113,7 @@ export function TopNav() {
 
         {/* Module nav */}
         <nav className="hidden lg:flex items-center gap-0.5 ml-2">
-          {modules.map((m) => {
+          {modules.filter((m) => canAccessRoute(roles, m.url)).map((m) => {
             const isActive = root === m.url || (m.url !== "/" && location.pathname.startsWith(m.url));
             return (
               <RRNavLink
