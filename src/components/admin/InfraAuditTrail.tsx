@@ -122,7 +122,33 @@ export function InfraAuditTrail() {
               ))}
             </SelectContent>
           </Select>
+          <Select value={autor} onValueChange={setAutor}>
+            <SelectTrigger className="h-9 text-[12px] w-[200px]"><SelectValue placeholder="Utilizador" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all" className="text-[12px]">Todos os utilizadores</SelectItem>
+              {autores.map((a) => (
+                <SelectItem key={a} value={a} className="text-[12px]">{a}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={recurso} onValueChange={setRecurso}>
+            <SelectTrigger className="h-9 text-[12px] w-[220px]"><SelectValue placeholder="Repositório/base" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all" className="text-[12px]">Todos os repositórios/bases</SelectItem>
+              {recursos.map((r) => (
+                <SelectItem key={r} value={r} className="text-[12px]">{r}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Input type="datetime-local" aria-label="Data inicial" className="h-9 text-[12px] w-[190px]"
+            value={de} onChange={(e) => setDe(e.target.value)} />
+          <Input type="datetime-local" aria-label="Data final" className="h-9 text-[12px] w-[190px]"
+            value={ate} onChange={(e) => setAte(e.target.value)} />
+          <Button variant="outline" size="sm" className="h-9 text-[12px]" onClick={limparFiltros}>
+            <FilterX className="h-3.5 w-3.5 mr-1.5" /> Limpar
+          </Button>
         </div>
+
 
         {isLoading ? (
           <p className="text-body-sm text-muted-foreground py-6 text-center">A carregar...</p>
