@@ -39,6 +39,10 @@ export function InfraAuditTrail() {
   const [search, setSearch] = useState("");
   const [entity, setEntity] = useState<"all" | "repository" | "database">("all");
   const [action, setAction] = useState<"all" | string>("all");
+  const [autor, setAutor] = useState<"all" | string>("all");
+  const [recurso, setRecurso] = useState<"all" | string>("all");
+  const [de, setDe] = useState("");
+  const [ate, setAte] = useState("");
 
   const { data: rows = [], isLoading } = useQuery({
     queryKey: ["infra_audit_log"],
