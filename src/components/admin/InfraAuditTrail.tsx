@@ -57,15 +57,36 @@ export function InfraAuditTrail() {
     },
   });
 
+  const autores = useMemo(
+    () => Array.from(new Set(rows.map((r) => r.changed_by_email).filter(Boolean) as string[])).sort(),
+    [rows]
+  );
+  const recursos = useMemo(
+    () => Array.from(new Set(rows.map((r) => r.entity_name).filter(Boolean) as string[])).sort(),
+    [rows]
+  );
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
+    const deTs = de ? new Date(de).getTime() : null;
+    const ateTs = ate ? new Date(ate).getTime() : null;
     return rows.filter((r) => {
       if (entity !== "all" && r.entity_type !== entity) return false;
       if (action !== "all" && r.action !== action) return false;
+      if (autor !== "all" && (r.changed_by_email ?? "") !== autor) return false;
+      if (recurso !== "all" && (r.entity_name ?? "") !== recurso) return false;
+      const ts = new Date(r.created_at).getTime();
+      if (deTs !== null && ts < deTs) return false;
+      if (ateTs !== null && ts > ateTs) return false;
       if (!q) return true;
       return `${r.entity_name} ${r.motivo} ${r.changed_by_email}`.toLowerCase().includes(q);
     });
-  }, [rows, search, entity, action]);
+  }, [rows, search, entity, action, autor, recurso, de, ate]);
+
+  const limparFiltros = () => {
+    setSearch(""); setEntity("all"); setAction("all");
+    setAutor("all"); setRecurso("all"); setDe(""); setAte("");
+  };
 
   return (
     <Card className="lg:col-span-3 surface-card">
