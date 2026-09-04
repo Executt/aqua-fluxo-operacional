@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { History, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { FilterX, History, Search } from "lucide-react";
 
 type Row = {
   id: string;
