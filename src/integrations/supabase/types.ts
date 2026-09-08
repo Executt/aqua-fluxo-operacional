@@ -2108,7 +2108,7 @@ export type Database = {
       refresh_metabase_views: { Args: never; Returns: undefined }
     }
     Enums: {
-      app_role: "admin" | "gestor" | "auditor" | "operador"
+      app_role: "admin" | "gestor" | "auditor" | "operador" | "compliance"
       conn_test_status: "ok" | "warn" | "fail" | "pending"
       db_engine:
         | "postgres"
@@ -2290,7 +2290,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "gestor", "auditor", "operador"],
+      app_role: ["admin", "gestor", "auditor", "operador", "compliance"],
       conn_test_status: ["ok", "warn", "fail", "pending"],
       db_engine: [
         "postgres",
