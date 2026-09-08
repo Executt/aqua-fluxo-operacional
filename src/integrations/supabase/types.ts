@@ -479,6 +479,9 @@ export type Database = {
           created_at: string
           created_by: string | null
           credentials_ref: string | null
+          criticidade: string
+          custo_acesso_mensal: number
+          custo_manutencao_mensal: number
           description: string | null
           doc_count: number
           file_types: string[]
@@ -492,9 +495,14 @@ export type Database = {
           last_test_status:
             | Database["public"]["Enums"]["conn_test_status"]
             | null
+          metadata_updated_at: string | null
+          metadata_updated_by: string | null
           name: string
+          owner_email: string | null
+          owner_name: string | null
           provider: Database["public"]["Enums"]["repo_provider"]
           size_bytes: number
+          sla_atualizacao_horas: number
           tags: string[]
           updated_at: string
           version: number
@@ -505,6 +513,9 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           credentials_ref?: string | null
+          criticidade?: string
+          custo_acesso_mensal?: number
+          custo_manutencao_mensal?: number
           description?: string | null
           doc_count?: number
           file_types?: string[]
@@ -518,9 +529,14 @@ export type Database = {
           last_test_status?:
             | Database["public"]["Enums"]["conn_test_status"]
             | null
+          metadata_updated_at?: string | null
+          metadata_updated_by?: string | null
           name: string
+          owner_email?: string | null
+          owner_name?: string | null
           provider: Database["public"]["Enums"]["repo_provider"]
           size_bytes?: number
+          sla_atualizacao_horas?: number
           tags?: string[]
           updated_at?: string
           version?: number
@@ -531,6 +547,9 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           credentials_ref?: string | null
+          criticidade?: string
+          custo_acesso_mensal?: number
+          custo_manutencao_mensal?: number
           description?: string | null
           doc_count?: number
           file_types?: string[]
@@ -544,9 +563,14 @@ export type Database = {
           last_test_status?:
             | Database["public"]["Enums"]["conn_test_status"]
             | null
+          metadata_updated_at?: string | null
+          metadata_updated_by?: string | null
           name?: string
+          owner_email?: string | null
+          owner_name?: string | null
           provider?: Database["public"]["Enums"]["repo_provider"]
           size_bytes?: number
+          sla_atualizacao_horas?: number
           tags?: string[]
           updated_at?: string
           version?: number
@@ -561,6 +585,9 @@ export type Database = {
           created_at: string
           created_by: string | null
           credentials_ref: string | null
+          criticidade: string
+          custo_acesso_mensal: number
+          custo_manutencao_mensal: number
           description: string | null
           engine: Database["public"]["Enums"]["db_engine"]
           engine_version: string | null
@@ -570,8 +597,13 @@ export type Database = {
           last_test_status:
             | Database["public"]["Enums"]["conn_test_status"]
             | null
+          metadata_updated_at: string | null
+          metadata_updated_by: string | null
           name: string
+          owner_email: string | null
+          owner_name: string | null
           read_only: boolean
+          sla_atualizacao_horas: number
           tags: string[]
           updated_at: string
           version: number
@@ -583,6 +615,9 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           credentials_ref?: string | null
+          criticidade?: string
+          custo_acesso_mensal?: number
+          custo_manutencao_mensal?: number
           description?: string | null
           engine: Database["public"]["Enums"]["db_engine"]
           engine_version?: string | null
@@ -592,8 +627,13 @@ export type Database = {
           last_test_status?:
             | Database["public"]["Enums"]["conn_test_status"]
             | null
+          metadata_updated_at?: string | null
+          metadata_updated_by?: string | null
           name: string
+          owner_email?: string | null
+          owner_name?: string | null
           read_only?: boolean
+          sla_atualizacao_horas?: number
           tags?: string[]
           updated_at?: string
           version?: number
@@ -605,6 +645,9 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           credentials_ref?: string | null
+          criticidade?: string
+          custo_acesso_mensal?: number
+          custo_manutencao_mensal?: number
           description?: string | null
           engine?: Database["public"]["Enums"]["db_engine"]
           engine_version?: string | null
@@ -614,8 +657,13 @@ export type Database = {
           last_test_status?:
             | Database["public"]["Enums"]["conn_test_status"]
             | null
+          metadata_updated_at?: string | null
+          metadata_updated_by?: string | null
           name?: string
+          owner_email?: string | null
+          owner_name?: string | null
           read_only?: boolean
+          sla_atualizacao_horas?: number
           tags?: string[]
           updated_at?: string
           version?: number
@@ -1577,6 +1625,57 @@ export type Database = {
           },
         ]
       }
+      repo_alertas: {
+        Row: {
+          created_at: string
+          detalhes: Json
+          first_seen_at: string
+          id: string
+          last_seen_at: string
+          mensagem: string
+          resolved_at: string | null
+          severidade: string
+          status: string
+          target: string
+          target_id: string
+          target_name: string | null
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          detalhes?: Json
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          mensagem: string
+          resolved_at?: string | null
+          severidade?: string
+          status?: string
+          target: string
+          target_id: string
+          target_name?: string | null
+          tipo: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          detalhes?: Json
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          mensagem?: string
+          resolved_at?: string | null
+          severidade?: string
+          status?: string
+          target?: string
+          target_id?: string
+          target_name?: string | null
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       repository_sync_jobs: {
         Row: {
           bytes_synced: number
@@ -2095,6 +2194,7 @@ export type Database = {
       }
     }
     Functions: {
+      detect_repo_alertas: { Args: never; Returns: Json }
       get_metabase_refresh_status: { Args: never; Returns: Json }
       get_user_operador: { Args: { _user_id: string }; Returns: string }
       has_role: {
@@ -2108,7 +2208,7 @@ export type Database = {
       refresh_metabase_views: { Args: never; Returns: undefined }
     }
     Enums: {
-      app_role: "admin" | "gestor" | "auditor" | "operador"
+      app_role: "admin" | "gestor" | "auditor" | "operador" | "compliance"
       conn_test_status: "ok" | "warn" | "fail" | "pending"
       db_engine:
         | "postgres"
@@ -2290,7 +2390,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "gestor", "auditor", "operador"],
+      app_role: ["admin", "gestor", "auditor", "operador", "compliance"],
       conn_test_status: ["ok", "warn", "fail", "pending"],
       db_engine: [
         "postgres",
