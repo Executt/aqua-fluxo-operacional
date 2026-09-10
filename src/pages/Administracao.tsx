@@ -28,6 +28,9 @@ import { DmiPesosConfig } from "@/components/admin/DmiPesosConfig";
 import { ComplianceRegrasConfig } from "@/components/admin/ComplianceRegrasConfig";
 import { MetabaseRefreshPanel } from "@/components/dashboard/MetabaseRefreshPanel";
 import { InfraAuditTrail } from "@/components/admin/InfraAuditTrail";
+import { RepoAlertasPanel } from "@/components/admin/RepoAlertasPanel";
+import { RepoMetadadosTab } from "@/components/admin/RepoMetadadosTab";
+import { UsuariosAdmin } from "@/components/admin/UsuariosAdmin";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
