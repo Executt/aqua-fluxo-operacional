@@ -51,6 +51,8 @@ const TAB_META: Record<TabKey, { label: string; icon: typeof UsersIcon; desc: st
   regras: { label: "Regras compliance", icon: Shield, desc: "Motor automático de não-conformidades" },
   metabase: { label: "Refresh do Star Schema", icon: RefreshCw, desc: "Estado do pg_cron e das materialized views (Metabase)" },
   infra: { label: "Auditoria de infraestrutura", icon: History, desc: "Repositórios e conexões — quem alterou, quando e porquê" },
+  alertas: { label: "Alertas de repositórios", icon: Shield, desc: "Falhas de conexão, sincronizações paradas e repositórios sem dados" },
+  metadados: { label: "Metadados", icon: Sliders, desc: "Responsáveis, custos, criticidade e SLA de repositórios e bases" },
   smtp: { label: "SMTP / E-mail", icon: Mail, desc: "Servidor de envio de notificações" },
   sei: { label: "Integração SEI", icon: FileSignature, desc: "Sistema Eletrônico de Informações" },
   sso: { label: "SSO / Keycloak", icon: KeyRound, desc: "Autenticação federada OIDC" },
