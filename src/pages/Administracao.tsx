@@ -39,7 +39,8 @@ const fadeUp = {
 
 type TabKey =
   | "usuarios" | "smtp" | "sei" | "sso" | "parametros" | "auditoria"
-  | "llm" | "mcp" | "kb" | "dmi" | "regras" | "metabase" | "infra";
+  | "llm" | "mcp" | "kb" | "dmi" | "regras" | "metabase" | "infra"
+  | "alertas" | "metadados";
 
 const TAB_META: Record<TabKey, { label: string; icon: typeof UsersIcon; desc: string }> = {
   usuarios: { label: "Usuários & LDAP", icon: UsersIcon, desc: "Cadastro local e diretório LDAP/AD" },
