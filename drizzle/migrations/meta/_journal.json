@@ -8,6 +8,13 @@
       "when": 1789406552794,
       "tag": "0000_fix_payload_sha256_digest",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789406602257,
+      "tag": "0001_fix_formulario_audit_columns",
+      "breakpoints": true
     }
   ]
 }
