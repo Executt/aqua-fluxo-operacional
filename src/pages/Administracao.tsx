@@ -31,6 +31,7 @@ import { InfraAuditTrail } from "@/components/admin/InfraAuditTrail";
 import { RepoAlertasPanel } from "@/components/admin/RepoAlertasPanel";
 import { RepoMetadadosTab } from "@/components/admin/RepoMetadadosTab";
 import { UsuariosAdmin } from "@/components/admin/UsuariosAdmin";
+import { RepoCustosTab } from "@/components/admin/RepoCustosTab";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 12 },
@@ -40,7 +41,7 @@ const fadeUp = {
 type TabKey =
   | "usuarios" | "smtp" | "sei" | "sso" | "parametros" | "auditoria"
   | "llm" | "mcp" | "kb" | "dmi" | "regras" | "metabase" | "infra"
-  | "alertas" | "metadados";
+  | "alertas" | "metadados" | "custos";
 
 const TAB_META: Record<TabKey, { label: string; icon: typeof UsersIcon; desc: string }> = {
   usuarios: { label: "Usuários & LDAP", icon: UsersIcon, desc: "Cadastro local e diretório LDAP/AD" },
@@ -53,6 +54,7 @@ const TAB_META: Record<TabKey, { label: string; icon: typeof UsersIcon; desc: st
   infra: { label: "Auditoria de infraestrutura", icon: History, desc: "Repositórios e conexões — quem alterou, quando e porquê" },
   alertas: { label: "Alertas de repositórios", icon: Shield, desc: "Falhas de conexão, sincronizações paradas e repositórios sem dados" },
   metadados: { label: "Metadados", icon: Sliders, desc: "Responsáveis, custos, criticidade e SLA de repositórios e bases" },
+  custos: { label: "Custos mensais", icon: SettingsIcon, desc: "Custo de acesso e manutenção por repositório e base, ligado à auditoria" },
   smtp: { label: "SMTP / E-mail", icon: Mail, desc: "Servidor de envio de notificações" },
   sei: { label: "Integração SEI", icon: FileSignature, desc: "Sistema Eletrônico de Informações" },
   sso: { label: "SSO / Keycloak", icon: KeyRound, desc: "Autenticação federada OIDC" },
@@ -117,6 +119,7 @@ const Administracao = () => {
           {tab === "usuarios" && <UsuariosAdmin />}
           {tab === "alertas" && <RepoAlertasPanel />}
           {tab === "metadados" && <RepoMetadadosTab />}
+          {tab === "custos" && <RepoCustosTab />}
           {tab === "llm" && <LLMConfig />}
           {tab === "mcp" && <MCPConfig />}
           {tab === "kb" && <KnowledgeBaseConfig />}
