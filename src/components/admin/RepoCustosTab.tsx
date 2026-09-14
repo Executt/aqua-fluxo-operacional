@@ -108,7 +108,7 @@ export function RepoCustosTab() {
     [filtradas],
   );
 
-  const palette = [CHART_COLORS.primary, CHART_COLORS.info ?? CHART_COLORS.primary];
+  const palette = [CHART_COLORS.primary, CHART_COLORS.teal];
 
   return (
     <div className="lg:col-span-3 space-y-4">
